@@ -1,12 +1,15 @@
 # ignore windows autosaves
-*.asv 
-		
+*.asv
+
 # ignore mac autosaves
 *~
- 		
+
 # ignore MSword
-*.doc 		
+*.doc
 *.docx
- 
+
 # Mac OS dir file
-*.DS_Store 	
+*.DS_Store
+
+# We probably should not redistribute 3rd party USB drivers
+*/CedrusUSB/*
