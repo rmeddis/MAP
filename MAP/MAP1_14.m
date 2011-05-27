@@ -295,9 +295,11 @@ IHCu1= IHC_cilia_RPParams.u1;
 IHCs0= IHC_cilia_RPParams.s0;
 IHCs1= IHC_cilia_RPParams.s1;
 IHCGmax= IHC_cilia_RPParams.Gmax;
-IHCGu0= IHC_cilia_RPParams.Gu0; % (leakage)
-IHCGa= IHCGmax./(1+exp(-(0-IHCu0)/IHCs0).*(1+exp(-(0-IHCu1)/IHCs1)));
-IHCrestingCiliaCond=IHCGa+IHCGu0;
+IHCGa= IHC_cilia_RPParams.Ga; % (leakage)
+
+IHCGu0 = IHCGa+IHCGmax./(1+exp(IHCu0/IHCs0).*(1+exp(IHCu1/IHCs1)));
+
+
 
 % Receptor potential
 IHC_Cab= IHC_cilia_RPParams.Cab;
@@ -307,6 +309,9 @@ IHC_Ek= IHC_cilia_RPParams.Ek;
 IHC_Ekp= IHC_Ek+IHC_Et*IHC_cilia_RPParams.Rpc;
 
 IHCrestingV= -0.06;
+
+IHCrestingV= (IHC_Gk*IHC_Ek+IHCGu0*IHC_Et)/(IHCGu0+IHC_Gk);
+
 IHC_Vnow= IHCrestingV*ones(nBFs,1); % initial voltage
 IHC_RP= zeros(nBFs,segmentLength);
 
@@ -674,9 +679,7 @@ while segmentStartPTR<signalLength
     % compute apical conductance
     G=1./(1+exp(-(IHCciliaDisplacement-IHCu0)/IHCs0).*...
         (1+exp(-(IHCciliaDisplacement-IHCu1)/IHCs1)));
-    Gu=IHCGmax*G;
-    % add resting conductance to give apical conductance
-    Gu= Gu+IHCGu0;
+    Gu=IHCGmax*G + IHCGa;
 
     % Compute receptor potential
     for idx=1:segmentLength

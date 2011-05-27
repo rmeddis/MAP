@@ -153,7 +153,6 @@ for BFno=1:length(BFs)
     subplot(2,2,3)
     % RP I/O function min and max
     restingRP=IHC_RP_peak(1);
-    restingRP=IHCrestingV;
     toPlot= [fliplr(IHC_RP_min(:,1)') IHC_RP_peak(:,1)'];
     microPa=   28e-6*10.^(levels/20);
     microPa=[-fliplr(microPa) microPa];

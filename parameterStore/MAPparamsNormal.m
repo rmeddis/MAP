@@ -131,7 +131,7 @@ IHC_cilia_RPParams.u1=	1e-9;
 IHC_cilia_RPParams.s1=	1e-9;
 
 IHC_cilia_RPParams.Gmax= 5e-9;    % 2.5e-9 maximum conductance (Siemens)
-IHC_cilia_RPParams.Gu0=	1e-9;  % 4.3e-9 fixed apical membrane conductance
+IHC_cilia_RPParams.Ga=	1e-9;  % 4.3e-9 fixed apical membrane conductance
 
 %  #5 IHC_RP
 IHC_cilia_RPParams.Cab=	4e-012;         % IHC capacitance (F)
@@ -208,10 +208,10 @@ switch MacGregorMultiType
         MacGregorMultiParams.nNeuronsPerBF=	10;   % N neurons per BF
         MacGregorMultiParams.type = 'chopper cell';
         MacGregorMultiParams.fibersPerNeuron=10;  % N input fibers
-        MacGregorMultiParams.fibersPerNeuron=6;  % N input fibers
+%         MacGregorMultiParams.fibersPerNeuron=6;  % N input fibers
 
         MacGregorMultiParams.dendriteLPfreq=50;   % dendritic filter
-        MacGregorMultiParams.currentPerSpike=39e-9; % *per spike
+        MacGregorMultiParams.currentPerSpike=35e-9; % *per spike
 %         MacGregorMultiParams.currentPerSpike=45e-9; % *per spike
         
         MacGregorMultiParams.Cap=1.67e-8; % ??cell capacitance (Siemens)

@@ -552,7 +552,7 @@ switch experiment.paradigm
         
         % paradigms with maskers
     case {'forwardMasking','forwardMaskingD','trainingIFMC', 'TMC','TMC_16ms', ...
-           'TMCmodel','IFMC','IFMC_8ms','GOM','overShoot','overShootB',...
+           'TMCmodel','IFMC','IFMC_8ms', 'IFMC_16ms','GOM','overShoot','overShootB',...
            'gapDetection', 'psychometric', 'FMreProbe'}
         set(handles.editmaskerDuration,'visible', 'on')
         set(handles.editmaskerLevel,'visible', 'on')
@@ -928,7 +928,7 @@ end
 
 switch experiment.paradigm
     %     case { 'TMC',  'TMCmodel','IFMC'}
-    case {'trainingIFMC', 'TMC','TMC_16ms', 'TMC - ELP', 'IFMC'}
+    case {'trainingIFMC', 'TMC','TMC_16ms', 'TMC - ELP', 'IFMC', 'IFMC_16ms'}
         
         % For TMC and IFMC multiple target levels can be set
         if length(stimulusParameters.targetLevel)==1
