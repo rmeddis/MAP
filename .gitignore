@@ -1,12 +1,12 @@
-##ignore windows autosaves
-*.asv 		
-
-##ignore mac autosaves
-*~ 		
-
-##ignore MSword
+# ignore windows autosaves
+*.asv 
+		
+# ignore mac autosaves
+*~
+ 		
+# ignore MSword
 *.doc 		
-*.docx 
-
-##Mac OS dir file
+*.docx
+ 
+# Mac OS dir file
 *.DS_Store 	
