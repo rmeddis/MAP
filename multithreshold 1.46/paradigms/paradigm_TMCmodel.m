@@ -1,0 +1,45 @@
+function paradigm_TMCmodel(handles)
+global stimulusParameters experiment betweenRuns
+
+paradigm_training(handles) % default
+
+stimulusParameters.WRVname='maskerLevel';
+stimulusParameters.WRVstartValues=30;
+stimulusParameters.WRVsteps= [-10 -4];
+stimulusParameters.WRVlimits=[-30 110];
+
+stimulusParameters.cueTestDifference = 10;
+experiment.psyFunSlope = -1;
+withinRuns.direction='up';
+
+betweenRuns.variableName1='gapDuration';
+betweenRuns.variableList1=[ 0.09 0.01:0.02:0.07 0.02:0.02:.08 0.005];
+betweenRuns.variableName2='targetFrequency';
+% retain existing targetFrequencies
+betweenRuns.variableList2=str2num(get(handles.edittargetFrequency,'string'));
+betweenRuns.randomizeSequence=1; % 'random sequence'
+
+stimulusParameters.maskerType='tone';
+stimulusParameters.maskerPhase='sin';
+stimulusParameters.maskerDuration=0.108;
+stimulusParameters.maskerLevel=stimulusParameters.WRVstartValues(1);
+stimulusParameters.maskerRelativeFrequency=1;
+experiment.singleIntervalMaxTrials=10;
+
+stimulusParameters.gapDuration=betweenRuns.variableList1;
+
+stimulusParameters.targetType='tone';
+stimulusParameters.targetPhase='sin';
+stimulusParameters.targetFrequency=betweenRuns.variableList2(1);
+stimulusParameters.targetDuration=0.016;
+stimulusParameters.targetLevel=NaN;
+
+stimulusParameters.rampDuration=0.004;
+
+% instructions to user
+%   single interval up/down no cue
+stimulusParameters.instructions{1}=[{'YES if you hear the added click'}, { }, { 'NO if not (or you are uncertain'}];
+%   single interval up/down with cue
+stimulusParameters.instructions{2}=[{'count how many distinct clicks you hear'},{'ignore the tones'},{' '},...
+    {'The clicks must be **clearly distinct** to count'}];
+
