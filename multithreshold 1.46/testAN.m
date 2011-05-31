@@ -1,9 +1,9 @@
-function testAN
+function vectorStrength=testAN(targetFrequency,BFlist, levels)
 % testIHC used either for IHC I/O function ...
 %  or receptive field (doReceptiveFields=1)
 
 global experiment method stimulusParameters
-global IHC_VResp_VivoParams IHCpreSynapseParams
+global IHC_VResp_VivoParams  IHC_cilia_RPParams IHCpreSynapseParams
 global AN_IHCsynapseParams
 % global saveMembranePotential MacGregorMultiParams
 dbstop if error
@@ -12,8 +12,11 @@ addpath (['..' filesep 'MAP'], ['..' filesep 'utilities'], ...
     ['..' filesep 'parameterStore'],  ['..' filesep 'wavFileStore'],...
     ['..' filesep 'testPrograms'])
 
-levels=-10:10:80;
-% levels=80:10:90;
+if nargin<3
+    levels=-10:10:80;
+    % levels=80:10:90;
+end
+
 nLevels=length(levels);
 
 toneDuration=.2;
@@ -22,8 +25,8 @@ silenceDuration=.02;
 localPSTHbinwidth=0.001;
 
 % Use only the first frequency in the GUI targetFrequency box to defineBF
-targetFrequency=stimulusParameters.targetFrequency(1);
-BFlist=targetFrequency;
+% targetFrequency=stimulusParameters.targetFrequency(1);
+% BFlist=targetFrequency;
 
 AN_HSRonset=zeros(nLevels,1);
 AN_HSRsaturated=zeros(nLevels,1);
@@ -43,15 +46,23 @@ MOC=zeros(nLevels,1);
 figure(15), clf
 set(gcf,'position',[980   356   401   321])
 figure(5), clf
- set(gcf,'position', [980 34 400 295])
+set(gcf,'position', [980 34 400 295])
+set(gcf,'name',[num2str(BFlist), ' Hz']);
 drawnow
 
 levelNo=0;
 for leveldB=levels
     levelNo=levelNo+1;
 
-    % sample rate should be amultiple of the targetFrequency for PSTH below
+    %% sample rate should be amultiple of the targetFrequency for PSTH below
     sampleRate=50000;
+    sampleRate=20*targetFrequency;
+    if sampleRate<20000
+    sampleRate=round(40000/targetFrequency)*targetFrequency;
+    end
+    
+     
+    %% ananana
     dt=1/sampleRate;
     period=1/targetFrequency;
     dt=dt*(dt/period)*round(period/dt);
@@ -79,8 +90,8 @@ for leveldB=levels
 
     global ANoutput CNoutput ICoutput ICmembraneOutput tauCas
     global ARattenuation MOCattenuation
-    
-    MAP1_14(inputSignal, 1/dt, targetFrequency, ...
+
+    MAP1_14(inputSignal, 1/dt, BFlist, ...
         MAPparamsName, AN_spikesOrProbability);
 
     nTaus=length(tauCas);
@@ -111,8 +122,8 @@ for leveldB=levels
     hold off, bar(PSTHtime,PSTH, 'b')
     hold on,  bar(PSTHtime,PSTHLSR,'r')
     ylim([0 1000])
-xlim([0 length(PSTH)*localPSTHbinwidth])
-    
+    xlim([0 length(PSTH)*localPSTHbinwidth])
+
     % AN - CV
     %  CV is computed 5 times. Use the middle one (3) as most typical
     cvANHSR=  UTIL_CV(HSRspikes, dt);
@@ -180,7 +191,7 @@ xlim([0 length(PSTH)*localPSTHbinwidth])
     xlim([0 max(time)])
     title(['IC  ' num2str(leveldB,'%4.0f') 'dB'])
     drawnow
-    
+
     figure(5), subplot(2,2,1)
     plot(20*log10(MOC), 'k'),
     title(' MOC'), ylabel('dB attenuation')
@@ -189,9 +200,9 @@ xlim([0 length(PSTH)*localPSTHbinwidth])
 
 end % level
 figure(5), subplot(2,2,1)
-    plot(levels,20*log10(MOC), 'k'),
-    title(' MOC'), ylabel('dB attenuation')
-    ylim([-30 0])
+plot(levels,20*log10(MOC), 'k'),
+title(' MOC'), ylabel('dB attenuation')
+ylim([-30 0])
 xlim([0 max(levels)])
 
 fprintf('\n')
@@ -209,7 +220,6 @@ fprintf('\n')
 % ---------------------------------------------------- display parameters
 
 figure(15), clf
-set(gcf,'position',[1000   356   381   321])
 nRows=2; nCols=2;
 
 % AN rate - level ONSET functions
@@ -261,6 +271,7 @@ set(gca,'ytick',0:50:300)
 xlim([min(levels) max(levels)])
 set(gca,'xtick',[levels(1):20:levels(end)]), grid on
 
+
 ttl=['spont=' num2str(mean(ICHSRsaturated(1,:)),'%4.0f') ...
     '  sat=' num2str(mean(ICHSRsaturated(end,1)),'%4.0f')];
 title( ttl)
@@ -268,6 +279,25 @@ xlabel('level dB SPL'), ylabel ('adapted rate (sp/s)')
 text(0, 350, 'IC', 'fontsize', 16)
 set(gcf,'name',' AN CN IC rate/level')
 
+peakVectorStrength=max(vectorStrength);
+
+fprintf('\n')
+disp('levels vectorStrength')
+fprintf('%3.0f \t %6.4f \n', [levels; vectorStrength'])
+fprintf('\n')
+fprintf('Phase locking, max vector strength=\t %6.4f\n\n',...
+    max(vectorStrength))
+
+allData=[ levels'  AN_HSRonset AN_HSRsaturated...
+    AN_LSRonset AN_LSRsaturated ...
+    CNHSRsaturated CNLSRrate...
+    ICHSRsaturated ICLSRsaturated];
+fprintf('\n levels \tANHSR Onset \tANHSR adapted\tANLSR Onset \tANLSR adapted\tCNHSR\tCNLSR\tICHSR  \tICLSR \n');
+UTIL_printTabTable(round(allData))
+fprintf('VS (phase locking)= \t%6.4f\n\n',...
+    max(vectorStrength))
+
+UTIL_showStruct(IHC_cilia_RPParams, 'IHC_cilia_RPParams')
 UTIL_showStruct(IHCpreSynapseParams, 'IHCpreSynapseParams')
 UTIL_showStruct(AN_IHCsynapseParams, 'AN_IHCsynapseParams')
 
@@ -275,7 +305,7 @@ fprintf('\n')
 disp('levels vectorStrength')
 fprintf('%3.0f \t %6.4f \n', [levels; vectorStrength'])
 fprintf('\n')
-fprintf('Phase locking, max vector strength= %6.4f\n\n',...
+fprintf('Phase locking, max vector strength= \t%6.4f\n\n',...
     max(vectorStrength))
 
 allData=[ levels'  AN_HSRonset AN_HSRsaturated...

@@ -19,7 +19,7 @@ levels=-10:10:90;   nLevels=length(levels);
 % levels= 50;   nLevels=length(levels);
 
 relativeFrequencies=[0.25    .5   .75  1  1.25 1.5    2];
-relativeFrequencies=1;
+% relativeFrequencies=1;
 
 % refBMdisplacement is the displacement of the BM at threshold
 % 1 nm disp at  threshold (9 kHz, Ruggero)

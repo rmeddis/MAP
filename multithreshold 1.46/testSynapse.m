@@ -82,7 +82,7 @@ legend boxoff
 grid on
 
 figure(88), [c,H]=contour(time, maskerLevels,qtMatrix); clabel(c, H);
-set(gcf,'position',[ 276    31   264   243])
+set(gcf,'position',[ 276    31   328   246])
 xlabel('time'), ylabel('maskerLevels')
 
 path(savePath);

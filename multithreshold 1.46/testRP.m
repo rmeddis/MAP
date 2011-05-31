@@ -9,7 +9,7 @@ dbstop if error
 
 figure(4), clf,
 set (gcf, 'name', ['IHC'])
-% set(gcf,'position',[613   354   360   322])
+set(gcf,'position',[613   354   360   322])
 drawColors='rgbkmcy';
 drawnow
 

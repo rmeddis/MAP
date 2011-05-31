@@ -46,7 +46,7 @@ function varargout = expGUI_MT(varargin)
 
 % Edit the above text to modify the response to help expGUI_MT
 
-% Last Modified by GUIDE v2.5 07-Apr-2011 07:20:00
+% Last Modified by GUIDE v2.5 29-May-2011 16:02:02
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -314,7 +314,7 @@ chosenOption=get(handles.popupmenuParadigm,'value');
 paradigm=paradigmNames{chosenOption};
 experiment.paradigm=paradigm;
 
-%Paradigm: read in all relevant parameters
+        %Paradigm: read in all relevant parameters
 % a file must exist with this name 'paradigm_<paradigm>'
 % 'handles' are only occasionally used
 addpath ('paradigms')
@@ -326,6 +326,16 @@ catch
         'paradigm file not found or error in file'])
 end
 rmpath ('paradigms')
+
+switch experiment.paradigm
+    % identify masker free paradigms
+    case {'training', 'discomfort','absThreshold', 'absThreshold_8',...
+            'absThreshold_16','TENtest', 'threshold_duration','SRT'...
+            'paradigm_thr_IFMC'}
+        experiment.maskerInUse=0;
+    otherwise
+        experiment.maskerInUse=1;
+end
 
 % if a variable is subject to change, specify list of values here
 % eg. stimulusParameters.targetFrequency=betweenRuns.variableList1;
@@ -423,7 +433,7 @@ set(handles.popupmenuMaskerType,'value', idx)
 
 aShowRelevantObjects(handles)
 
-% % backgroundType
+% % backgroundType popup
 idx= find(strcmp(stimulusParameters.backgroundType, backgroundTypes));
 set(handles.popupmenuBackgroundType,'value', idx)
 set(handles.editBackgroundLevel,'string', ...
@@ -432,6 +442,7 @@ set(handles.editBackgroundLevel,'string', ...
 % ---------------------------------------------- aShowRelevantObjects
 function aShowRelevantObjects(handles)
 global experiment stimulusParameters
+% called from aShowRelevantObjects
 % always on
 set(handles.edittargetLevel, 'visible', 'on')
 set(handles.edittargetDuration, 'visible', 'on')
@@ -442,15 +453,7 @@ switch experiment.ear
         set(handles.editStatsModel, 'visible', 'on')
         set(handles.textStatsModel, 'visible', 'on')
         set(handles.pushbuttonStop, 'visible', 'on')
-        set(handles.pushbuttonOME, 'visible', 'off')
-        set(handles.pushbuttonBM, 'visible', 'off')
-        set(handles.pushbuttonRP, 'visible', 'off')
-        set(handles.pushbuttonAN, 'visible', 'off')
-        set(handles.pushbuttonRF, 'visible', 'off')
-        set(handles.pushbuttonSYN, 'visible', 'off')
-        set(handles.pushbuttonFM, 'visible', 'off')
-        set(handles.pushbuttonParams, 'visible', 'off')
-        set(handles.pushbuttonSingleShot, 'visible', 'off')
+showModelPushButtons(handles, 0)
         set(handles.editCatchTrialRate, 'visible', 'off')
         set(handles.textCatchTrials, 'visible', 'off')
         set(handles.editcalibrationdB, 'visible', 'off')
@@ -459,44 +462,25 @@ switch experiment.ear
         set(handles.textCue, 'visible', 'off')
         set(handles.editMusicLevel,'visible', 'off')
         set(handles.textMusicLevel,'visible', 'off')
-        set(handles.editMAPplot,'visible', 'off')
-        set(handles.textMAPplot,'visible', 'off')
         
     case {'MAPmodel',  'MAPmodelListen', 'MAPmodelMultiCh', 'MAPmodelSingleCh'}
         set(handles.popupmenuCueNoCue, 'visible', 'off')
         set(handles.editStatsModel, 'visible', 'off')
         set(handles.textStatsModel, 'visible', 'off')
         set(handles.pushbuttonStop, 'visible', 'on')
-        set(handles.pushbuttonOME, 'visible', 'on')
-        set(handles.pushbuttonBM, 'visible', 'on')
-        set(handles.pushbuttonRP, 'visible', 'on')
-        set(handles.pushbuttonAN, 'visible', 'on')
-        set(handles.pushbuttonRF, 'visible', 'on')
-        set(handles.pushbuttonSYN, 'visible', 'on')
-        set(handles.pushbuttonFM, 'visible', 'on')
-        set(handles.pushbuttonParams, 'visible', 'on')
-        set(handles.pushbuttonSingleShot, 'visible', 'on')
+showModelPushButtons(handles, 1)
         set(handles.editcalibrationdB, 'visible', 'off')
         set(handles.textcalibration, 'visible', 'off')
         set(handles.textCue, 'visible', 'off')
         set(handles.editMusicLevel,'visible', 'off')
         set(handles.textMusicLevel,'visible', 'off')
-        set(handles.editMAPplot,'visible', 'on')
-        set(handles.textMAPplot,'visible', 'on')
         
     otherwise
+        % i.e. using real subjects (left, right, diotic, dichotic)
         set(handles.editStatsModel, 'visible', 'off')
         set(handles.textStatsModel, 'visible', 'off')
         set(handles.pushbuttonStop, 'visible', 'off')
-        set(handles.pushbuttonOME, 'visible', 'off')
-        set(handles.pushbuttonBM, 'visible', 'off')
-        set(handles.pushbuttonRP, 'visible', 'off')
-        set(handles.pushbuttonAN, 'visible', 'off')
-        set(handles.pushbuttonRF, 'visible', 'off')
-        set(handles.pushbuttonSYN, 'visible', 'off')
-        set(handles.pushbuttonFM, 'visible', 'off')
-        set(handles.pushbuttonParams, 'visible', 'off')
-        set(handles.pushbuttonSingleShot, 'visible', 'off')
+showModelPushButtons(handles, 0)
         set(handles.editCatchTrialRate, 'visible', 'on')
         set(handles.textCatchTrials, 'visible', 'on')
         set(handles.editcalibrationdB, 'visible', 'on')
@@ -505,8 +489,6 @@ switch experiment.ear
         set(handles.textCue, 'visible', 'on')
         set(handles.editMusicLevel,'visible', 'on')
         set(handles.textMusicLevel,'visible', 'on')
-        set(handles.editMAPplot,'visible', 'off')
-        set(handles.textMAPplot,'visible', 'off')
 end
 
 switch experiment.threshEstMethod
@@ -533,48 +515,42 @@ switch experiment.threshEstMethod
         set(handles.textcueTestDifference,'visible', 'off')
 end
 
-
 % show/ remove masker related boxes
-switch experiment.paradigm
-    % masker free paradigms
-    case {'training', 'discomfort','absThreshold', 'absThreshold_8',...
-            'TENtest', 'threshold_duration','SRT'}
-        set(handles.editmaskerDuration,'visible', 'off')
-        set(handles.editmaskerLevel,'visible', 'off')
-        set(handles.editmaskerRelativeFrequency,'visible', 'off')
-        set(handles.editgapDuration,'visible', 'off')
-        set(handles.textmaskerDuration,'visible', 'off')
-        set(handles.textmaskerLevel,'visible', 'off')
-        set(handles.textmaskerRelativeFrequency,'visible', 'off')
-        set(handles.textgapDuration,'visible', 'off')
-        set(handles.popupmenuMaskerType,'visible', 'off')
-        set(handles.textMaskerType,'visible', 'off')
-        
-        % paradigms with maskers
-    case {'forwardMasking','forwardMaskingD','trainingIFMC', 'TMC','TMC_16ms', ...
-           'TMCmodel','IFMC','IFMC_8ms', 'IFMC_16ms','GOM','overShoot','overShootB',...
-           'gapDetection', 'psychometric', 'FMreProbe'}
-        set(handles.editmaskerDuration,'visible', 'on')
-        set(handles.editmaskerLevel,'visible', 'on')
-        set(handles.editmaskerRelativeFrequency,'visible', 'on')
-        set(handles.editgapDuration,'visible', 'on')
-        set(handles.popupmenuMaskerType,'visible', 'on')
-        set(handles.textmaskerDuration,'visible', 'on')
-        set(handles.textmaskerLevel,'visible', 'on')
-        set(handles.textmaskerRelativeFrequency,'visible', 'on')
-        set(handles.textgapDuration,'visible', 'on')
-        set(handles.popupmenuMaskerType,'visible', 'on')
-        set(handles.textMaskerType,'visible', 'on')
-        % masker relative frequency /type
-        chosenOption=get(handles.popupmenuMaskerType,'value');
-        maskerTypes=get(handles.popupmenuMaskerType,'string');
-        maskerType=maskerTypes{chosenOption};
-        switch maskerType
-            case 'tone'
-                set(handles.editmaskerRelativeFrequency,'visible', 'on')
-            otherwise
-                set(handles.editmaskerRelativeFrequency,'visible', 'off')
-        end
+if ~experiment.maskerInUse
+    set(handles.editmaskerDuration,'visible', 'off')
+    set(handles.editmaskerLevel,'visible', 'off')
+    set(handles.editmaskerRelativeFrequency,'visible', 'off')
+    set(handles.editgapDuration,'visible', 'off')
+    set(handles.textmaskerDuration,'visible', 'off')
+    set(handles.textmaskerLevel,'visible', 'off')
+    set(handles.textmaskerRelativeFrequency,'visible', 'off')
+    set(handles.textgapDuration,'visible', 'off')
+    set(handles.popupmenuMaskerType,'visible', 'off')
+    set(handles.textMaskerType,'visible', 'off')
+
+    % paradigms with maskers
+else
+    set(handles.editmaskerDuration,'visible', 'on')
+    set(handles.editmaskerLevel,'visible', 'on')
+    set(handles.editmaskerRelativeFrequency,'visible', 'on')
+    set(handles.editgapDuration,'visible', 'on')
+    set(handles.popupmenuMaskerType,'visible', 'on')
+    set(handles.textmaskerDuration,'visible', 'on')
+    set(handles.textmaskerLevel,'visible', 'on')
+    set(handles.textmaskerRelativeFrequency,'visible', 'on')
+    set(handles.textgapDuration,'visible', 'on')
+    set(handles.popupmenuMaskerType,'visible', 'on')
+    set(handles.textMaskerType,'visible', 'on')
+    % masker relative frequency /type
+    chosenOption=get(handles.popupmenuMaskerType,'value');
+    maskerTypes=get(handles.popupmenuMaskerType,'string');
+    maskerType=maskerTypes{chosenOption};
+    switch maskerType
+        case 'tone'
+            set(handles.editmaskerRelativeFrequency,'visible', 'on')
+        otherwise
+            set(handles.editmaskerRelativeFrequency,'visible', 'off')
+    end
 end
 
 eval(['set(handles.edit' stimulusParameters.WRVname ...
@@ -601,16 +577,94 @@ else
     set(handles.textBGlevel,'visible','on')
 end
 
+% ------------------------------------------------ showModelPushButtons
+function showModelPushButtons(handles,on)
+if on
+    set(handles.pushbuttonOME, 'visible', 'on')
+    set(handles.pushbuttonBM, 'visible', 'on')
+    set(handles.pushbuttonRP, 'visible', 'on')
+    set(handles.pushbuttonAN, 'visible', 'on')
+    set(handles.pushbuttonPhLk, 'visible', 'on')
+    set(handles.pushbuttonSYN, 'visible', 'on')
+    set(handles.pushbuttonFM, 'visible', 'on')
+    set(handles.pushbuttonParams, 'visible', 'on')
+    set(handles.pushbuttonSingleShot, 'visible', 'on')
+    set(handles.editMAPplot,'visible', 'on')
+    set(handles.textMAPplot,'visible', 'on')
 
+else
+    set(handles.pushbuttonOME, 'visible', 'off')
+    set(handles.pushbuttonBM, 'visible', 'off')
+    set(handles.pushbuttonRP, 'visible', 'off')
+    set(handles.pushbuttonAN, 'visible', 'off')
+    set(handles.pushbuttonPhLk, 'visible', 'off')
+    set(handles.pushbuttonSYN, 'visible', 'off')
+    set(handles.pushbuttonFM, 'visible', 'off')
+    set(handles.pushbuttonParams, 'visible', 'off')
+    set(handles.pushbuttonSingleShot, 'visible', 'off')
+    set(handles.editMAPplot,'visible', 'off')
+    set(handles.textMAPplot,'visible', 'off')
+
+end
 
 % ------------------------------------------------ pushbuttonRun_Callback
 function pushbuttonRun_Callback(hObject, eventdata, handles)
 global checkForPreviousGUI % holds screen positioning across repeated calls 
-global experiment
+global experiment betweenRuns paradigmNames
 checkForPreviousGUI.GUIposition=get(handles.figure1,'position');
 experiment.singleShot=0;
-run (handles)
-experiment.stop=0;
+switch experiment.paradigm
+    case 'thr_IFMC'
+        %% special option for two successive and linked measurements
+        experiment.paradigm='threshold_16ms';
+        set(handles.editstopCriteriaBox,'string','30') % nTrials
+        run (handles)
+        
+        % use these threshold for IFMC
+        thresholds16ms=betweenRuns.thresholds;
+        optionNo=strmatch('IFMC_16ms',paradigmNames);
+        set(handles.popupmenuParadigm,'value',optionNo);
+        aParadigmSelection(handles)
+        set(handles.edittargetLevel,'string', thresholds16ms+10);
+        set(handles.editstopCriteriaBox,'string','30')  % nTrials
+        pause(.1) 
+        run (handles)
+        
+        % reset original paradigm
+        optionNo=strmatch('thr_IFMC',paradigmNames);
+        set(handles.popupmenuParadigm,'value',optionNo);
+        aParadigmSelection(handles)
+
+    case 'thr_TMC'
+        %% special option for two successive and linked measurements
+        experiment.paradigm='threshold_16ms';
+        set(handles.edittargetDuration,'string', num2str(0.25))
+        set(handles.editstopCriteriaBox,'string','30') % nTrials
+        run (handles)
+        
+        set(handles.edittargetDuration,'string', num2str(0.016))
+        set(handles.editstopCriteriaBox,'string','30') % nTrials
+        run (handles)
+
+        % use these threshold for TMC
+        thresholds16ms=betweenRuns.thresholds;
+        optionNo=strmatch('TMC_16ms',paradigmNames);
+        set(handles.popupmenuParadigm,'value',optionNo);
+        aParadigmSelection(handles)
+        set(handles.edittargetLevel,'string', thresholds16ms+10);
+        set(handles.editstopCriteriaBox,'string','30')  % nTrials
+        pause(.1) 
+        run (handles)
+        
+        % reset original paradigm
+        optionNo=strmatch('thr_TMC',paradigmNames);
+        set(handles.popupmenuParadigm,'value',optionNo);
+        aParadigmSelection(handles)
+
+    otherwise
+        run (handles)
+        experiment.stop=0;
+end
 
 function run (handles)
 global experiment expGUIhandles stimulusParameters
@@ -926,10 +980,10 @@ elseif strcmp(betweenRuns.randomizeSequence, 'randomize within blocks')...
     return
 end
 
+% set the target level in advance for every wnticipated run
 switch experiment.paradigm
-    %     case { 'TMC',  'TMCmodel','IFMC'}
-    case {'trainingIFMC', 'TMC','TMC_16ms', 'TMC - ELP', 'IFMC', 'IFMC_16ms'}
-        
+    case {'trainingIFMC', 'TMC','TMC_16ms', 'TMC - ELP', ...
+            'IFMC', 'IFMC_16ms'}
         % For TMC and IFMC multiple target levels can be set
         if length(stimulusParameters.targetLevel)==1
             betweenRuns.targetLevels=...
@@ -938,6 +992,7 @@ switch experiment.paradigm
                 *length(betweenRuns.variableList2));
         elseif length(stimulusParameters.targetLevel)==...
                 length(betweenRuns.variableList2)
+            % only one level specified, so use this throughout
             x=stimulusParameters.targetLevel;
             x=repmat(x,length(betweenRuns.variableList1),1);
             x=reshape(x,1,length(betweenRuns.variableList1)*length(betweenRuns.variableList2));
@@ -1309,15 +1364,18 @@ aReadAndCheckParameterBoxes(handles);
 testBM(stimulusParameters.targetFrequency, experiment.name);
 
 function pushbuttonAN_Callback(hObject, eventdata, handles)
+global stimulusParameters
 aReadAndCheckParameterBoxes(handles);
 % now carry out tests
 showPSTHs=0;
-testAN
+targetFrequency=stimulusParameters.targetFrequency(1);
+BFlist=targetFrequency;
 
-function pushbuttonRF_Callback(hObject, eventdata, handles)
+testAN(targetFrequency,BFlist);
+
+function pushbuttonPhLk_Callback(hObject, eventdata, handles)
 aReadAndCheckParameterBoxes(handles);
-showPSTHs=1;
-testRF
+testPhaseLocking
 
 function pushbuttonSYN_Callback(hObject, eventdata, handles)
 aReadAndCheckParameterBoxes(handles);

@@ -1,4 +1,4 @@
-function test_MAP1_14
+function demoTwisterSpikes
 
 % MAPdemo runs the MATLAB auditory periphery model (MAP1_14) as far as
 %  the AN (probabilities) or IC (spikes) with graphical output

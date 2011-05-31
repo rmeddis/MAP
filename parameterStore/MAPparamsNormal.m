@@ -80,7 +80,7 @@ DRNLParams.BFlist=BFlist;
 
 % DRNL nonlinear path
 DRNLParams.a=3e4;     % nonlinear path gain (below compression threshold)
-% DRNLParams.a=0;     % DRNL.a=0 means no OHCs (no nonlinear path)
+% DRNLParams.a=3e2;     % DRNL.a=0 means no OHCs (no nonlinear path)
 
 DRNLParams.b=8e-6;    % *compression threshold raised compression
 % DRNLParams.b=1;    % b=1 means no compression
@@ -135,19 +135,19 @@ IHC_cilia_RPParams.Ga=	1e-9;  % 4.3e-9 fixed apical membrane conductance
 
 %  #5 IHC_RP
 IHC_cilia_RPParams.Cab=	4e-012;         % IHC capacitance (F)
+IHC_cilia_RPParams.Cab=	1e-012;         % IHC capacitance (F)
 IHC_cilia_RPParams.Et=	0.100;          % endocochlear potential (V)
-% IHC_cilia_RPParams.Et=	0.070;          % endocochlear potential (V)
+IHC_cilia_RPParams.Et=	0.07;          % endocochlear potential (V)
 
 IHC_cilia_RPParams.Gk=	2e-008;         % 1e-8 potassium conductance (S)
 IHC_cilia_RPParams.Ek=	-0.08;          % -0.084 K equilibrium potential
 IHC_cilia_RPParams.Rpc=	0.04;           % combined resistances
 
 
-
 %%  #5 IHCpreSynapse
 IHCpreSynapseParams=[];
 IHCpreSynapseParams.GmaxCa=	14e-9;% maximum calcium conductance
-IHCpreSynapseParams.GmaxCa=	13e-9;% maximum calcium conductance
+IHCpreSynapseParams.GmaxCa=	12e-9;% maximum calcium conductance
 IHCpreSynapseParams.ECa=	0.066;  % calcium equilibrium potential
 IHCpreSynapseParams.beta=	400;	% determine Ca channel opening
 IHCpreSynapseParams.gamma=	100;	% determine Ca channel opening

@@ -1,4 +1,4 @@
-function test_MAP1_14
+function demoTwisterProbability
 
 % MAPdemo runs the MATLAB auditory periphery model (MAP1_14) as far as
 %  the AN (probabilities) or IC (spikes) with graphical output
@@ -10,9 +10,9 @@ MAPparamsName='Normal';
 
 
 %% #2 probability (fast) or spikes (slow) representation
-AN_spikesOrProbability='spikes';
+% AN_spikesOrProbability='spikes';
 % or
-% AN_spikesOrProbability='probability';
+AN_spikesOrProbability='probability';
 
 
 %% #3 pure tone, harmonic sequence or speech file input
@@ -94,10 +94,6 @@ end
 %% run the model
 tic
 
-fprintf('\n')
-disp(['Signal duration= ' num2str(length(inputSignal)/sampleRate)])
-disp([num2str(numChannels) ' channel model'])
-disp('Computing ...')
 MAP1_14(inputSignal, sampleRate, BFlist, ...
     MAPparamsName, AN_spikesOrProbability, paramChanges);
 toc

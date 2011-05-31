@@ -45,6 +45,7 @@ else
     end
 end
 
+clc
 fprintf('******** multithreshold ')
 x=pwd; disp(['version ' x(end-3:end)])
 fprintf('\nName:\t%s ', experiment.name)
@@ -191,10 +192,8 @@ if length(var1values)==1 && length(var2values)==1 && experiment.maxTrials>49
     fprintf('\n')
     
 end
-% resultsSoFar=[betweenRuns.var1Sequence(betweenRuns.runNumber)'...
-%     betweenRuns.var2Sequence(betweenRuns.runNumber)'...
-%     betweenRuns.thresholds(betweenRuns.runNumber)'    ];
-% fprintf('%10.3f \t%10.3f \t%10.1f  \n', resultsSoFar')
+
+fprintf('\nparadigm:\t%s\n ', experiment.paradigm)
 
 % ------------------------------------------------------- sortTablesForPrinting
 function table= sortTablesForPrinting(idx1,idx2, var1values,var2values, x)

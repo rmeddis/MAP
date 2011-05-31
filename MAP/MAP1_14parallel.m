@@ -1,5 +1,5 @@
 
-function  MAP1_14(inputSignal, sampleRate, BFlist, MAPparamsName, ...
+function  MAP1_14parallel(inputSignal, sampleRate, BFlist, MAPparamsName, ...
     AN_spikesOrProbability, paramChanges)
 % To test this function use test_MAP1_14 in this folder
 %
@@ -244,7 +244,12 @@ a1 = alpha .* a0;
 GTlin_a = [b0, b1, b2];
 GTlin_b = [a0, a1];
 GTlinOrder=DRNLlinearOrder;
-GTlinBdry=cell(nBFs,GTlinOrder);
+GTlinBdry1=cell(nBFs);
+GTlinBdry2=cell(nBFs);
+GTlinBdry3=cell(nBFs);
+GTlinBdry1out=cell(nBFs);
+GTlinBdry2out=cell(nBFs);
+GTlinBdry3out=cell(nBFs);
 
 % nonlinear gammatone filter coefficients 
 bw=DRNLParams.nlBWs';
@@ -266,8 +271,19 @@ a1 = alpha .* a0;
 GTnonlin_a = [b0, b1, b2];
 GTnonlin_b = [a0, a1];
 GTnonlinOrder=DRNLnonlinearOrder;
-GTnonlinBdry1=cell(nBFs, GTnonlinOrder);
-GTnonlinBdry2=cell(nBFs, GTnonlinOrder);
+firstGTnonlinBdry1=cell(nBFs);
+firstGTnonlinBdry2=cell(nBFs);
+firstGTnonlinBdry3=cell(nBFs);
+firstGTnonlinBdry1out=cell(nBFs);
+firstGTnonlinBdry2out=cell(nBFs);
+firstGTnonlinBdry3out=cell(nBFs);
+
+secondGTnonlinBdry1=cell(nBFs);
+secondGTnonlinBdry2=cell(nBFs);
+secondGTnonlinBdry3=cell(nBFs);
+secondGTnonlinBdry1out=cell(nBFs);
+secondGTnonlinBdry2out=cell(nBFs);
+secondGTnonlinBdry3out=cell(nBFs);
 
 % complete BM record (BM displacement)
 DRNLoutput=zeros(nBFs, signalLength);
@@ -298,7 +314,6 @@ IHCGmax= IHC_cilia_RPParams.Gmax;
 IHCGa= IHC_cilia_RPParams.Ga; % (leakage)
 
 IHCGu0 = IHCGa+IHCGmax./(1+exp(IHCu0/IHCs0).*(1+exp(IHCu1/IHCs1)));
-IHCrestingCiliaCond=IHCGu0;
 
 % Receptor potential
 IHC_Cab= IHC_cilia_RPParams.Cab;
@@ -593,33 +608,44 @@ while segmentStartPTR<signalLength
     % and save
     OMEoutput(segmentStartPTR:segmentEndPTR)= stapesDisplacement;
 
-
+    % needed for parallel processing
+    if segmentStartPTR>efferentDelayPts
+        MOCatt=MOCattenuation(:, segmentStartPTR-efferentDelayPts:...
+            segmentEndPTR-efferentDelayPts);
+    else    % no MOC available yet
+        MOCatt=ones(nBFs, segmentLength);
+    end
     %% BM ------------------------------
-    % Each location is computed separately
-    for BFno=1:nBFs
+    % Each BM location is computed separately
+    parfor BFno=1:nBFs
 
         %            *linear* path
+        % repeats used to avoid parallel processin problems
         linOutput = stapesDisplacement * linGAIN;  % linear gain
-        for order = 1 : GTlinOrder
-            [linOutput GTlinBdry{BFno,order}] = ...
-                filter(GTlin_b(BFno,:), GTlin_a(BFno,:), linOutput, GTlinBdry{BFno,order});
-        end
+        [linOutput GTlinBdry1out{BFno}] = ...
+            filter(GTlin_b(BFno,:), GTlin_a(BFno,:), linOutput, GTlinBdry1{BFno});
+        [linOutput GTlinBdry2out{BFno}] = ...
+            filter(GTlin_b(BFno,:), GTlin_a(BFno,:), linOutput, GTlinBdry2{BFno});
+        [linOutput GTlinBdry3out{BFno}] = ...
+            filter(GTlin_b(BFno,:), GTlin_a(BFno,:), linOutput, GTlinBdry3{BFno});
 
         %           *nonLinear* path
         % efferent attenuation (0 <> 1)
-        if segmentStartPTR>efferentDelayPts
-            MOC=MOCattenuation(BFno, segmentStartPTR-efferentDelayPts:...
-                segmentEndPTR-efferentDelayPts);
-        else    % no MOC available yet
-            MOC=ones(1, segmentLength);
-        end
+        MOC=MOCatt(BFno);
+
 
         %       first gammatone filter
-        for order = 1 : GTnonlinOrder
-            [nonlinOutput GTnonlinBdry1{BFno,order}] = ...
-                filter(GTnonlin_b(BFno,:), GTnonlin_a(BFno,:), ...
-                stapesDisplacement, GTnonlinBdry1{BFno,order});
-        end
+        [nonlinOutput firstGTnonlinBdry1out{BFno}] = ...
+            filter(GTnonlin_b(BFno,:), GTnonlin_a(BFno,:), ...
+            stapesDisplacement, firstGTnonlinBdry1{BFno});
+
+        [nonlinOutput firstGTnonlinBdry2out{BFno}] = ...
+            filter(GTnonlin_b(BFno,:), GTnonlin_a(BFno,:), ...
+            stapesDisplacement, firstGTnonlinBdry2{BFno});
+
+        [nonlinOutput firstGTnonlinBdry3out{BFno}] = ...
+            filter(GTnonlin_b(BFno,:), GTnonlin_a(BFno,:), ...
+            stapesDisplacement, firstGTnonlinBdry3{BFno});
 
         %       broken stick instantaneous compression
         % nonlinear gain is weakend by MOC before applied to BM response
@@ -635,15 +661,31 @@ while segmentStartPTR<signalLength
         nonlinOutput=y;
 
         %       second filter removes distortion products
-        for order = 1 : GTnonlinOrder
-            [ nonlinOutput GTnonlinBdry2{BFno,order}] = ...
-                filter(GTnonlin_b(BFno,:), GTnonlin_a(BFno,:), nonlinOutput, GTnonlinBdry2{BFno,order});
-        end
+        [nonlinOutput secondGTnonlinBdry1out{BFno}] = ...
+            filter(GTnonlin_b(BFno,:), GTnonlin_a(BFno,:), ...
+            nonlinOutput, secondGTnonlinBdry1{BFno});
+
+        [nonlinOutput secondGTnonlinBdry2out{BFno}] = ...
+            filter(GTnonlin_b(BFno,:), GTnonlin_a(BFno,:), ...
+            nonlinOutput, secondGTnonlinBdry2{BFno});
+
+        [nonlinOutput secondGTnonlinBdry3out{BFno}] = ...
+            filter(GTnonlin_b(BFno,:), GTnonlin_a(BFno,:), ...
+            nonlinOutput, secondGTnonlinBdry3{BFno});
+
 
         %  combine the two paths to give the DRNL displacement
         DRNLresponse(BFno,:)=linOutput+nonlinOutput;
     end % BF
-
+    GTlinBdry1=GTlinBdry1out;
+    GTlinBdry2=GTlinBdry2out;
+    GTlinBdry3=GTlinBdry3out;
+    firstGTnonlinBdry1=firstGTnonlinBdry1out;
+    firstGTnonlinBdry2=firstGTnonlinBdry2out;
+    firstGTnonlinBdry3=firstGTnonlinBdry3out;
+    secondGTnonlinBdry1=secondGTnonlinBdry1out;
+    secondGTnonlinBdry2=secondGTnonlinBdry2out;
+    secondGTnonlinBdry3=secondGTnonlinBdry3out;
     % segment debugging plots
     % figure(98)
     %     if size(DRNLresponse,1)>3
