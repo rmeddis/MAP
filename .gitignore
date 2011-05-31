@@ -5,8 +5,9 @@
 *~
 
 # ignore MSword
-*.doc
-*.docx
+#*.doc
+#*.docx
+~*
 
 # Mac OS dir file
 *.DS_Store
