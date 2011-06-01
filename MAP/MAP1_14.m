@@ -165,8 +165,6 @@ stapesScalar= OMEParams.stapesScalar;
 % Acoustic reflex
 efferentDelayPts=round(OMEParams.ARdelay/dt);
 % smoothing filter
-% Nyquist=(1/ANdt)/2;
-% [ARfilt_b,ARfilt_a] = butter(1, (1/(2*pi*OMEParams.ARtau))/Nyquist, 'low');
 a1=dt/OMEParams.ARtau-1; a0=1;
 b0=1+ a1;
 ARfilt_b=b0; ARfilt_a=[a0 a1];
@@ -195,10 +193,6 @@ rateToAttenuationFactorProb=DRNLParams.rateToAttenuationFactorProb;
 MOCrateThreshold=DRNLParams.MOCrateThreshold;
 
 % smoothing filter for MOC
-% Nyquist=(1/ANdt)/2;
-% [MOCfilt_b,MOCfilt_a] = ...
-%     butter(1, (1/(2*pi*DRNLParams.MOCtau))/Nyquist, 'low');
-% figure(10), freqz(stapesDisp_b, stapesDisp_a)
 a1=dt/DRNLParams.MOCtau-1; a0=1;
 b0=1+ a1;
 MOCfilt_b=b0; MOCfilt_a=[a0 a1];

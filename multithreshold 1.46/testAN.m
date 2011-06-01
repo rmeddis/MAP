@@ -5,7 +5,7 @@ function vectorStrength=testAN(targetFrequency,BFlist, levels)
 global experiment method stimulusParameters
 global IHC_VResp_VivoParams  IHC_cilia_RPParams IHCpreSynapseParams
 global AN_IHCsynapseParams
-% global saveMembranePotential MacGregorMultiParams
+
 dbstop if error
 
 addpath (['..' filesep 'MAP'], ['..' filesep 'utilities'], ...
@@ -50,22 +50,27 @@ set(gcf,'position', [980 34 400 295])
 set(gcf,'name',[num2str(BFlist), ' Hz']);
 drawnow
 
+%% guarantee that the sample rate is at least 10 times the frequency
+sampleRate=50000;
+while sampleRate< 10* targetFrequency
+    sampleRate=sampleRate+10000;
+end
+
+%% adjust sample rate so that the pure tone stimulus has an integer
+%% numver of epochs in a period
+dt=1/sampleRate;
+period=1/targetFrequency;
+ANspeedUpFactor=5;  %anticipating MAP (needs clearing up)
+ANdt=dt*ANspeedUpFactor;
+ANdt=period/round(period/ANdt);
+dt=ANdt/ANspeedUpFactor;
+sampleRate=1/dt;
+epochsPerPeriod=sampleRate*period;
+
+%% main computational loop (vary level)    
 levelNo=0;
 for leveldB=levels
     levelNo=levelNo+1;
-
-    %% sample rate should be amultiple of the targetFrequency for PSTH below
-    sampleRate=50000;
-    sampleRate=20*targetFrequency;
-    if sampleRate<20000
-    sampleRate=round(40000/targetFrequency)*targetFrequency;
-    end
-    
-     
-    %% ananana
-    dt=1/sampleRate;
-    period=1/targetFrequency;
-    dt=dt*(dt/period)*round(period/dt);
 
     fprintf('%4.0f\t', leveldB)
     amp=28e-6*10^(leveldB/20);
@@ -88,7 +93,7 @@ for leveldB=levels
     MAPparamsName=experiment.name;
     showPlotsAndDetails=0;
 
-    global ANoutput CNoutput ICoutput ICmembraneOutput tauCas
+    global ANoutput ANdt CNoutput ICoutput ICmembraneOutput tauCas
     global ARattenuation MOCattenuation
 
     MAP1_14(inputSignal, 1/dt, BFlist, ...
@@ -98,13 +103,12 @@ for leveldB=levels
 
     %LSR (same as HSR if no LSR fibers present)
     [nANFibers nTimePoints]=size(ANoutput);
-    dt=dt* length(inputSignal)/nTimePoints;
 
     numLSRfibers=nANFibers/nTaus;
     numHSRfibers=numLSRfibers;
 
     LSRspikes=ANoutput(1:numLSRfibers,:);
-    PSTH=UTIL_makePSTH(LSRspikes, dt, localPSTHbinwidth);
+    PSTH=UTIL_makePSTH(LSRspikes, ANdt, localPSTHbinwidth);
     PSTHLSR=mean(PSTH,1)/localPSTHbinwidth;  % across fibers rates
     PSTHtime=localPSTHbinwidth:localPSTHbinwidth:...
         localPSTHbinwidth*length(PSTH);
@@ -113,7 +117,7 @@ for leveldB=levels
 
     % HSR
     HSRspikes= ANoutput(end- numHSRfibers+1:end, :);
-    PSTH=UTIL_makePSTH(HSRspikes, dt, localPSTHbinwidth);
+    PSTH=UTIL_makePSTH(HSRspikes, ANdt, localPSTHbinwidth);
     PSTH=mean(PSTH,1)/localPSTHbinwidth; % sum across fibers (HSR only)
     AN_HSRonset(levelNo)= max(PSTH);
     AN_HSRsaturated(levelNo)= mean(PSTH(round(length(PSTH)/2): end));
@@ -126,12 +130,12 @@ for leveldB=levels
 
     % AN - CV
     %  CV is computed 5 times. Use the middle one (3) as most typical
-    cvANHSR=  UTIL_CV(HSRspikes, dt);
+    cvANHSR=  UTIL_CV(HSRspikes, ANdt);
 
     % AN - vector strength
     PSTH=sum(HSRspikes);
     [PH, binTimes]=UTIL_periodHistogram...
-        (PSTH, dt, targetFrequency);
+        (PSTH, ANdt, targetFrequency);
     VS=UTIL_vectorStrength(PH);
     vectorStrength(levelNo)=VS;
     disp(['sat rate= ' num2str(AN_HSRsaturated(levelNo)) ...
@@ -145,14 +149,14 @@ for leveldB=levels
     [nCNneurons c]=size(CNoutput);
     nLSRneurons=round(nCNneurons/nTaus);
     CNLSRspikes=CNoutput(1:nLSRneurons,:);
-    PSTH=UTIL_makePSTH(CNLSRspikes, dt, localPSTHbinwidth);
+    PSTH=UTIL_makePSTH(CNLSRspikes, ANdt, localPSTHbinwidth);
     PSTH=sum(PSTH)/nLSRneurons;
     CNLSRrate(levelNo)=mean(PSTH(round(length(PSTH)/2):end))/localPSTHbinwidth;
 
     %CN HSR
     MacGregorMultiHSRspikes=...
         CNoutput(end-nLSRneurons:end,:);
-    PSTH=UTIL_makePSTH(MacGregorMultiHSRspikes, dt, localPSTHbinwidth);
+    PSTH=UTIL_makePSTH(MacGregorMultiHSRspikes, ANdt, localPSTHbinwidth);
     PSTH=sum(PSTH)/nLSRneurons;
     PSTH=mean(PSTH,1)/localPSTHbinwidth; % sum across fibers (HSR only)
 
@@ -162,20 +166,20 @@ for leveldB=levels
     bar(PSTHtime,PSTH)
     ylim([0 1000])
     xlim([0 length(PSTH)*localPSTHbinwidth])
-    cvMMHSR= UTIL_CV(MacGregorMultiHSRspikes, dt);
+    cvMMHSR= UTIL_CV(MacGregorMultiHSRspikes, ANdt);
     title(['CN    CV= ' num2str(cvMMHSR(3),'%5.2f')])
 
     % IC LSR
     [nICneurons c]=size(ICoutput);
     nLSRneurons=round(nICneurons/nTaus);
     ICLSRspikes=ICoutput(1:nLSRneurons,:);
-    PSTH=UTIL_makePSTH(ICLSRspikes, dt, localPSTHbinwidth);
+    PSTH=UTIL_makePSTH(ICLSRspikes, ANdt, localPSTHbinwidth);
     ICLSRsaturated(levelNo)=mean(PSTH(round(length(PSTH)/2):end))/localPSTHbinwidth;
 
     %IC HSR
     MacGregorMultiHSRspikes=...
         ICoutput(end-nLSRneurons:end,:);
-    PSTH=UTIL_makePSTH(MacGregorMultiHSRspikes, dt, localPSTHbinwidth);
+    PSTH=UTIL_makePSTH(MacGregorMultiHSRspikes, ANdt, localPSTHbinwidth);
     PSTH=sum(PSTH)/nLSRneurons;
     PSTH=mean(PSTH,1)/localPSTHbinwidth; % sum across fibers (HSR only)
 
@@ -184,7 +188,7 @@ for leveldB=levels
     AR(levelNo)=min(ARattenuation);
     MOC(levelNo)=min(MOCattenuation(length(MOCattenuation)/2:end));
 
-    time=dt:dt:dt*size(ICmembraneOutput,2);
+    time=ANdt:ANdt:ANdt*size(ICmembraneOutput,2);
     figure(5), subplot(2,2,4)
     plot(time,ICmembraneOutput(2, 1:end),'k')
     ylim([-0.07 0])

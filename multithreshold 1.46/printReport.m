@@ -45,7 +45,6 @@ else
     end
 end
 
-clc
 fprintf('******** multithreshold ')
 x=pwd; disp(['version ' x(end-3:end)])
 fprintf('\nName:\t%s ', experiment.name)
