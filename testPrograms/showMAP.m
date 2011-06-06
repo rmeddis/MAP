@@ -51,8 +51,8 @@ if options.printFiringRates
         nHSRCNneuronss=nCNneurons/nANfiberTypes;
         disp(['CN: ' num2str(sum(sum(CNoutput(end-nHSRCNneuronss+1:end,:)))...
             /(nHSRCNneuronss*duration))])
-        disp(['IC: ' num2str(sum(sum(ICoutput)))])
-        disp(['IC by type: ' num2str(mean(ICfiberTypeRates,2)')])
+        disp(['IC: ' num2str(sum(sum(ICoutput))/duration)])
+%         disp(['IC by type: ' num2str(mean(ICfiberTypeRates,2)')])
     else
         disp(['AN: ' num2str(mean(mean(ANprobRateOutput)))])
     end

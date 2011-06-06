@@ -130,13 +130,13 @@ IHC_cilia_RPParams.s0=	30e-9;
 IHC_cilia_RPParams.u1=	1e-9;
 IHC_cilia_RPParams.s1=	1e-9;
 
-IHC_cilia_RPParams.Gmax= 5e-9;    % 2.5e-9 maximum conductance (Siemens)
-IHC_cilia_RPParams.Ga=	1e-9;  % 4.3e-9 fixed apical membrane conductance
+IHC_cilia_RPParams.Gmax= 5e-9;      % 2.5e-9 maximum conductance (Siemens)
+IHC_cilia_RPParams.Ga=	1e-9;       % 4.3e-9 fixed apical membrane conductance
 
 %  #5 IHC_RP
 IHC_cilia_RPParams.Cab=	4e-012;         % IHC capacitance (F)
 IHC_cilia_RPParams.Cab=	1e-012;         % IHC capacitance (F)
-% IHC_cilia_RPParams.Et=	0.100;          % endocochlear potential (V)
+IHC_cilia_RPParams.Et=	0.100;          % endocochlear potential (V)
 IHC_cilia_RPParams.Et=	0.07;          % endocochlear potential (V)
 
 IHC_cilia_RPParams.Gk=	2e-008;         % 1e-8 potassium conductance (S)
@@ -183,6 +183,8 @@ AN_IHCsynapseParams.refractory_period=	0.00075;
 AN_IHCsynapseParams.numFibers=	100; 
 AN_IHCsynapseParams.TWdelay=0.004;  % ?delay before stimulus first spike
 
+AN_IHCsynapseParams.ANspeedUpFactor=5; % longer epochs for computing spikes.
+
 %%  #7 MacGregorMulti (first order brainstem neurons)
 MacGregorMultiParams=[];
 MacGregorMultiType='chopper'; % MacGregorMultiType='primary-like'; %choose
@@ -212,13 +214,13 @@ switch MacGregorMultiType
 
         MacGregorMultiParams.dendriteLPfreq=50;   % dendritic filter
         MacGregorMultiParams.currentPerSpike=35e-9; % *per spike
-%         MacGregorMultiParams.currentPerSpike=45e-9; % *per spike
+        MacGregorMultiParams.currentPerSpike=30e-9; % *per spike
         
         MacGregorMultiParams.Cap=1.67e-8; % ??cell capacitance (Siemens)
         MacGregorMultiParams.tauM=0.002;  % membrane time constant (s)
         MacGregorMultiParams.Ek=-0.01;    % K+ eq. potential (V)
         MacGregorMultiParams.dGkSpike=1.33e-4; % K+ cond.shift on spike,S
-        MacGregorMultiParams.tauGk=	0.0001;% K+ conductance tau (s)
+        MacGregorMultiParams.tauGk=	0.0005;% K+ conductance tau (s)
         MacGregorMultiParams.Th0=	0.01; % equilibrium threshold (V)
         MacGregorMultiParams.c=	0;        % threshold shift on spike, (V)
         MacGregorMultiParams.tauTh=	0.02; % variable threshold tau
@@ -233,12 +235,13 @@ MacGregorParams.type = 'chopper cell';
 MacGregorParams.fibersPerNeuron=10; % N input fibers
 MacGregorParams.dendriteLPfreq=100; % dendritic filter
 MacGregorParams.currentPerSpike=120e-9;% *(A) per spike
+MacGregorParams.currentPerSpike=30e-9;% *(A) per spike
 
 MacGregorParams.Cap=16.7e-9;        % cell capacitance (Siemens)
 MacGregorParams.tauM=0.002;         % membrane time constant (s)
 MacGregorParams.Ek=-0.01;           % K+ eq. potential (V)
 MacGregorParams.dGkSpike=1.33e-4;   % K+ cond.shift on spike,S
-MacGregorParams.tauGk=	0.0003;     % K+ conductance tau (s)
+MacGregorParams.tauGk=	0.0005;     % K+ conductance tau (s)
 MacGregorParams.Th0=	0.01;       % equilibrium threshold (V)
 MacGregorParams.c=	0;              % threshold shift on spike, (V)
 MacGregorParams.tauTh=	0.02;       % variable threshold tau

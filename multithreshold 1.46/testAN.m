@@ -6,6 +6,9 @@ global experiment method stimulusParameters
 global IHC_VResp_VivoParams  IHC_cilia_RPParams IHCpreSynapseParams
 global AN_IHCsynapseParams
 
+    global ANoutput ANdt CNoutput ICoutput ICmembraneOutput tauCas
+    global ARattenuation MOCattenuation
+
 dbstop if error
 
 addpath (['..' filesep 'MAP'], ['..' filesep 'utilities'], ...
@@ -47,7 +50,6 @@ figure(15), clf
 set(gcf,'position',[980   356   401   321])
 figure(5), clf
 set(gcf,'position', [980 34 400 295])
-set(gcf,'name',[num2str(BFlist), ' Hz']);
 drawnow
 
 %% guarantee that the sample rate is at least 10 times the frequency
@@ -93,8 +95,6 @@ for leveldB=levels
     MAPparamsName=experiment.name;
     showPlotsAndDetails=0;
 
-    global ANoutput ANdt CNoutput ICoutput ICmembraneOutput tauCas
-    global ARattenuation MOCattenuation
 
     MAP1_14(inputSignal, 1/dt, BFlist, ...
         MAPparamsName, AN_spikesOrProbability);
@@ -127,6 +127,7 @@ for leveldB=levels
     hold on,  bar(PSTHtime,PSTHLSR,'r')
     ylim([0 1000])
     xlim([0 length(PSTH)*localPSTHbinwidth])
+    set(gcf,'name',[num2str(BFlist), ' Hz: ' num2str(leveldB) ' dB']);
 
     % AN - CV
     %  CV is computed 5 times. Use the middle one (3) as most typical
@@ -188,7 +189,7 @@ for leveldB=levels
     AR(levelNo)=min(ARattenuation);
     MOC(levelNo)=min(MOCattenuation(length(MOCattenuation)/2:end));
 
-    time=ANdt:ANdt:ANdt*size(ICmembraneOutput,2);
+    time=dt:dt:dt*size(ICmembraneOutput,2);
     figure(5), subplot(2,2,4)
     plot(time,ICmembraneOutput(2, 1:end),'k')
     ylim([-0.07 0])

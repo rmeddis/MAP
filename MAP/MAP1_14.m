@@ -83,7 +83,7 @@ segmentLength=round(segmentDuration/ dt);
 segmentTime=dt*(1:segmentLength); % used in debugging plots
 
 % all spiking activity is computed using longer epochs
-ANspeedUpFactor=5;  % 5 times longer
+ANspeedUpFactor=AN_IHCsynapseParams.ANspeedUpFactor;  % e.g.5 times
 
 % inputSignal must be  row vector
 [r c]=size(inputSignal);
@@ -443,10 +443,13 @@ CNdendriteLPfreq= MacGregorMultiParams.dendriteLPfreq;
 CNcurrentPerSpike=MacGregorMultiParams.currentPerSpike;
 CNspikeToCurrentTau=1/(2*pi*CNdendriteLPfreq);
 t=ANdt:ANdt:5*CNspikeToCurrentTau;
-CNalphaFunction=...
-    (CNcurrentPerSpike/CNspikeToCurrentTau)*t.*exp(-t/CNspikeToCurrentTau);
+CNalphaFunction= (1 / ...
+    CNspikeToCurrentTau)*t.*exp(-t /CNspikeToCurrentTau);
+CNalphaFunction=CNalphaFunction*CNcurrentPerSpike;
+
 % figure(98), plot(t,CNalphaFunction)
 % working memory for implementing convolution
+
 CNcurrentTemp=...
     zeros(nCNneurons,reducedSegmentLength+length(CNalphaFunction)-1);
 % trailing alphas are parts of humps carried forward to the next segment
@@ -877,7 +880,7 @@ while segmentStartPTR<signalLength
                 for idx=1:nCNneuronsPerChannel
                     % determine candidate fibers for this unit
                     fibersUsed=CNinputfiberLists(synapseNo,:);
-                    % ANpsth has a bin width of dt
+                    % ANpsth has a bin width of ANdt
                     %  (just a simple sum across fibers)
                     AN_PSTH(synapseNo,:) = ...
                         sum(ANspikes(fibersUsed,:), 1);
@@ -892,12 +895,14 @@ while segmentStartPTR<signalLength
                 CNcurrentTemp(unitNo,:)= ...
                     conv(AN_PSTH(unitNo,:),CNalphaFunction);
             end
+%             disp(['sum(AN_PSTH)= ' num2str(sum(AN_PSTH(1,:)))])
             % add post-synaptic current  left over from previous segment
             CNcurrentTemp(:,1:alphaCols)=...
                 CNcurrentTemp(:,1:alphaCols)+ CNtrailingAlphas;
 
             % take post-synaptic current for this segment
             CNcurrentInput= CNcurrentTemp(:, 1:reducedSegmentLength);
+%                 disp(['mean(CNcurrentInput)= ' num2str(mean(CNcurrentInput(1,:)))])
 
             % trailingalphas are the ends of the alpha functions that
             % spill over into the next segment
@@ -907,13 +912,14 @@ while segmentStartPTR<signalLength
             if CN_c>0
                 % variable threshold condition (slow)
                 for t=1:reducedSegmentLength
-                    CNtimeSinceLastSpike=CNtimeSinceLastSpike-dts;
+                    CNtimeSinceLastSpike=CNtimeSinceLastSpike-ANdt;
                     s=CN_E>CN_Th & CNtimeSinceLastSpike<0 ;
                     CNtimeSinceLastSpike(s)=0.0005;         % 0.5 ms for sodium spike
                     dE =(-CN_E/CN_tauM + ...
-                        CNcurrentInput(:,t)/CN_cap+(CN_Gk/CN_cap).*(CN_Ek-CN_E))*dt;
-                    dGk=-CN_Gk*dt./tauGk + CN_b*s;
-                    dTh=-(CN_Th-CN_Th0)*dt/CN_tauTh + CN_c*s;
+                        CNcurrentInput(:,t)/CN_cap+(...
+                        CN_Gk/CN_cap).*(CN_Ek-CN_E))*ANdt;
+                    dGk=-CN_Gk*ANdt./tauGk + CN_b*s;
+                    dTh=-(CN_Th-CN_Th0)*ANdt/CN_tauTh + CN_c*s;
                     CN_E=CN_E+dE;
                     CN_Gk=CN_Gk+dGk;
                     CN_Th=CN_Th+dTh;
@@ -921,30 +927,48 @@ while segmentStartPTR<signalLength
                 end
             else
                 % static threshold (faster)
+                E=zeros(1,reducedSegmentLength);
+                Gk=zeros(1,reducedSegmentLength);
+                ss=zeros(1,reducedSegmentLength);
                 for t=1:reducedSegmentLength
-                    CNtimeSinceLastSpike=CNtimeSinceLastSpike-dt;
-                    s=CN_E>CN_Th0 & CNtimeSinceLastSpike<0 ;  % =1 if both conditions met
-                    CNtimeSinceLastSpike(s)=0.0005;          % 0.5 ms for sodium spike
+                    % time of previous spike moves back in time
+                    CNtimeSinceLastSpike=CNtimeSinceLastSpike-ANdt;
+                    % action potential if E>threshold
+                    %  allow time for s to reset between events
+                    s=CN_E>CN_Th0 & CNtimeSinceLastSpike<0 ;  
+                    ss(t)=s(1);
+                    CNtimeSinceLastSpike(s)=0.0005; % 0.5 ms for sodium spike
                     dE = (-CN_E/CN_tauM + ...
-                        CNcurrentInput(:,t)/CN_cap+(CN_Gk/CN_cap).*(CN_Ek-CN_E))*dt;
-                    dGk=-CN_Gk*dt./tauGk +CN_b*s;
+                        CNcurrentInput(:,t)/CN_cap +...
+                        (CN_Gk/CN_cap).*(CN_Ek-CN_E))*ANdt;
+                    dGk=-CN_Gk*ANdt./tauGk +CN_b*s;
                     CN_E=CN_E+dE;
                     CN_Gk=CN_Gk+dGk;
+                    E(t)=CN_E(1);
+                    Gk(t)=CN_Gk(1);
                     % add spike to CN_E and add resting potential (-60 mV)
-                    CNmembranePotential(:,t)=CN_E+s.*(CN_Eb-CN_E)+CN_Er;
+                    CNmembranePotential(:,t)=CN_E +s.*(CN_Eb-CN_E)+CN_Er;
                 end
             end
+%             disp(['CN_E= ' num2str(sum(CN_E(1,:)))])
+%             disp(['CN_Gk= ' num2str(sum(CN_Gk(1,:)))])
+%             disp(['CNmembranePotential= ' num2str(sum(CNmembranePotential(1,:)))])
+%             plot(CNmembranePotential(1,:))
+
 
             % extract spikes.  A spike is a substantial upswing in voltage
-            CN_spikes=CNmembranePotential> -0.01;
+            CN_spikes=CNmembranePotential> -0.02;
+%             disp(['CNspikesbefore= ' num2str(sum(sum(CN_spikes)))])
 
             % now remove any spike that is immediately followed by a spike
             % NB 'find' works on columns (whence the transposing)
+            % for each spike put a zero in the next epoch
             CN_spikes=CN_spikes';
             idx=find(CN_spikes);
             idx=idx(1:end-1);
             CN_spikes(idx+1)=0;
             CN_spikes=CN_spikes';
+%             disp(['CNspikes= ' num2str(sum(sum(CN_spikes)))])
 
             % segment debugging
             % plotInstructions.figureNo=98;
@@ -988,8 +1012,8 @@ while segmentStartPTR<signalLength
                     for t=1:reducedSegmentLength
                         s=IC_E>IC_Th0;
                         dE = (-IC_E/IC_tauM + inputCurrent(:,t)/IC_cap +...
-                            (IC_Gk/IC_cap).*(IC_Ek-IC_E))*dt;
-                        dGk=-IC_Gk*dt/IC_tauGk +IC_b*s;
+                            (IC_Gk/IC_cap).*(IC_Ek-IC_E))*ANdt;
+                        dGk=-IC_Gk*ANdt/IC_tauGk +IC_b*s;
                         IC_E=IC_E+dE;
                         IC_Gk=IC_Gk+dGk;
                         ICmembranePotential(:,t)=IC_E+s.*(IC_Eb-IC_E)+IC_Er;
@@ -999,16 +1023,16 @@ while segmentStartPTR<signalLength
                     for t=1:reducedSegmentLength
                         dE = (-IC_E/IC_tauM + ...
                             inputCurrent(:,t)/IC_cap + (IC_Gk/IC_cap)...
-                            .*(IC_Ek-IC_E))*dt;
+                            .*(IC_Ek-IC_E))*ANdt;
                         IC_E=IC_E+dE;
                         s=IC_E>IC_Th;
                         ICmembranePotential(:,t)=IC_E+s.*(IC_Eb-IC_E)+IC_Er;
-                        dGk=-IC_Gk*dt/IC_tauGk +IC_b*s;
+                        dGk=-IC_Gk*ANdt/IC_tauGk +IC_b*s;
                         IC_Gk=IC_Gk+dGk;
 
                         % After a spike, the threshold is raised
                         % otherwise it settles to its baseline
-                        dTh=-(IC_Th-Th0)*dt/IC_tauTh +s*IC_c;
+                        dTh=-(IC_Th-Th0)*ANdt/IC_tauTh +s*IC_c;
                         IC_Th=IC_Th+dTh;
                     end
                 end
@@ -1027,6 +1051,7 @@ while segmentStartPTR<signalLength
                 lastCell=nCellsPerTau;
                 for tauCount=1:nANfiberTypes
                     % separate rates according to fiber types
+                    % currently only the last segment is saved
                     ICfiberTypeRates(tauCount, ...
                         reducedSegmentPTR:shorterSegmentEndPTR)=...
                         sum(ICspikes(firstCell:lastCell, :))...
@@ -1034,13 +1059,16 @@ while segmentStartPTR<signalLength
                     firstCell=firstCell+nCellsPerTau;
                     lastCell=lastCell+nCellsPerTau;
                 end
-                ICoutput(:, reducedSegmentPTR:shorterSegmentEndPTR)=ICspikes;
-
+                
+                ICoutput(:,reducedSegmentPTR:shorterSegmentEndPTR)=ICspikes;
+                
+                % store membrane output on original dt scale
                 if nBFs==1  % single channel
                     x= repmat(ICmembranePotential(1,:), ANspeedUpFactor,1);
                     x= reshape(x,1,segmentLength);
                     if nANfiberTypes>1  % save HSR and LSR
-                        y= repmat(ICmembranePotential(end,:), ANspeedUpFactor,1);
+                        y=repmat(ICmembranePotential(end,:),...
+                            ANspeedUpFactor,1);
                         y= reshape(y,1,segmentLength);
                         x=[x; y];
                     end
