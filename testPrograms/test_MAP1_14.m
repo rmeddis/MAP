@@ -43,7 +43,7 @@ lowestBF=250; 	highestBF= 8000;
 BFlist=round(logspace(log10(lowestBF), log10(highestBF), numChannels));
 
 %   or specify your own channel BFs
-% BFlist=toneFrequency;
+BFlist=toneFrequency;
 
 
 %% #6 change model parameters

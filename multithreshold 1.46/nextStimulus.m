@@ -82,7 +82,7 @@ switch experiment.ear
 end
 
 set(handles.textMSG,'BackgroundColor','w', 'ForegroundColor', 'b')
-            
+
 % Now the serious business of crafting and presenting the stimulus
 errormsg= stimulusMakeAndPlay (handles);
 
@@ -314,6 +314,23 @@ if withinRuns.catchTrial
     targetLevel=-100;	% no target
 end
 
+% ----------------------------- calibration of sound output
+calibrationCorrectiondB=stimulusParameters.calibrationdB;
+if calibrationCorrectiondB<-50
+    if maskerFrequency==targetFrequency
+        load 'calibrationFile'  % calibrationFrequency calibrationAttenutation
+        idx=find(calibrationFrequency==targetFrequency);
+        if isempty(idx)
+            error('Calibration bty file; frequency not found')
+        else
+            calibrationCorrectiondB=calibrationAttenutation(idx)
+        end
+    else
+        error('calibration by file requested but masker frequency is not the same as target')
+    end
+end
+
+
 % -------------------------------------- Checks on excessive signal level
 
 % clipping is relevant only for soundcard use (not modelling)
@@ -329,7 +346,7 @@ end
 switch experiment.ear
     case {'left', 'right', 'diotic',...
             'dichotic', 'dioticLeft', 'dichoticRight'}
-        clippingLevel=91+stimulusParameters.calibrationdB;
+        clippingLevel=91+calibrationCorrectiondB;
         soundCardMinimum=clippingLevel-20*log10(2^24);
     otherwise
         clippingLevel=inf;
@@ -366,7 +383,7 @@ switch stimulusParameters.WRVname
             withinRuns.forceThreshold=NaN;
             return
         end
-                
+        
     case 'targetLevel'
         upperLevel=stimulusParameters.WRVlimits(2);
         lowerLevel=stimulusParameters.WRVlimits(1);
@@ -376,7 +393,7 @@ switch stimulusParameters.WRVname
                     num2str(max(targetLevel, cueTargetLevel)) ...
                     ')  is too high ***'];
                 withinRuns.forceThreshold=upperLevel;
-            withinRuns.forceThreshold=NaN;
+                withinRuns.forceThreshold=NaN;
                 return
             end
             if max(targetLevel, cueTargetLevel)< lowerLevel
@@ -384,7 +401,7 @@ switch stimulusParameters.WRVname
                     num2str(max(targetLevel, cueTargetLevel)) ...
                     ')  is too low ***'];
                 withinRuns.forceThreshold=lowerLevel;
-            withinRuns.forceThreshold=NaN;
+                withinRuns.forceThreshold=NaN;
                 return
             end
             if max(targetLevel, cueTargetLevel)> clippingLevel
@@ -392,10 +409,10 @@ switch stimulusParameters.WRVname
                     num2str(max(targetLevel, cueTargetLevel)) ...
                     ')  is clipping ***'];
                 withinRuns.forceThreshold=upperLevel;
-            withinRuns.forceThreshold=NaN;
+                withinRuns.forceThreshold=NaN;
                 return
             end
-        end    
+        end
     case 'maskerDuration'
         % this is odd! but harmless
         if max(maskerDuration, cueMaskerDuration)> ...
@@ -493,7 +510,7 @@ end
 backgroundType=stimulusParameters.backgroundType;
 switch stimulusParameters.backgroundType
     case {'noiseDich', 'pinkNoiseDich'}
-%     case 'Dich'
+        %     case 'Dich'
         % dich means put the background in the ear opposite to the target
         backgroundType=backgroundType(1:end-4);
         switch targetEar
@@ -503,7 +520,7 @@ switch stimulusParameters.backgroundType
                 backgroundEar=1;
         end
     otherwise
-%             case {'none','noise', 'pinkNoise', 'TEN','babble'}
+        %             case {'none','noise', 'pinkNoise', 'TEN','babble'}
         backgroundEar=targetEar;
 end
 
@@ -515,9 +532,9 @@ dt=1/stimulusParameters.sampleRate;
 globalStimParams.dt=dt;
 stimulusParameters.dt=dt; % for use later
 
-% calibration of sound output
-correctiondB=stimulusParameters.calibrationdB;
-globalStimParams.audioOutCorrection=10^(correctiondB/20);
+
+
+globalStimParams.audioOutCorrection=10^(calibrationCorrectiondB/20);
 % the output will be reduced by this amount in stimulusCreate
 % i.e.  audio=audio/globalStimParams.audioOutCorrection
 % A 91 dB level will yield a peak amp of 1 for calibration=0
@@ -680,7 +697,7 @@ switch backgroundType
             'backgrounds and maskers'...
             filesep 'ten.wav'];
         [tenNoise, FS]=wavread(fileName);
-
+        
         tenNoise=resample(tenNoise, globalStimParams.FS, FS);
         stimComponents(backgroundEar,componentNo).type='file';
         stimComponents(backgroundEar,componentNo).stimulus=tenNoise';
@@ -705,8 +722,8 @@ switch experiment.paradigm
             +stimulusParameters.maskerDuration;
         stimulusParameters.testTargetEnds=...
             stimulusParameters.testTargetBegins+withinRuns.variableValue;
-%     case 'SRT'
-%         set(handles.editdigitInput,'visible','off')
+        %     case 'SRT'
+        %         set(handles.editdigitInput,'visible','off')
     otherwise
         stimulusParameters.testTargetBegins=targetDelay;
         stimulusParameters.testTargetEnds=targetDelay+targetDuration;

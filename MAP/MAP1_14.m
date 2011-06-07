@@ -777,6 +777,8 @@ while segmentStartPTR<signalLength
                     (1- smoothedRates* rateToAttenuationFactorProb);
             end
             MOCattenuation(MOCattenuation<0)=0.001;
+plot(MOCattenuation)
+MOCattenuation
 
 
         case 'spikes'
