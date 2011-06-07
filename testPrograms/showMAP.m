@@ -1,10 +1,12 @@
 function showMAP (options)
 % defaults
-%     options.showModelParameters=1;
-%     options.showModelOutput=1;
-%     options.printFiringRates=1;
-%     options.showACF=1;
-%     options.showEfferent=1;
+% options.showModelParameters=1;
+% options.showModelOutput=1;
+% options.printFiringRates=1;
+% options.showACF=1;
+% options.showEfferent=1;
+% options.surfProbability=0;
+% options.fileName=[];
 
 dbstop if warning
 
@@ -13,6 +15,9 @@ global dt ANdt saveAN_spikesOrProbability savedBFlist saveMAPparamsName...
     DRNLoutput IHC_cilia_output IHCrestingCiliaCond IHCrestingV...
     IHCoutput ANprobRateOutput ANoutput savePavailable tauCas  ...
     CNoutput  ICoutput ICmembraneOutput ICfiberTypeRates MOCattenuation
+global OMEParams DRNLParams IHC_cilia_RPParams IHCpreSynapseParams
+global AN_IHCsynapseParams MacGregorParams MacGregorMultiParams
+
 
 restorePath=path;
 addpath ( ['..' filesep 'utilities'], ['..' filesep 'parameterStore'])
@@ -21,8 +26,10 @@ if nargin<1
     options.showModelParameters=1;
     options.showModelOutput=1;
     options.printFiringRates=1;
-    options.showACF=1;
+    options.showACF=0;
     options.showEfferent=1;
+    options.surfProbability=0;
+    options.fileName=[];
 end
 
 if options.showModelParameters
@@ -46,13 +53,13 @@ if options.printFiringRates
         duration=size(TMoutput,2)*dt;
         disp(['AN: ' num2str(sum(sum(ANoutput(end-nHSRfibers+1:end,:)))/...
             (nHSRfibers*duration))])
-        
+
         nCNneurons=size(CNoutput,1);
         nHSRCNneuronss=nCNneurons/nANfiberTypes;
         disp(['CN: ' num2str(sum(sum(CNoutput(end-nHSRCNneuronss+1:end,:)))...
             /(nHSRCNneuronss*duration))])
-        disp(['IC: ' num2str(sum(sum(ICoutput)))])
-        disp(['IC by type: ' num2str(mean(ICfiberTypeRates,2)')])
+        disp(['IC: ' num2str(sum(sum(ICoutput))/duration)])
+        %         disp(['IC by type: ' num2str(mean(ICfiberTypeRates,2)')])
     else
         disp(['AN: ' num2str(mean(mean(ANprobRateOutput)))])
     end
@@ -64,7 +71,7 @@ if options.showModelOutput
     plotInstructions.figureNo=99;
     signalRMS=mean(savedInputSignal.^2)^0.5;
     signalRMSdb=20*log10(signalRMS/20e-6);
-    
+
     % plot signal (1)
     plotInstructions.displaydt=dt;
     plotInstructions.numPlots=6;
@@ -74,18 +81,18 @@ if options.showModelOutput
     r=size(savedInputSignal,1);
     if r==1, savedInputSignal=savedInputSignal'; end
     UTIL_plotMatrix(savedInputSignal', plotInstructions);
-    
+
     % stapes (2)
     plotInstructions.subPlotNo=2;
     plotInstructions.title= ['stapes displacement'];
     UTIL_plotMatrix(OMEoutput, plotInstructions);
-    
+
     % DRNL (3)
     plotInstructions.subPlotNo=3;
     plotInstructions.title= ['BM displacement'];
     plotInstructions.yValues= savedBFlist;
     UTIL_plotMatrix(DRNLoutput, plotInstructions);
-    
+
     switch saveAN_spikesOrProbability
         case 'spikes'
             % AN (4)
@@ -100,7 +107,7 @@ if options.showModelOutput
                 plotInstructions.rasterDotSize=3;
             end
             UTIL_plotMatrix(ANoutput, plotInstructions);
-            
+
             % CN (5)
             plotInstructions.displaydt=ANdt;
             plotInstructions.subPlotNo=5;
@@ -109,7 +116,7 @@ if options.showModelOutput
                 plotInstructions.rasterDotSize=3;
             end
             UTIL_plotMatrix(CNoutput, plotInstructions);
-            
+
             % IC (6)
             plotInstructions.displaydt=ANdt;
             plotInstructions.subPlotNo=6;
@@ -126,7 +133,7 @@ if options.showModelOutput
                 plotInstructions.zValuesRange= [-.1 0];
                 UTIL_plotMatrix(ICmembraneOutput, plotInstructions);
             end
-            
+
         otherwise % probability (4-6)
             plotInstructions.displaydt=dt;
             plotInstructions.numPlots=2;
@@ -153,7 +160,7 @@ if options.showEfferent
     plotInstructions.title= ['AR strength.  Signal level= ' ...
         num2str(signalRMSdb,'%4.0f') ' dB SPL'];
     UTIL_plotMatrix(20*log10(ARattenuation), plotInstructions);
-    
+
     plotInstructions.subPlotNo=2;
     plotInstructions.yValues= savedBFlist;
     plotInstructions.yLabel= 'BF';
@@ -165,6 +172,24 @@ if options.showEfferent
     colorbar
 end
 
+%% surface plot of probability
+if options.surfProbability
+    figure(97), clf
+    % select only HSR fibers at the bottom of the matrix
+    ANprobRateOutput= ANprobRateOutput(end-length(savedBFlist)+1:end,:);
+    [nY nX]=size(ANprobRateOutput);
+    time=dt*(1:nX);
+    surf(time, savedBFlist, ANprobRateOutput)
+    shading interp
+    set(gca, 'yScale','log')
+    xlim([0 max(time)]), ylim([0 max(savedBFlist)]), zlim([0 1000])
+    xlabel('time (s)')
+    ylabel('best frequency (Hz)')
+    zlabel('spike rate')
+    view([-20 60])
+    title ([options.fileName ':   ' num2str(signalRMSdb,'% 3.0f') ' dB'])
+end
+
 
 %% ACF plot if required
 if options.showACF
@@ -172,7 +197,7 @@ if options.showACF
     method.dt=dt;
     method.segmentNo=1;
     method.nonlinCF=savedBFlist;
-    
+
     minPitch=	80; maxPitch=	4000; numPitches=100;    % specify lags
     pitches=10.^ linspace(log10(minPitch), log10(maxPitch),numPitches);
     pitches=fliplr(pitches);
@@ -180,18 +205,18 @@ if options.showACF
     filteredSACFParams.acfTau=	.003;       % time constant of running ACF
     filteredSACFParams.lambda=	0.12;       % slower filter to smooth ACF
     filteredSACFParams.lambda=	0.01;       % slower filter to smooth ACF
-    
+
     filteredSACFParams.plotACFs=0;          % special plot (see code)
     filteredSACFParams.plotFilteredSACF=0;  % 0 plots unfiltered ACFs
     filteredSACFParams.plotMoviePauses=.3;          % special plot (see code)
-    
+
     filteredSACFParams.usePressnitzer=0; % attenuates ACF at  long lags
     filteredSACFParams.lagsProcedure=  'useAllLags';
     % filteredSACFParams.lagsProcedure=  'useBernsteinLagWeights';
     % filteredSACFParams.lagsProcedure=  'omitShortLags';
     filteredSACFParams.criterionForOmittingLags=3;
     filteredSACFParams.plotACFsInterval=200;
-    
+
     if filteredSACFParams.plotACFs
         % plot original waveform on ACF plot
         figure(13), clf
@@ -201,16 +226,16 @@ if options.showACF
         xlim([0 t(end)])
         title(['stimulus: ' num2str(signalRMSdb, '%4.0f') ' dB SPL']);
     end
-    
+
     % plot original waveform on summary/smoothed ACF plot
-    figure(97), clf
+    figure(96), clf
     subplot(2,1,1)
     t=dt*(1:length(savedInputSignal));
     plot(t,savedInputSignal)
     xlim([0 t(end)])
     title(['stimulus: ' num2str(signalRMSdb, '%4.0f') ' dB SPL']);
-    
-    
+
+
     % compute ACF
     switch saveAN_spikesOrProbability
         case 'probability'
@@ -218,12 +243,12 @@ if options.showACF
         otherwise
             inputToACF=ANoutput;
     end
-    
+
     disp ('computing ACF...')
     [P, BFlist, sacf, boundaryValue] = ...
         filteredSACF(inputToACF, method, filteredSACFParams);
     disp(' ACF done.')
-    
+
     % SACF
     subplot(2,1,2)
     imagesc(P)
