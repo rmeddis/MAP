@@ -23,9 +23,11 @@ figure(2), clf, subplot(2,1,1)
 set(2,'position',[5   349   268   327])
 semilogx(HuberFrequencies, 20*log10(HuberDisplacementAt80dBSPL/1e-10),...
     'ko', 'MarkerFaceColor','k', 'Marker','o', 'markerSize',6)
-% Generate test stimulus .................................................................
+hold on
 
-%% independent test using discrete frequencies
+%% Generate test stimulus .................................................................
+
+% independent test using discrete frequencies
 peakResponses=[];
 peakTMpressure=[];
 frequencies=[200 400 HuberFrequencies 10000];
@@ -39,7 +41,7 @@ for toneFrequency=frequencies
     paramChanges{1}='OMEParams.rateToAttenuationFactorProb=0;';
     paramChanges{2}='DRNLParams.rateToAttenuationFactorProb = 0;';
 
-    global OMEoutput  OMEextEarPressure TMoutput ARAttenuation
+    global OMEoutput  OMEextEarPressure TMoutput ARattenuation
     % BF is irrelevant
     MAP1_14(inputSignal, sampleRate, -1, ...
         MAPparamsName, AN_spikesOrProbability, paramChanges);
@@ -48,7 +50,7 @@ for toneFrequency=frequencies
     peakResponses=[peakResponses peakDisplacement];
 
     peakTMpressure=[peakTMpressure max(OMEextEarPressure)];
-    disp([' greatest AR attenuation:   ' num2str(min(ARAttenuation))])
+    disp([' AR attenuation (dB):   ' num2str(20*log10(min(ARattenuation)))])
 end
 
 %% Report
@@ -59,6 +61,7 @@ fprintf('%6.0f \t%10.3e\n',[frequencies' peakResponses']')
 % stapes peak displacement
 figure(2), subplot(2,1,1), hold on
 semilogx(frequencies, 20*log10(peakResponses/1e-10), 'r', 'linewidth',4)
+set(gca,'xScale','log')
 % ylim([1e-11 1e-8])
 xlim([100 10000]), ylim([0 30])
 grid on

@@ -57,7 +57,7 @@ OMEParams.stapesScalar=	     45e-9;
 % Acoustic reflex: maximum attenuation should be around 25 dB Price (1966)
 % i.e. a minimum ratio of 0.056.
 % 'spikes' model: AR based on brainstem spiking activity (LSR)
-OMEParams.rateToAttenuationFactor=0.003;   % * N(all ICspikes)
+OMEParams.rateToAttenuationFactor=0.004;   % * N(all ICspikes)
 %     OMEParams.rateToAttenuationFactor=0;   % * N(all ICspikes)
 
 % 'probability model': Ar based on AN firing probabilities (LSR)
@@ -76,7 +76,7 @@ DRNLParams.BFlist=BFlist;
 
 % DRNL nonlinear path
 DRNLParams.a=3e4;     % nonlinear path gain (below compression threshold)
-% DRNLParams.a=3e2;     % DRNL.a=0 means no OHCs (no nonlinear path)
+DRNLParams.a=5e2;     % DRNL.a=0 means no OHCs (no nonlinear path)
 
 DRNLParams.b=8e-6;    % *compression threshold raised compression
 % DRNLParams.b=1;    % b=1 means no compression
@@ -102,13 +102,13 @@ DRNLParams.linBWs=minLinBW + coeffLinBW*BFlist; % bandwidths of linear  filters
 DRNLParams.MOCdelay = efferentDelay;            % must be < segment length!
 % 'spikes' model: MOC based on brainstem spiking activity (HSR)
 DRNLParams.rateToAttenuationFactor = .009;  % strength of MOC
-DRNLParams.rateToAttenuationFactor = .009;  % strength of MOC
+DRNLParams.rateToAttenuationFactor = .004;  % strength of MOC
 %      DRNLParams.rateToAttenuationFactor = 0;  % strength of MOC
 
 % 'probability' model: MOC based on AN spiking activity (HSR)
-DRNLParams.rateToAttenuationFactorProb = .007;  % strength of MOC
-DRNLParams.rateToAttenuationFactorProb = .0;  % strength of MOC
-DRNLParams.MOCtau =.03;                         % smoothing for MOC
+DRNLParams.rateToAttenuationFactorProb = .004;  % strength of MOC
+% DRNLParams.rateToAttenuationFactorProb = .0;  % strength of MOC
+DRNLParams.MOCtau =.1;                         % smoothing for MOC
 DRNLParams.MOCrateThreshold =50;                % set to AN rate threshold
 
 
@@ -147,7 +147,7 @@ IHCpreSynapseParams.power=	3;
 % reminder: changing z has a strong effect on HF thresholds (like Et)
 IHCpreSynapseParams.z=	    2e42;   % scalar Ca -> vesicle release rate
 
-LSRtauCa=50e-6;            HSRtauCa=85e-6;            % seconds
+LSRtauCa=35e-6;            HSRtauCa=85e-6;            % seconds
 % LSRtauCa=35e-6;            HSRtauCa=70e-6;            % seconds
 IHCpreSynapseParams.tauCa= [LSRtauCa HSRtauCa]; %LSR and HSR fiber
 

@@ -535,34 +535,34 @@ while segmentStartPTR<signalLength
     % shorter segments after speed up.
     shorterSegmentEndPTR=reducedSegmentPTR+reducedSegmentLength-1;
 
-    iputPressureSegment=inputSignal...
+    inputPressureSegment=inputSignal...
         (:,segmentStartPTR:segmentStartPTR+segmentLength-1);
 
     % segment debugging plots
     % figure(98)
-    % plot(segmentTime,iputPressureSegment), title('signalSegment')
+    % plot(segmentTime,inputPressureSegment), title('signalSegment')
 
 
     % OME ----------------------
 
     % OME Stage 1: external resonances. Add to inputSignal pressure wave
-    y=iputPressureSegment;
+    y=inputPressureSegment;
     for n=1:nOMEExtFilters
         % any number of resonances can be used
         [x  OMEExtFilterBndry{n}] = ...
             filter(ExtFilter_b{n},ExtFilter_a{n},...
-            iputPressureSegment, OMEExtFilterBndry{n});
+            inputPressureSegment, OMEExtFilterBndry{n});
         x= x* OMEgainScalars(n);
         % This is a parallel resonance so add it
         y=y+x;
     end
-    iputPressureSegment=y;
-    OMEextEarPressure(segmentStartPTR:segmentEndPTR)= iputPressureSegment;
+    inputPressureSegment=y;
+    OMEextEarPressure(segmentStartPTR:segmentEndPTR)= inputPressureSegment;
     
     % OME stage 2: convert input pressure (velocity) to
     %  tympanic membrane(TM) displacement using low pass filter
     [TMdisplacementSegment  OME_TMdisplacementBndry] = ...
-        filter(TMdisp_b,TMdisp_a,iputPressureSegment, ...
+        filter(TMdisp_b,TMdisp_a,inputPressureSegment, ...
         OME_TMdisplacementBndry);
     % and save it
     TMoutput(segmentStartPTR:segmentEndPTR)= TMdisplacementSegment;
@@ -610,6 +610,7 @@ while segmentStartPTR<signalLength
         else    % no MOC available yet
             MOC=ones(1, segmentLength);
         end
+        plot(MOC) % current channel
 
         %       first gammatone filter
         for order = 1 : GTnonlinOrder
@@ -623,10 +624,10 @@ while segmentStartPTR<signalLength
         y= nonlinOutput.*(MOC* DRNLa);  % linear section.
         % compress those parts of the signal above the compression
         % threshold
-        abs_x = abs(nonlinOutput);
+        abs_x = abs(y);
         idx=find(abs_x>DRNLcompressionThreshold);
         if ~isempty(idx)>0
-            y(idx)=sign(nonlinOutput(idx)).*...
+            y(idx)=sign(y(idx)).*...
                 (DRNLb*abs_x(idx).^DRNLc);
         end
         nonlinOutput=y;
@@ -634,7 +635,8 @@ while segmentStartPTR<signalLength
         %       second filter removes distortion products
         for order = 1 : GTnonlinOrder
             [ nonlinOutput GTnonlinBdry2{BFno,order}] = ...
-                filter(GTnonlin_b(BFno,:), GTnonlin_a(BFno,:), nonlinOutput, GTnonlinBdry2{BFno,order});
+                filter(GTnonlin_b(BFno,:), GTnonlin_a(BFno,:), ...
+                nonlinOutput, GTnonlinBdry2{BFno,order});
         end
 
         %  combine the two paths to give the DRNL displacement
@@ -757,14 +759,18 @@ while segmentStartPTR<signalLength
 
             % Estimate efferent effects. ARattenuation (0 <> 1)
             %  acoustic reflex
-            ARAttSeg=mean(ANrate(1:nBFs,:),1); %LSR channels are 1:nBF
-            % smooth
-            [ARAttSeg, ARboundaryProb] = ...
-                filter(ARfilt_b, ARfilt_a, ARAttSeg, ARboundaryProb);
-            ARAttSeg=ARAttSeg-ARrateThreshold;
-            ARAttSeg(ARAttSeg<0)=0;   % prevent negative strengths
-            ARattenuation(segmentStartPTR:segmentEndPTR)=...
-                (1-ARrateToAttenuationFactorProb.* ARAttSeg);
+            [r c]=size(ANrate);
+            if r>nBFs % Only if LSR fibers are computed
+                ARAttSeg=mean(ANrate(1:nBFs,:),1); %LSR channels are 1:nBF
+                % smooth
+                [ARAttSeg, ARboundaryProb] = ...
+                    filter(ARfilt_b, ARfilt_a, ARAttSeg, ARboundaryProb);
+                ARAttSeg=ARAttSeg-ARrateThreshold;
+                ARAttSeg(ARAttSeg<0)=0;   % prevent negative strengths
+                ARattenuation(segmentStartPTR:segmentEndPTR)=...
+                    (1-ARrateToAttenuationFactorProb.* ARAttSeg);
+            end
+            %             plot(ARattenuation)
 
             % MOC attenuation
             % within-channel HSR response only
@@ -780,8 +786,8 @@ while segmentStartPTR<signalLength
                     (1- smoothedRates* rateToAttenuationFactorProb);
             end
             MOCattenuation(MOCattenuation<0)=0.001;
-plot(MOCattenuation)
-MOCattenuation
+
+            %             plot(MOCattenuation)
 
 
         case 'spikes'

@@ -9,7 +9,7 @@ function test_MAP1_14
 %
 % #1
 % Identify the file (in 'MAPparamsName') containing the model parameters
-% 
+%
 % #2
 % Identify the kind of model required (in 'AN_spikesOrProbability').
 %  A full brainstem model (spikes) can be computed or a shorter model
@@ -49,7 +49,7 @@ duration=0.100;                 % seconds
 % duration=0.020;                 % seconds
 sampleRate= 64000;
 % toneFrequency= 250:250:8000;    % harmonic sequence (Hz)
-toneFrequency= 2000;            % or a pure tone (Hz8
+toneFrequency= 1000;            % or a pure tone (Hz8
 
 rampDuration=.005;              % seconds
 
@@ -58,25 +58,25 @@ signalType= 'file';
 fileName='twister_44kHz';
 % fileName='new-da-44khz';
 
-% mix with an optional second file?
+% ? and mix with an optional second file?
 mixerFile=[];
 %or
 mixerFile='babble';
-leveldBSPL2=-60;
+leveldBSPL2=60;
 
 %% #4 rms level
 % signal details
-leveldBSPL= 60;                  % dB SPL
+leveldBSPL= 70;                  % dB SPL
 
 
 %% #5 number of channels in the model
 %   21-channel model (log spacing)
 numChannels=21;
-lowestBF=250; 	highestBF= 8000; 
+lowestBF=250; 	highestBF= 8000;
 BFlist=round(logspace(log10(lowestBF), log10(highestBF), numChannels));
 
 %   or specify your own channel BFs
-BFlist=toneFrequency;
+% BFlist=toneFrequency;
 
 
 %% #6 change model parameters
@@ -89,8 +89,7 @@ paramChanges=[];
 % constant of 80e-6 s (HSR fiber) when the probability option is selected.
 % paramChanges={'AN_IHCsynapseParams.ANspeedUpFactor=5;', ...
 %     'IHCpreSynapseParams.tauCa=86e-6;'};
-% paramChanges={'AN_IHCsynapseParams.ANspeedUpFactor=5;', ...
-%     'DRNLParams.rateToAttenuationFactorProb = 0;'};
+% paramChanges={'DRNLParams.rateToAttenuationFactorProb = 0;'};
 
 %% delare showMap options
 showMapOptions=[];  % use defaults
@@ -120,14 +119,22 @@ switch signalType
         
     case 'file'
         %% file input simple or mixed
-        [inputSignal sampleRate]=wavread(fileName);       
+        [inputSignal sampleRate]=wavread(fileName);
+            dt=1/sampleRate;
         inputSignal=inputSignal(:,1);
         targetRMS=20e-6*10^(leveldBSPL/20);
         rms=(mean(inputSignal.^2))^0.5;
         amp=targetRMS/rms;
         inputSignal=inputSignal*amp;
+        silence= zeros(1,round(0.1/dt));
+        inputSignal= [silence inputSignal' silence];
+        
         if ~isempty(mixerFile)
-            [inputSignal2 sampleRate]=wavread(mixerFile);
+            [inputSignal2 sampleRate2]=wavread(mixerFile);
+            if ~isequal(sampleRate,sampleRate2)
+                error...
+                    ('file and mixer file have different sample rates')
+            end
             inputSignal2=inputSignal2(:,1);
             [r c]=size(inputSignal);
             inputSignal2=inputSignal2(1:r);
@@ -135,8 +142,18 @@ switch signalType
             rms=(mean(inputSignal2.^2))^0.5;
             amp=targetRMS/rms;
             inputSignal2=inputSignal2*amp;
-        inputSignal=inputSignal+inputSignal2;
+            rampDuration=dt*length(inputSignal2)/3;
+            if rampDuration>0.5*duration, rampDuration=duration/2; end
+            rampTime=dt:dt:rampDuration;
+            time=dt*(1:length(inputSignal2));
+            ramp=[0.5*(1+cos(2*pi*rampTime/(2*rampDuration)+pi)) ...
+                ones(1,length(time)-length(rampTime))];
+            inputSignal2=inputSignal2.*ramp';
+            ramp=fliplr(ramp);
+            inputSignal2=inputSignal2.*ramp';
         end
+        
+        inputSignal=inputSignal+inputSignal2;
 end
 
 
@@ -159,7 +176,7 @@ toc
 % the model run is now complete. Now display the results
 showMAP(showMapOptions)
 for i=1:length(paramChanges)
-disp(paramChanges{i})
+    disp(paramChanges{i})
 end
 
 toc

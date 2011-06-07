@@ -1,4 +1,5 @@
-function PSTH =UTIL_makePSTH(inputData, dt, PSTHbinWidth)
+function [PSTH dataPointsPerBin]= ...
+    UTIL_makePSTH(inputData, dt, PSTHbinWidth)
 % UTIL_PSTHmaker accumulates values into bins.
 % No corrections are applied
 % usage:
