@@ -20,7 +20,6 @@ global IHC_cilia_RPParams
 currentFile=mfilename;                      % i.e. the name of this mfile
 method.parameterSource=currentFile(10:end); % for the record
 
-switchOffEfferent=0;
 efferentDelay=0.010;
 method.segmentDuration=efferentDelay;
 
@@ -57,17 +56,14 @@ OMEParams.stapesScalar=	     45e-9;
 
 % Acoustic reflex: maximum attenuation should be around 25 dB Price (1966)
 % i.e. a minimum ratio of 0.056.
-if ~switchOffEfferent
-    % 'spikes' model: AR based on brainstem spiking activity (LSR)
-    OMEParams.rateToAttenuationFactor=0.003;   % * N(all ICspikes)
+% 'spikes' model: AR based on brainstem spiking activity (LSR)
+OMEParams.rateToAttenuationFactor=0.003;   % * N(all ICspikes)
 %     OMEParams.rateToAttenuationFactor=0;   % * N(all ICspikes)
-    % 'probability model': Ar based on An firing probabilities (LSR)
-    OMEParams.rateToAttenuationFactorProb=0.005;% * N(all ANrates)
+
+% 'probability model': Ar based on AN firing probabilities (LSR)
+OMEParams.rateToAttenuationFactorProb=0.003;% * N(all ANrates)
 %     OMEParams.rateToAttenuationFactorProb=0;% * N(all ANrates)
-else
-    OMEParams.rateToAttenuationFactor=0;        % 0= off
-    OMEParams.rateToAttenuationFactorProb=0;    % 0= off
-end
+
 % asymptote should be around 100-200 ms
 OMEParams.ARtau=.05; % AR smoothing function
 % delay must be longer than the segment length
@@ -104,18 +100,14 @@ DRNLParams.linBWs=minLinBW + coeffLinBW*BFlist; % bandwidths of linear  filters
 
 % DRNL MOC efferents
 DRNLParams.MOCdelay = efferentDelay;            % must be < segment length!
-if ~switchOffEfferent
-    % 'spikes' model: MOC based on brainstem spiking activity (HSR)
-    DRNLParams.rateToAttenuationFactor = .009;  % strength of MOC
-    DRNLParams.rateToAttenuationFactor = .009;  % strength of MOC
+% 'spikes' model: MOC based on brainstem spiking activity (HSR)
+DRNLParams.rateToAttenuationFactor = .009;  % strength of MOC
+DRNLParams.rateToAttenuationFactor = .009;  % strength of MOC
 %      DRNLParams.rateToAttenuationFactor = 0;  % strength of MOC
 
-    % 'spikes' model: MOC based on brainstem spiking activity (HSR)
-    DRNLParams.rateToAttenuationFactorProb = .002;  % strength of MOC
-else
-    DRNLParams.rateToAttenuationFactor = 0;     % 0 = MOC off (probability)
-    DRNLParams.rateToAttenuationFactorProb = 0; % 0 = MOC off (spikes)
-end
+% 'probability' model: MOC based on AN spiking activity (HSR)
+DRNLParams.rateToAttenuationFactorProb = .007;  % strength of MOC
+DRNLParams.rateToAttenuationFactorProb = .0;  % strength of MOC
 DRNLParams.MOCtau =.03;                         % smoothing for MOC
 DRNLParams.MOCrateThreshold =50;                % set to AN rate threshold
 
@@ -137,7 +129,6 @@ IHC_cilia_RPParams.Ga=	1e-9;  % 4.3e-9 fixed apical membrane conductance
 IHC_cilia_RPParams.Cab=	4e-012;         % IHC capacitance (F)
 IHC_cilia_RPParams.Cab=	1e-012;         % IHC capacitance (F)
 IHC_cilia_RPParams.Et=	0.100;          % endocochlear potential (V)
-IHC_cilia_RPParams.Et=	0.07;          % endocochlear potential (V)
 
 IHC_cilia_RPParams.Gk=	2e-008;         % 1e-8 potassium conductance (S)
 IHC_cilia_RPParams.Ek=	-0.08;          % -0.084 K equilibrium potential

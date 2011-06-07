@@ -20,7 +20,6 @@ global IHC_cilia_RPParams
 currentFile=mfilename;                      % i.e. the name of this mfile
 method.parameterSource=currentFile(10:end); % for the record
 
-switchOffEfferent=0;
 efferentDelay=0.010;
 method.segmentDuration=efferentDelay;
 
@@ -57,17 +56,14 @@ OMEParams.stapesScalar=	     45e-9;
 
 % Acoustic reflex: maximum attenuation should be around 25 dB Price (1966)
 % i.e. a minimum ratio of 0.056.
-if ~switchOffEfferent
-    % 'spikes' model: AR based on brainstem spiking activity (LSR)
-    OMEParams.rateToAttenuationFactor=0.003;   % * N(all ICspikes)
+% 'spikes' model: AR based on brainstem spiking activity (LSR)
+OMEParams.rateToAttenuationFactor=0.003;   % * N(all ICspikes)
 %     OMEParams.rateToAttenuationFactor=0;   % * N(all ICspikes)
-    % 'probability model': Ar based on An firing probabilities (LSR)
-    OMEParams.rateToAttenuationFactorProb=0.005;% * N(all ANrates)
+
+% 'probability model': Ar based on AN firing probabilities (LSR)
+OMEParams.rateToAttenuationFactorProb=0.005;% * N(all ANrates)
 %     OMEParams.rateToAttenuationFactorProb=0;% * N(all ANrates)
-else
-    OMEParams.rateToAttenuationFactor=0;        % 0= off
-    OMEParams.rateToAttenuationFactorProb=0;    % 0= off
-end
+
 % asymptote should be around 100-200 ms
 OMEParams.ARtau=.05; % AR smoothing function
 % delay must be longer than the segment length
@@ -104,18 +100,13 @@ DRNLParams.linBWs=minLinBW + coeffLinBW*BFlist; % bandwidths of linear  filters
 
 % DRNL MOC efferents
 DRNLParams.MOCdelay = efferentDelay;            % must be < segment length!
-if ~switchOffEfferent
-    % 'spikes' model: MOC based on brainstem spiking activity (HSR)
-    DRNLParams.rateToAttenuationFactor = .009;  % strength of MOC
-    DRNLParams.rateToAttenuationFactor = .009;  % strength of MOC
+% 'spikes' model: MOC based on brainstem spiking activity (HSR)
+DRNLParams.rateToAttenuationFactor = .009;  % strength of MOC
+DRNLParams.rateToAttenuationFactor = .009;  % strength of MOC
 %      DRNLParams.rateToAttenuationFactor = 0;  % strength of MOC
 
-    % 'spikes' model: MOC based on brainstem spiking activity (HSR)
-    DRNLParams.rateToAttenuationFactorProb = .002;  % strength of MOC
-else
-    DRNLParams.rateToAttenuationFactor = 0;     % 0 = MOC off (probability)
-    DRNLParams.rateToAttenuationFactorProb = 0; % 0 = MOC off (spikes)
-end
+% 'probability' model: MOC based on AN spiking activity (HSR)
+DRNLParams.rateToAttenuationFactorProb = .002;  % strength of MOC
 DRNLParams.MOCtau =.03;                         % smoothing for MOC
 DRNLParams.MOCrateThreshold =50;                % set to AN rate threshold
 
@@ -137,7 +128,6 @@ IHC_cilia_RPParams.Ga=	1e-9;  % 4.3e-9 fixed apical membrane conductance
 IHC_cilia_RPParams.Cab=	4e-012;         % IHC capacitance (F)
 IHC_cilia_RPParams.Cab=	1e-012;         % IHC capacitance (F)
 IHC_cilia_RPParams.Et=	0.100;          % endocochlear potential (V)
-% IHC_cilia_RPParams.Et=	0.07;          % endocochlear potential (V)
 
 IHC_cilia_RPParams.Gk=	2e-008;         % 1e-8 potassium conductance (S)
 IHC_cilia_RPParams.Ek=	-0.08;          % -0.084 K equilibrium potential
@@ -183,6 +173,8 @@ AN_IHCsynapseParams.refractory_period=	0.00075;
 AN_IHCsynapseParams.numFibers=	100; 
 AN_IHCsynapseParams.TWdelay=0.004;  % ?delay before stimulus first spike
 
+AN_IHCsynapseParams.ANspeedUpFactor=5; % longer epochs for computing spikes.
+
 %%  #7 MacGregorMulti (first order brainstem neurons)
 MacGregorMultiParams=[];
 MacGregorMultiType='chopper'; % MacGregorMultiType='primary-like'; %choose
@@ -212,13 +204,13 @@ switch MacGregorMultiType
 
         MacGregorMultiParams.dendriteLPfreq=50;   % dendritic filter
         MacGregorMultiParams.currentPerSpike=35e-9; % *per spike
-%         MacGregorMultiParams.currentPerSpike=45e-9; % *per spike
+        MacGregorMultiParams.currentPerSpike=30e-9; % *per spike
         
         MacGregorMultiParams.Cap=1.67e-8; % ??cell capacitance (Siemens)
         MacGregorMultiParams.tauM=0.002;  % membrane time constant (s)
         MacGregorMultiParams.Ek=-0.01;    % K+ eq. potential (V)
         MacGregorMultiParams.dGkSpike=1.33e-4; % K+ cond.shift on spike,S
-        MacGregorMultiParams.tauGk=	0.0001;% K+ conductance tau (s)
+        MacGregorMultiParams.tauGk=	0.0005;% K+ conductance tau (s)
         MacGregorMultiParams.Th0=	0.01; % equilibrium threshold (V)
         MacGregorMultiParams.c=	0;        % threshold shift on spike, (V)
         MacGregorMultiParams.tauTh=	0.02; % variable threshold tau
@@ -233,12 +225,13 @@ MacGregorParams.type = 'chopper cell';
 MacGregorParams.fibersPerNeuron=10; % N input fibers
 MacGregorParams.dendriteLPfreq=100; % dendritic filter
 MacGregorParams.currentPerSpike=120e-9;% *(A) per spike
+MacGregorParams.currentPerSpike=30e-9;% *(A) per spike
 
 MacGregorParams.Cap=16.7e-9;        % cell capacitance (Siemens)
 MacGregorParams.tauM=0.002;         % membrane time constant (s)
 MacGregorParams.Ek=-0.01;           % K+ eq. potential (V)
 MacGregorParams.dGkSpike=1.33e-4;   % K+ cond.shift on spike,S
-MacGregorParams.tauGk=	0.0003;     % K+ conductance tau (s)
+MacGregorParams.tauGk=	0.0005;     % K+ conductance tau (s)
 MacGregorParams.Th0=	0.01;       % equilibrium threshold (V)
 MacGregorParams.c=	0;              % threshold shift on spike, (V)
 MacGregorParams.tauTh=	0.02;       % variable threshold tau

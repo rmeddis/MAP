@@ -137,7 +137,7 @@ IHC_cilia_RPParams.Ga=	1e-9;       % 4.3e-9 fixed apical membrane conductance
 IHC_cilia_RPParams.Cab=	4e-012;         % IHC capacitance (F)
 IHC_cilia_RPParams.Cab=	1e-012;         % IHC capacitance (F)
 IHC_cilia_RPParams.Et=	0.100;          % endocochlear potential (V)
-IHC_cilia_RPParams.Et=	0.07;          % endocochlear potential (V)
+IHC_cilia_RPParams.Et=	0.065;          % endocochlear potential (V)
 
 IHC_cilia_RPParams.Gk=	2e-008;         % 1e-8 potassium conductance (S)
 IHC_cilia_RPParams.Ek=	-0.08;          % -0.084 K equilibrium potential

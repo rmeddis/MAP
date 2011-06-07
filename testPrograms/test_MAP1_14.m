@@ -40,7 +40,7 @@ MAPparamsName='Normal';
 %% #2 probability (fast) or spikes (slow) representation
 AN_spikesOrProbability='spikes';
 % or
-% AN_spikesOrProbability='probability';
+AN_spikesOrProbability='probability';
 
 
 %% #3 pure tone, harmonic sequence or speech file input
@@ -54,14 +54,19 @@ toneFrequency= 2000;            % or a pure tone (Hz8
 rampDuration=.005;              % seconds
 
 % or
-% signalType= 'file';
-% fileName='twister_44kHz';
+signalType= 'file';
+fileName='twister_44kHz';
 % fileName='new-da-44khz';
 
+% mix with an optional second file?
+mixerFile=[];
+%or
+mixerFile='babble';
+leveldBSPL2=-60;
 
 %% #4 rms level
 % signal details
-leveldBSPL= 90;                  % dB SPL
+leveldBSPL= 60;                  % dB SPL
 
 
 %% #5 number of channels in the model
@@ -71,7 +76,7 @@ lowestBF=250; 	highestBF= 8000;
 BFlist=round(logspace(log10(lowestBF), log10(highestBF), numChannels));
 
 %   or specify your own channel BFs
-BFlist=toneFrequency;
+% BFlist=toneFrequency;
 
 
 %% #6 change model parameters
@@ -82,18 +87,26 @@ paramChanges=[];
 %  *after* the MAPparams file has been read
 % This example declares only one fiber type with a calcium clearance time
 % constant of 80e-6 s (HSR fiber) when the probability option is selected.
-        paramChanges={'AN_IHCsynapseParams.ANspeedUpFactor=5;', ...
-            'IHCpreSynapseParams.tauCa=86e-6;'};
+% paramChanges={'AN_IHCsynapseParams.ANspeedUpFactor=5;', ...
+%     'IHCpreSynapseParams.tauCa=86e-6;'};
+% paramChanges={'AN_IHCsynapseParams.ANspeedUpFactor=5;', ...
+%     'DRNLParams.rateToAttenuationFactorProb = 0;'};
 
 %% delare showMap options
 showMapOptions=[];  % use defaults
 
 % or (example: show everything including an smoothed SACF output
-    showMapOptions.showModelParameters=0;
-    showMapOptions.showModelOutput=1;
-    showMapOptions.printFiringRates=1;
-    showMapOptions.showACF=0;
-    showMapOptions.showEfferent=1;
+showMapOptions.showModelParameters=1;
+showMapOptions.showModelOutput=1;
+showMapOptions.printFiringRates=1;
+showMapOptions.showACF=0;
+showMapOptions.showEfferent=1;
+if strcmp(AN_spikesOrProbability, 'probability')
+    showMapOptions.surfProbability=1;
+end
+if strcmp(signalType, 'file')
+    showMapOptions.fileName=fileName;
+end
 
 %% Generate stimuli
 
@@ -106,12 +119,24 @@ switch signalType
             leveldBSPL, duration, rampDuration);
         
     case 'file'
+        %% file input simple or mixed
         [inputSignal sampleRate]=wavread(fileName);       
-        inputSignal(:,1);
+        inputSignal=inputSignal(:,1);
         targetRMS=20e-6*10^(leveldBSPL/20);
         rms=(mean(inputSignal.^2))^0.5;
         amp=targetRMS/rms;
         inputSignal=inputSignal*amp;
+        if ~isempty(mixerFile)
+            [inputSignal2 sampleRate]=wavread(mixerFile);
+            inputSignal2=inputSignal2(:,1);
+            [r c]=size(inputSignal);
+            inputSignal2=inputSignal2(1:r);
+            targetRMS=20e-6*10^(leveldBSPL2/20);
+            rms=(mean(inputSignal2.^2))^0.5;
+            amp=targetRMS/rms;
+            inputSignal2=inputSignal2*amp;
+        inputSignal=inputSignal+inputSignal2;
+        end
 end
 
 
