@@ -244,8 +244,6 @@ betweenRuns.observationCount=[];
 betweenRuns.catchTrials=[];
 betweenRuns.timesOfFirstReversals=[];
 betweenRuns.bestThresholdTracks=[];
-betweenRuns.bestThresholdMeanTracks=[];
-betweenRuns.bestThresholdMedianTracks=[];
 betweenRuns.levelTracks=[];
 betweenRuns.responseTracks=[];
 betweenRuns.slopeKTracks=[];
@@ -1260,7 +1258,7 @@ else
             switch experiment.threshEstMethod
                 case {'MaxLikelihood', 'oneIntervalUpDown'}
                     % last value in the list
-                    threshold=withinRuns.meanEstTrack(end);
+%                     threshold=withinRuns.meanEstTrack(end);
                     threshold=withinRuns.thresholdEstimateTrack(end);
                     stdev=NaN;
                     
@@ -1302,23 +1300,13 @@ betweenRuns.catchTrials=...
 % add variable length tracks to cell arrays
 if withinRuns.beginningOfPhase2>0
     betweenRuns.bestThresholdTracks{length(betweenRuns.thresholds)}=...
-        withinRuns.thresholdEstimateTrack;
-    betweenRuns.bestThresholdMeanTracks...
-        {length(betweenRuns.thresholds_mean)}=...
-        withinRuns.thresholdEstimateTrack;
-    betweenRuns.bestThresholdMedianTracks...
-        {length(betweenRuns.thresholds_median)}=...
-        withinRuns.thresholdEstimateTrack;
-    
+        withinRuns.thresholdEstimateTrack;   
     betweenRuns.levelTracks{length(betweenRuns.thresholds)}=...
         withinRuns.levelList(withinRuns.beginningOfPhase2:end);
     betweenRuns.responseTracks{length(betweenRuns.thresholds)}=...
         withinRuns.responseList(withinRuns.beginningOfPhase2:end);
 else
     betweenRuns.bestThresholdTracks{length(betweenRuns.thresholds)}=[];
-    betweenRuns.bestThresholdMeanTracks{length(betweenRuns.thresholds)}=[];
-    betweenRuns.bestThresholdMedianTracks{length(betweenRuns.thresholds)}=...
-        [];
     betweenRuns.levelTracks{length(betweenRuns.thresholds)}=[];
     betweenRuns.responseTracks{length(betweenRuns.thresholds)}=[];
 end

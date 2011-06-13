@@ -26,15 +26,16 @@ if nargin==0
     if experiment.saveData
         saveFileName=['savedData/' experiment.name '_' experiment.date '_' experiment.paradigm];
     else
-        % overwrite existing file just in case
+        % save this data (just in case)
         saveFileName=['savedData/mostRecentResults'];
     end
     experiment.minElapsed=etime(clock, betweenRuns.timeNow)/60;
-    save(saveFileName, 'experiment', 'stimulusParameters', 'betweenRuns', 'withinRuns', 'statsModel', 'expGUIhandles')
+    save(saveFileName, 'experiment', 'stimulusParameters',...
+        'betweenRuns', 'withinRuns', 'statsModel', 'expGUIhandles')
     disp(['data saved as: ' saveFileName]);
     
 else
-    % reprint request
+    % reprint request (i.e print out old data)
     printReportGuide.fileName=fileName;
     load(printReportGuide.fileName)
     saveFileName=printReportGuide.fileName;
@@ -46,17 +47,18 @@ else
 end
 
 fprintf('******** multithreshold ')
+
 x=pwd; disp(['version ' x(end-3:end)])
 fprintf('\nName:\t%s ', experiment.name)
 fprintf('\nparadigm:\t%s ', experiment.paradigm)
 fprintf('\nEar:\t%s ', experiment.ear)
+
 method=experiment.threshEstMethod;
 if stimulusParameters.includeCue && ~strcmp(method(1:6),'2I2AFC')
     method=[method '/ withCue'];
 end
 fprintf('\nmethod:\t%s ', method)
 fprintf('\ndate:\t%s ', experiment.date)
-
 fprintf('\n\n')
 
 if isempty(betweenRuns.thresholds)
@@ -64,12 +66,11 @@ if isempty(betweenRuns.thresholds)
 end
 
 % prepare results as matrices ready to print
+%  first sort the actual sequence into a more readable sequence
 [idx1, idx2, var1values, var2values]=...
-    sortVariables(betweenRuns.variableList1, betweenRuns.variableList2, betweenRuns.var1Sequence, betweenRuns.var2Sequence);
+    sortVariables(betweenRuns.variableList1, betweenRuns.variableList2,...
+    betweenRuns.var1Sequence, betweenRuns.var2Sequence);
 
-% if strcmp(betweenRuns.variableName2, 'none')
-%     betweenRuns.variableName2=' ';
-% end
 header1=betweenRuns.variableName1;
 header2=betweenRuns.variableName2;
 header1 = strrep(header1, 'none', ' '); % none is not a useful header
@@ -77,7 +78,8 @@ header2 = strrep(header2, 'none', ' '); % none is not a useful header
 headers=strvcat([header1 '/'], header2);
 
 disp('thresholds')
-msg=printTabTable(sortTablesForPrinting(idx1,idx2,var1values,var2values, betweenRuns.thresholds),  headers);
+msg=printTabTable(sortTablesForPrinting(idx1,idx2,...
+    var1values,var2values, betweenRuns.thresholds),  headers);
 addToMsg(msg,0)
 fprintf('\n')
 
@@ -85,7 +87,6 @@ fprintf('\n')
 betweenRuns.levelTracks=betweenRuns.levelTracks(idx1);
 betweenRuns.responseTracks=betweenRuns.responseTracks(idx1);
 betweenRuns.bestThresholdTracks=betweenRuns.bestThresholdTracks(idx1);
-
 betweenRuns.levelTracks=betweenRuns.levelTracks(idx2);
 betweenRuns.responseTracks=betweenRuns.responseTracks(idx2);
 betweenRuns.bestThresholdTracks=betweenRuns.bestThresholdTracks(idx2);
@@ -130,21 +131,6 @@ if printReportGuide.showTracks
     
     disp(' '); disp('threshold tracks starting from the first reversal')
     for i=1:length(betweenRuns.bestThresholdTracks)
-        if printReportGuide.HorizontalTracks
-        end
-        printTabTable(betweenRuns.bestThresholdTracks{i});
-        header=strvcat(header, 'mean');
-    end
-    
-    disp(' '); disp('threshold (mean) tracks starting from the first reversal')
-    for i=1:length(betweenRuns.bestThresholdTracks)
-        if printReportGuide.HorizontalTracks
-        end
-        printTabTable(betweenRuns.bestThresholdMeanTracks{i});
-        header=strvcat(header, 'mean');
-    end
-    disp(' '); disp('threshold tracks (median) starting from the first reversal')
-    for i=1:length(betweenRuns.bestThresholdMedianTracks)
         if printReportGuide.HorizontalTracks
         end
         printTabTable(betweenRuns.bestThresholdTracks{i});
