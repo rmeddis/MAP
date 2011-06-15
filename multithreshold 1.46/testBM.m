@@ -19,7 +19,7 @@ levels=-10:10:90;   nLevels=length(levels);
 % levels= 50;   nLevels=length(levels);
 
 relativeFrequencies=[0.25    .5   .75  1  1.25 1.5    2];
-relativeFrequencies=1;
+% relativeFrequencies=1;
 
 % refBMdisplacement is the displacement of the BM at threshold
 % 1 nm disp at  threshold (9 kHz, Ruggero)
@@ -122,7 +122,7 @@ for BF=BMlocations
 
     % Tuning curve
     if length(relativeFrequencies)>2
-        figure(3), subplot(3,nBFs, nBFs+BFno)
+        figure(3), subplot(3,nBFs, 2*nBFs+BFno)
         %         contour(stimulusFrequencies,levels,peakAmpBM,...
         %             [refBMdisplacement refBMdisplacement],'r')
         contour(stimulusFrequencies,levels,peakAmpBM,...
@@ -138,7 +138,7 @@ for BF=BMlocations
 
     % MOC contribution
     figure(3)
-    subplot(3,nBFs,2*nBFs+BFno), cla
+    subplot(3,nBFs,nBFs+BFno), cla
     plot(levels,20*log10(peakEfferent), 'linewidth',2)
     ylabel('MOC (dB attenuation)'), xlabel('level')
     title(['peak MOC: model= ' AN_spikesOrProbability])

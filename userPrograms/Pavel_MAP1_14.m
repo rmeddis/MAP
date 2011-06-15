@@ -1,4 +1,4 @@
-function test_MAP1_14
+function Pavel_MAP1_14
 % test_MAP1_14 is a general purpose test routine that can be adjusted to
 % test a number of different applications of MAP1_14
 %
@@ -41,16 +41,16 @@ MAPparamsName='Normal';
 AN_spikesOrProbability='spikes';
 
 % or
+% AN_spikesOrProbability='probability';
 % NB probabilities are not corrected for refractory effects
-AN_spikesOrProbability='probability';
 
 
 %% #3 pure tone, harmonic sequence or speech file input
 signalType= 'tones';
 sampleRate= 100000;
-duration=0.010;                 % seconds
+duration=0.1;                 % seconds
 % toneFrequency= 250:250:8000;    % harmonic sequence (Hz)
-toneFrequency= 4000;            % or a pure tone (Hz8
+toneFrequency= 1000;            % or a pure tone (Hz8
 rampDuration=.005;              % seconds
 
 % or
@@ -60,17 +60,18 @@ rampDuration=.005;              % seconds
 
 %% #4 rms level
 % signal details
-leveldBSPL= 70;                  % dB SPL
+leveldBSPL= 30;                  % dB SPL
 
 
 %% #5 number of channels in the model
 %   21-channel model (log spacing)
-numChannels=21;
-lowestBF=250; 	highestBF= 8000;
-BFlist=round(logspace(log10(lowestBF), log10(highestBF), numChannels));
+% numChannels=21;
+% lowestBF=250; 	highestBF= 8000;
+% BFlist=round(logspace(log10(lowestBF), log10(highestBF), numChannels));
 
 %   or specify your own channel BFs
-% BFlist=toneFrequency;
+numChannels=1;
+BFlist=toneFrequency;
 
 
 %% #6 change model parameters
@@ -81,9 +82,12 @@ paramChanges=[];
 %  *after* the MAPparams file has been read
 % This example declares only one fiber type with a calcium clearance time
 % constant of 80e-6 s (HSR fiber) when the probability option is selected.
-% paramChanges={'AN_IHCsynapseParams.ANspeedUpFactor=5;', ...
-%     'IHCpreSynapseParams.tauCa=86e-6;'};
-% paramChanges={'DRNLParams.rateToAttenuationFactorProb = 0;'};
+% It also removes the speed up that normally takes place for AN spikes
+% It also increases the number of AN fibers computed to 500.
+paramChanges={...
+    'AN_IHCsynapseParams.ANspeedUpFactor=1;', ...
+    'IHCpreSynapseParams.tauCa=86e-6;',...
+    'AN_IHCsynapseParams.numFibers=	500;' };
 
 
 %% delare 'showMap' options to control graphical output
@@ -94,8 +98,8 @@ showMapOptions.printModelParameters=1;   % prints all parameters
 showMapOptions.showModelOutput=1;       % plot of all stages
 showMapOptions.printFiringRates=1;      % prints stage activity levels
 showMapOptions.showACF=0;               % shows SACF (probability only)
-showMapOptions.showEfferent=1;          % tracks of AR and MOC
-showMapOptions.surfProbability=1;       % 2D plot of HSR response 
+showMapOptions.showEfferent=0;          % tracks of AR and MOC
+showMapOptions.surfProbability=0;       % 2D plot of HSR response 
 if strcmp(AN_spikesOrProbability, 'spikes')
     % avoid nonsensical options
     showMapOptions.surfProbability=0;
@@ -142,19 +146,19 @@ disp('Computing ...')
 
 restorePath=path;
 addpath (['..' filesep 'MAP'])
-addpath (['..' filesep 'utilities'])
 
 MAP1_14(inputSignal, sampleRate, BFlist, ...
     MAPparamsName, AN_spikesOrProbability, paramChanges);
+path(restorePath)
 toc
 
+% the model run is now complete. Now display the results
 % the model run is now complete. Now display the results
 disp(' param changes to list of parameters below')
 for i=1:length(paramChanges)
     disp(paramChanges{i})
 end
 UTIL_showMAP(showMapOptions)
-
 
 toc
 path(restorePath)
@@ -181,6 +185,5 @@ inputSignal=inputSignal.*ramp;
 
 % add 10 ms silence
 silence= zeros(1,round(0.03/dt));
-silence= zeros(1,round(0.01/dt));
 inputSignal= [silence inputSignal silence];
 

@@ -610,25 +610,22 @@ while segmentStartPTR<signalLength
         else    % no MOC available yet
             MOC=ones(1, segmentLength);
         end
-        plot(MOC) % current channel
+        % apply MOC to nonlinear input function       
+        nonlinOutput=stapesDisplacement.* MOC;
 
-        %       first gammatone filter
+        %       first gammatone filter (nonlin path)
         for order = 1 : GTnonlinOrder
             [nonlinOutput GTnonlinBdry1{BFno,order}] = ...
                 filter(GTnonlin_b(BFno,:), GTnonlin_a(BFno,:), ...
-                stapesDisplacement, GTnonlinBdry1{BFno,order});
+                nonlinOutput, GTnonlinBdry1{BFno,order});
         end
-
         %       broken stick instantaneous compression
-        % nonlinear gain is weakend by MOC before applied to BM response
-        y= nonlinOutput.*(MOC* DRNLa);  % linear section.
-        % compress those parts of the signal above the compression
-        % threshold
-        abs_x = abs(y);
+        y= nonlinOutput.* DRNLa;  % linear section.
+        % compress parts of the signal above the compression threshold
+        abs_x = abs(nonlinOutput);
         idx=find(abs_x>DRNLcompressionThreshold);
         if ~isempty(idx)>0
-            y(idx)=sign(y(idx)).*...
-                (DRNLb*abs_x(idx).^DRNLc);
+            y(idx)=sign(y(idx)).* (DRNLb*abs_x(idx).^DRNLc);
         end
         nonlinOutput=y;
 
@@ -1111,6 +1108,7 @@ while segmentStartPTR<signalLength
                     [smoothedRates, MOCboundary{idx}] = ...
                         filter(MOCfilt_b, MOCfilt_a, rates(idx,:), ...
                         MOCboundary{idx});
+                    % spont 'rates' is zero for IC
                     MOCattSegment(idx,:)=smoothedRates;
                     % expand timescale back to model dt from ANdt
                     x= repmat(MOCattSegment(idx,:), ANspeedUpFactor,1);

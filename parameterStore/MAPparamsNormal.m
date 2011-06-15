@@ -57,7 +57,7 @@ OMEParams.stapesScalar=	     45e-9;
 % Acoustic reflex: maximum attenuation should be around 25 dB Price (1966)
 % i.e. a minimum ratio of 0.056.
 % 'spikes' model: AR based on brainstem spiking activity (LSR)
-OMEParams.rateToAttenuationFactor=0.004;   % * N(all ICspikes)
+OMEParams.rateToAttenuationFactor=0.006;   % * N(all ICspikes)
 %     OMEParams.rateToAttenuationFactor=0;   % * N(all ICspikes)
 
 % 'probability model': Ar based on AN firing probabilities (LSR)
@@ -75,8 +75,7 @@ DRNLParams=[];  % clear the structure first
 DRNLParams.BFlist=BFlist;
 
 % DRNL nonlinear path
-DRNLParams.a=3e4;     % nonlinear path gain (below compression threshold)
-DRNLParams.a=5e2;     % DRNL.a=0 means no OHCs (no nonlinear path)
+DRNLParams.a=5e4;     % DRNL.a=0 means no OHCs (no nonlinear path)
 
 DRNLParams.b=8e-6;    % *compression threshold raised compression
 % DRNLParams.b=1;    % b=1 means no compression
@@ -100,16 +99,16 @@ DRNLParams.linBWs=minLinBW + coeffLinBW*BFlist; % bandwidths of linear  filters
 
 % DRNL MOC efferents
 DRNLParams.MOCdelay = efferentDelay;            % must be < segment length!
-% 'spikes' model: MOC based on brainstem spiking activity (HSR)
-DRNLParams.rateToAttenuationFactor = .009;  % strength of MOC
-DRNLParams.rateToAttenuationFactor = .004;  % strength of MOC
-%      DRNLParams.rateToAttenuationFactor = 0;  % strength of MOC
 
+% 'spikes' model: MOC based on brainstem spiking activity (HSR)
+DRNLParams.rateToAttenuationFactor = .01;  % strength of MOC
+%      DRNLParams.rateToAttenuationFactor = 0;  % strength of MOC
 % 'probability' model: MOC based on AN spiking activity (HSR)
-DRNLParams.rateToAttenuationFactorProb = .004;  % strength of MOC
+DRNLParams.rateToAttenuationFactorProb = .005;  % strength of MOC
 % DRNLParams.rateToAttenuationFactorProb = .0;  % strength of MOC
+DRNLParams.MOCrateThreshold =70;                % spikes/s probability only
+
 DRNLParams.MOCtau =.1;                         % smoothing for MOC
-DRNLParams.MOCrateThreshold =50;                % set to AN rate threshold
 
 
 %% #4 IHC_cilia_RPParams

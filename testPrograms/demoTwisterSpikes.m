@@ -1,9 +1,8 @@
 function demoTwisterSpikes
 
 % MAPdemo runs the MATLAB auditory periphery model (MAP1_14) as far as
-%  the AN (probabilities) or IC (spikes) with graphical output
+%  IC (spikes) with graphical output
 
-% Things you might want to change; #1 - #5
 
 %%  #1 parameter file name
 MAPparamsName='Normal';
@@ -11,24 +10,11 @@ MAPparamsName='Normal';
 
 %% #2 probability (fast) or spikes (slow) representation
 AN_spikesOrProbability='spikes';
-% or
-% AN_spikesOrProbability='probability';
 
 
 %% #3 pure tone, harmonic sequence or speech file input
-signalType= 'tones';
-duration=0.100;                 % seconds
-duration=0.020;                 % seconds
-sampleRate= 64000;
-% toneFrequency= 250:250:8000;    % harmonic sequence (Hz)
-toneFrequency= 2000;            % or a pure tone (Hz8
-
-rampDuration=.005;              % seconds
-
-% or
 signalType= 'file';
 fileName='twister_44kHz';
-% fileName='new-da-44khz';
 
 
 %% #4 rms level
@@ -42,34 +28,19 @@ numChannels=21;
 lowestBF=250; 	highestBF= 8000; 
 BFlist=round(logspace(log10(lowestBF), log10(highestBF), numChannels));
 
-%   or specify your own channel BFs
-% BFlist=toneFrequency;
-
 
 %% #6 change model parameters
 paramChanges=[];
-
-% or
-% Parameter changes can be used to change one or more model parameters
-%  *after* the MAPparams file has been read
-% This example declares only one fiber type with a calcium clearance time
-% constant of 80e-6 s (HSR fiber) when the probability option is selected.
-% switch AN_spikesOrProbability
-%     case 'probability'
-%         paramChanges={'IHCpreSynapseParams.tauCa=80e-6;'};
-%     otherwise
-%         paramChanges=[];
-% end
 
 %% delare showMap options
 showMapOptions=[];  % use defaults
 
 % or (example: show everything including an smoothed SACF output
-    showMapOptions.showModelParameters=1;
+    showMapOptions.printModelParameters=1;
     showMapOptions.showModelOutput=1;
     showMapOptions.printFiringRates=1;
     showMapOptions.showACF=0;
-    showMapOptions.showEfferent=1;
+    showMapOptions.showEfferent=0;
 
 %% Generate stimuli
 
@@ -103,7 +74,7 @@ MAP1_14(inputSignal, sampleRate, BFlist, ...
 toc
 
 % the model run is now complete. Now display the results
-showMAP(showMapOptions)
+UTIL_showMAP(showMapOptions)
 
 toc
 path(restorePath)

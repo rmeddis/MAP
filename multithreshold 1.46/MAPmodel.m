@@ -25,12 +25,12 @@ global ICoutput ANdt
         MAPparamsName, AN_spikesOrProbability);
     
 if showPlotsAndDetails
-    options.showModelParameters=0;
+    options.printModelParameters=0;
     options.showModelOutput=1;
     options.printFiringRates=1;
     options.showACF=0;
     options.showEfferent=1;
-    showMAP(options)
+    UTIL_showMAP(options)
 end
 
 % No response,  probably caused by hitting 'stop' button

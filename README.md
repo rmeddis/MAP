@@ -1,4 +1,4 @@
 This is the new readMe file
 ----------------------------
 
-tada
+Look in the 'Help and reference data folder' for advice.
