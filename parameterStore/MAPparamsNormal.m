@@ -61,7 +61,7 @@ OMEParams.rateToAttenuationFactor=0.006;   % * N(all ICspikes)
 %     OMEParams.rateToAttenuationFactor=0;   % * N(all ICspikes)
 
 % 'probability model': Ar based on AN firing probabilities (LSR)
-OMEParams.rateToAttenuationFactorProb=0.003;% * N(all ANrates)
+OMEParams.rateToAttenuationFactorProb=0.01;% * N(all ANrates)
 %     OMEParams.rateToAttenuationFactorProb=0;% * N(all ANrates)
 
 % asymptote should be around 100-200 ms

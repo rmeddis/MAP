@@ -1,8 +1,10 @@
 function testPhaseLocking
 
 testFrequencies=[250 500 1000 2000 4000 8000];
-levels=-20:10:80;
+levels=50:10:80;
 figure(14), clf
+set(gcf,'position', [980    36   383   321])
+set(gcf,'name', 'phase locking')
 allStrengths=zeros(length(testFrequencies), length(levels));
 peakVectorStrength=zeros(1,length(testFrequencies));
 freqCount=0;

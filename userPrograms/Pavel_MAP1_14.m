@@ -32,6 +32,9 @@ function Pavel_MAP1_14
 %
 % When the demonstration is satisfactory, freeze it by renaming it <demoxx>
 
+restorePath=path;
+addpath (['..' filesep 'MAP'],    ['..' filesep 'wavFileStore'], ...
+    ['..' filesep 'utilities'])
 
 %%  #1 parameter file name
 MAPparamsName='Normal';
@@ -144,12 +147,9 @@ disp(['Signal duration= ' num2str(length(inputSignal)/sampleRate)])
 disp([num2str(numChannels) ' channel model'])
 disp('Computing ...')
 
-restorePath=path;
-addpath (['..' filesep 'MAP'])
 
 MAP1_14(inputSignal, sampleRate, BFlist, ...
     MAPparamsName, AN_spikesOrProbability, paramChanges);
-path(restorePath)
 toc
 
 % the model run is now complete. Now display the results

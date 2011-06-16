@@ -3,44 +3,44 @@ function demoTwisterProbability
 % MAPdemo runs the MATLAB auditory periphery model (MAP1_14) as far as
 %  the AN (probabilities) or IC (spikes) with graphical output
 
-% Things you might want to change; #1 - #5
+restorePath=path;
+addpath (['..' filesep 'MAP'],    ['..' filesep 'wavFileStore'], ...
+    ['..' filesep 'utilities'])
 
 %%  #1 parameter file name
 MAPparamsName='Normal';
 
 
-%% #2 probability (fast) or spikes (slow) representation
+%% #2 probability (fast) 
 AN_spikesOrProbability='probability';
 
 
-%% #3 pure tone, harmonic sequence or speech file input
+%% #3  speech file input
 signalType= 'file';
 fileName='twister_44kHz';
 
 
 %% #4 rms level
-leveldBSPL=60;                  % dB SPL
+leveldBSPL=60;        % dB SPL
 
 
 %% #5 number of channels in the model
 %   21-channel model (log spacing)
 numChannels=21;
-lowestBF=250; 	highestBF= 8000; 
+lowestBF=250; 	highestBF= 8000;
 BFlist=round(logspace(log10(lowestBF), log10(highestBF), numChannels));
 
-%% #6 change model parameters
+%% #6 no change to model parameters
 paramChanges=[];
 
 
 %% delare showMap options
-showMapOptions=[];  % use defaults
-
-% or (example: show everything including an smoothed SACF output
-    showMapOptions.printModelParameters=1;
-    showMapOptions.showModelOutput=1;
-    showMapOptions.printFiringRates=1;
-    showMapOptions.showACF=0;
-    showMapOptions.showEfferent=0;
+showMapOptions.printModelParameters=1;
+showMapOptions.showModelOutput=1;
+showMapOptions.printFiringRates=1;
+showMapOptions.showACF=0;
+showMapOptions.showEfferent=0;
+showMapOptions.surfProbability=1;       % 2D plot of HSR response 
 
 %% Generate stimuli
 
@@ -51,9 +51,9 @@ switch signalType
     case 'tones'
         inputSignal=createMultiTone(sampleRate, toneFrequency, ...
             leveldBSPL, duration, rampDuration);
-        
+
     case 'file'
-        [inputSignal sampleRate]=wavread(fileName);       
+        [inputSignal sampleRate]=wavread(fileName);
         inputSignal(:,1);
         targetRMS=20e-6*10^(leveldBSPL/20);
         rms=(mean(inputSignal.^2))^0.5;
@@ -67,6 +67,7 @@ tic
 
 MAP1_14(inputSignal, sampleRate, BFlist, ...
     MAPparamsName, AN_spikesOrProbability, paramChanges);
+
 toc
 
 % the model run is now complete. Now display the results

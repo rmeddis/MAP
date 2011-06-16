@@ -32,6 +32,9 @@ function test_MAP1_14
 %
 % When the demonstration is satisfactory, freeze it by renaming it <demoxx>
 
+restorePath=path;
+addpath (['..' filesep 'MAP'],    ['..' filesep 'wavFileStore'], ...
+    ['..' filesep 'utilities'])
 
 %%  #1 parameter file name
 MAPparamsName='Normal';
@@ -48,9 +51,9 @@ AN_spikesOrProbability='probability';
 %% #3 pure tone, harmonic sequence or speech file input
 signalType= 'tones';
 sampleRate= 100000;
-duration=0.010;                 % seconds
+duration=0.50;                 % seconds
 % toneFrequency= 250:250:8000;    % harmonic sequence (Hz)
-toneFrequency= 4000;            % or a pure tone (Hz8
+toneFrequency= 500;            % or a pure tone (Hz8
 rampDuration=.005;              % seconds
 
 % or
@@ -60,7 +63,7 @@ rampDuration=.005;              % seconds
 
 %% #4 rms level
 % signal details
-leveldBSPL= 70;                  % dB SPL
+leveldBSPL= 90;                  % dB SPL
 
 
 %% #5 number of channels in the model
@@ -139,10 +142,6 @@ fprintf('\n')
 disp(['Signal duration= ' num2str(length(inputSignal)/sampleRate)])
 disp([num2str(numChannels) ' channel model'])
 disp('Computing ...')
-
-restorePath=path;
-addpath (['..' filesep 'MAP'])
-addpath (['..' filesep 'utilities'])
 
 MAP1_14(inputSignal, sampleRate, BFlist, ...
     MAPparamsName, AN_spikesOrProbability, paramChanges);

@@ -1,13 +1,16 @@
 function UTIL_showMAP (options)
+% UTIL_showMAP produces summaries of the output from MAP's mmost recent run
+%  All MAP outputs are stored in global variables and UTIL_showMAP
+%  simply assumes that they are in place.
+%
 % options
-% options.printModelParameters=1;
-% options.showModelOutput=1;
-% options.printFiringRates=1;
-% options.showACF=1;
-% options.showEfferent=1;
-% options.surfProbability=0;
-% options.fileName=[];
-% options.surfProbability=0;
+% options.printModelParameters=1; % print model parameters 
+% options.showModelOutput=1;      % plot all stages output
+% options.printFiringRates=1;     % mean activity at all stages
+% options.showACF=1;              % SACF (probabilities only)
+% options.showEfferent=1;         % plot of efferent activity
+% options.surfProbability=0;      % HSR (probability) surf plot
+% options.fileName=[];            % parameter filename for plot title
 
 dbstop if warning
 
@@ -27,7 +30,8 @@ if nargin<1
     options=[];
 end
 % defaults (plot staged outputs and print rates only)
-if ~isfield(options,'printModelParameters'),options.printModelParameters=0;end
+if ~isfield(options,'printModelParameters')
+        options.printModelParameters=0; end
 if ~isfield(options,'showModelOutput'),options.showModelOutput=1;end
 if ~isfield(options,'printFiringRates'),options.printFiringRates=1;end
 if ~isfield(options,'showACF'),options.showACF=0;end

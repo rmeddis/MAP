@@ -3,16 +3,20 @@ function demoTwisterSpikes
 % MAPdemo runs the MATLAB auditory periphery model (MAP1_14) as far as
 %  IC (spikes) with graphical output
 
+restorePath=path;
+addpath (['..' filesep 'MAP'],    ['..' filesep 'wavFileStore'], ...
+    ['..' filesep 'utilities'])
+
 
 %%  #1 parameter file name
 MAPparamsName='Normal';
 
 
-%% #2 probability (fast) or spikes (slow) representation
+%% #2 spikes (slow) representation
 AN_spikesOrProbability='spikes';
 
 
-%% #3 pure tone, harmonic sequence or speech file input
+%% #3 speech file input
 signalType= 'file';
 fileName='twister_44kHz';
 
@@ -45,8 +49,6 @@ showMapOptions=[];  % use defaults
 %% Generate stimuli
 
 dbstop if error
-restorePath=path;
-addpath (['..' filesep 'MAP'],    ['..' filesep 'wavFileStore'])
 switch signalType
     case 'tones'
         inputSignal=createMultiTone(sampleRate, toneFrequency, ...

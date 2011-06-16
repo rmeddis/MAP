@@ -1554,7 +1554,7 @@ global experiment stimulusParameters audio withinRuns
 global outerMiddleEarParams DRNLParams AN_IHCsynapseParams
 
 savePath=path;
-addpath('..\MAP')
+addpath(['..' filesep 'MAP'], ['..' filesep 'utilities'])
 modelResponse=[];
 MacGregorResponse=[];
 

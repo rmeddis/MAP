@@ -33,7 +33,7 @@ sampleRate=30000;
 
 dbstop if error
 figure(3), clf
-% set(gcf,'position',[276    33   331   645])
+set(gcf,'position',[280   350   327   326])
 set(gcf,'name','DRNL - BM')
 
 finalSummary=[];
