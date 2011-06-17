@@ -3,6 +3,7 @@ function demoTwisterProbability
 % MAPdemo runs the MATLAB auditory periphery model (MAP1_14) as far as
 %  the AN (probabilities) or IC (spikes) with graphical output
 
+dbstop if error
 restorePath=path;
 addpath (['..' filesep 'MAP'],    ['..' filesep 'wavFileStore'], ...
     ['..' filesep 'utilities'])
@@ -44,9 +45,6 @@ showMapOptions.surfProbability=1;       % 2D plot of HSR response
 
 %% Generate stimuli
 
-dbstop if error
-restorePath=path;
-addpath (['..' filesep 'MAP'],    ['..' filesep 'wavFileStore'])
 switch signalType
     case 'tones'
         inputSignal=createMultiTone(sampleRate, toneFrequency, ...

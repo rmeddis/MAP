@@ -48,7 +48,6 @@ showMapOptions=[];  % use defaults
 
 %% Generate stimuli
 
-dbstop if error
 switch signalType
     case 'tones'
         inputSignal=createMultiTone(sampleRate, toneFrequency, ...

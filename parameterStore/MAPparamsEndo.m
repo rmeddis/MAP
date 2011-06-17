@@ -20,7 +20,6 @@ global IHC_cilia_RPParams
 currentFile=mfilename;                      % i.e. the name of this mfile
 method.parameterSource=currentFile(10:end); % for the record
 
-switchOffEfferent=0;
 efferentDelay=0.010;
 method.segmentDuration=efferentDelay;
 
@@ -57,17 +56,14 @@ OMEParams.stapesScalar=	     45e-9;
 
 % Acoustic reflex: maximum attenuation should be around 25 dB Price (1966)
 % i.e. a minimum ratio of 0.056.
-if ~switchOffEfferent
-    % 'spikes' model: AR based on brainstem spiking activity (LSR)
-    OMEParams.rateToAttenuationFactor=0.003;   % * N(all ICspikes)
+% 'spikes' model: AR based on brainstem spiking activity (LSR)
+OMEParams.rateToAttenuationFactor=0.006;   % * N(all ICspikes)
 %     OMEParams.rateToAttenuationFactor=0;   % * N(all ICspikes)
-    % 'probability model': Ar based on An firing probabilities (LSR)
-    OMEParams.rateToAttenuationFactorProb=0.005;% * N(all ANrates)
+
+% 'probability model': Ar based on AN firing probabilities (LSR)
+OMEParams.rateToAttenuationFactorProb=0.01;% * N(all ANrates)
 %     OMEParams.rateToAttenuationFactorProb=0;% * N(all ANrates)
-else
-    OMEParams.rateToAttenuationFactor=0;        % 0= off
-    OMEParams.rateToAttenuationFactorProb=0;    % 0= off
-end
+
 % asymptote should be around 100-200 ms
 OMEParams.ARtau=.05; % AR smoothing function
 % delay must be longer than the segment length
@@ -79,8 +75,7 @@ DRNLParams=[];  % clear the structure first
 DRNLParams.BFlist=BFlist;
 
 % DRNL nonlinear path
-DRNLParams.a=3e4;     % nonlinear path gain (below compression threshold)
-% DRNLParams.a=3e2;     % DRNL.a=0 means no OHCs (no nonlinear path)
+DRNLParams.a=5e4;     % DRNL.a=0 means no OHCs (no nonlinear path)
 
 DRNLParams.b=8e-6;    % *compression threshold raised compression
 % DRNLParams.b=1;    % b=1 means no compression
@@ -104,20 +99,16 @@ DRNLParams.linBWs=minLinBW + coeffLinBW*BFlist; % bandwidths of linear  filters
 
 % DRNL MOC efferents
 DRNLParams.MOCdelay = efferentDelay;            % must be < segment length!
-if ~switchOffEfferent
-    % 'spikes' model: MOC based on brainstem spiking activity (HSR)
-    DRNLParams.rateToAttenuationFactor = .009;  % strength of MOC
-    DRNLParams.rateToAttenuationFactor = .009;  % strength of MOC
-%      DRNLParams.rateToAttenuationFactor = 0;  % strength of MOC
 
-    % 'spikes' model: MOC based on brainstem spiking activity (HSR)
-    DRNLParams.rateToAttenuationFactorProb = .002;  % strength of MOC
-else
-    DRNLParams.rateToAttenuationFactor = 0;     % 0 = MOC off (probability)
-    DRNLParams.rateToAttenuationFactorProb = 0; % 0 = MOC off (spikes)
-end
-DRNLParams.MOCtau =.03;                         % smoothing for MOC
-DRNLParams.MOCrateThreshold =50;                % set to AN rate threshold
+% 'spikes' model: MOC based on brainstem spiking activity (HSR)
+DRNLParams.rateToAttenuationFactor = .01;  % strength of MOC
+%      DRNLParams.rateToAttenuationFactor = 0;  % strength of MOC
+% 'probability' model: MOC based on AN spiking activity (HSR)
+DRNLParams.rateToAttenuationFactorProb = .005;  % strength of MOC
+% DRNLParams.rateToAttenuationFactorProb = .0;  % strength of MOC
+DRNLParams.MOCrateThreshold =70;                % spikes/s probability only
+
+DRNLParams.MOCtau =.1;                         % smoothing for MOC
 
 
 %% #4 IHC_cilia_RPParams
@@ -130,14 +121,13 @@ IHC_cilia_RPParams.s0=	30e-9;
 IHC_cilia_RPParams.u1=	1e-9;
 IHC_cilia_RPParams.s1=	1e-9;
 
-IHC_cilia_RPParams.Gmax= 5e-9;      % 2.5e-9 maximum conductance (Siemens)
-IHC_cilia_RPParams.Ga=	1e-9;       % 4.3e-9 fixed apical membrane conductance
+IHC_cilia_RPParams.Gmax= 5e-9;    % 2.5e-9 maximum conductance (Siemens)
+IHC_cilia_RPParams.Ga=	1e-9;  % 4.3e-9 fixed apical membrane conductance
 
 %  #5 IHC_RP
 IHC_cilia_RPParams.Cab=	4e-012;         % IHC capacitance (F)
 IHC_cilia_RPParams.Cab=	1e-012;         % IHC capacitance (F)
-IHC_cilia_RPParams.Et=	0.100;          % endocochlear potential (V)
-IHC_cilia_RPParams.Et=	0.065;          % endocochlear potential (V)
+IHC_cilia_RPParams.Et=	0.07;          % endocochlear potential (V)
 
 IHC_cilia_RPParams.Gk=	2e-008;         % 1e-8 potassium conductance (S)
 IHC_cilia_RPParams.Ek=	-0.08;          % -0.084 K equilibrium potential
@@ -156,7 +146,7 @@ IHCpreSynapseParams.power=	3;
 % reminder: changing z has a strong effect on HF thresholds (like Et)
 IHCpreSynapseParams.z=	    2e42;   % scalar Ca -> vesicle release rate
 
-LSRtauCa=50e-6;            HSRtauCa=85e-6;            % seconds
+LSRtauCa=35e-6;            HSRtauCa=85e-6;            % seconds
 % LSRtauCa=35e-6;            HSRtauCa=70e-6;            % seconds
 IHCpreSynapseParams.tauCa= [LSRtauCa HSRtauCa]; %LSR and HSR fiber
 

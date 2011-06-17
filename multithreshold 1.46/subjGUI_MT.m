@@ -1581,6 +1581,7 @@ if showPlotsAndDetails
     options.showACF=0;
     options.showEfferent=1;
     options.surfProbability=0;
+    showMapOptions.surfSpikes=0;
     UTIL_showMAP(options)
 end
 
