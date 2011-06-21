@@ -52,28 +52,25 @@ global dt ANdt  savedBFlist saveAN_spikesOrProbability saveMAPparamsName...
 % AR is computed using across channel activity
 % MOC is computed on a within-channel basis.
 
+if nargin<1
+    error(' MAP1_14 is not a script but a function that must be called')
+end
+
+if nargin<6
+    paramChanges=[];
+end
+% Read parameters from MAPparams<***> file in 'parameterStore' folder
+cmd=['method=MAPparams' MAPparamsName ...
+    '(BFlist, sampleRate, 0, paramChanges);'];
+eval(cmd);
+% Beware, 'BFlist=-1' is a legitimate argument for MAPparams<>
+%  if the calling program allows MAPparams to specify the list
+BFlist=DRNLParams.nonlinCFs;
 
 % save as global for later plotting if required
 savedBFlist=BFlist;
 saveAN_spikesOrProbability=AN_spikesOrProbability;
 saveMAPparamsName=MAPparamsName;
-
-% Read parameters from MAPparams<***> file in 'parameterStore' folder
-cmd=['method=MAPparams' MAPparamsName ...
-    '(BFlist, sampleRate, 0);'];
-eval(cmd);
-
-% Beware, 'BFlist=-1' is a legitimate argument for MAPparams<>
-%  if the calling program allows MAPparams to specify the list
-BFlist=DRNLParams.nonlinCFs;
-
-% now accept last mintue parameter changes required by the calling program
-if nargin>5 && ~isempty(paramChanges)
-    nChanges=length(paramChanges);
-    for idx=1:nChanges
-        eval(paramChanges{idx})
-    end
-end
 
 dt=1/sampleRate;
 duration=length(inputSignal)/sampleRate;
@@ -190,7 +187,7 @@ DRNLresponse= zeros(nBFs, segmentLength);
 
 MOCrateToAttenuationFactor=DRNLParams.rateToAttenuationFactor;
 rateToAttenuationFactorProb=DRNLParams.rateToAttenuationFactorProb;
-MOCrateThreshold=DRNLParams.MOCrateThreshold;
+MOCrateThresholdProb=DRNLParams.MOCrateThresholdProb;
 
 % smoothing filter for MOC
 a1=dt/DRNLParams.MOCtau-1; a0=1;
@@ -355,6 +352,7 @@ kt0= -synapse_z * CaCurrent.^synapse_power;
 % Spikes are necessary if CN and IC are to be computed
 nFibersPerChannel= AN_IHCsynapseParams.numFibers;
 nANfibers= nChannels*nFibersPerChannel;
+AN_refractory_period= AN_IHCsynapseParams.refractory_period;
 
 y=AN_IHCsynapseParams.y;
 l=AN_IHCsynapseParams.l;
@@ -377,12 +375,12 @@ Preprocess    = Pcleft*r/x; % canbe fractional
 
 ANprobability=zeros(nChannels,segmentLength);
 ANprobRateOutput=zeros(nChannels,signalLength);
+lengthAbsRefractoryP= round(AN_refractory_period/dt);
 % special variables for monitoring synaptic cleft (specialists only)
 savePavailableSeg=zeros(nChannels,segmentLength);
 savePavailable=zeros(nChannels,signalLength);
 
 % spikes     % !  !  !    ! !        !   !  !
-AN_refractory_period= AN_IHCsynapseParams.refractory_period;
 lengthAbsRefractory= round(AN_refractory_period/ANdt);
 
 AN_ydt= repmat(AN_IHCsynapseParams.y*ANdt, nANfibers,1);
@@ -777,7 +775,7 @@ while segmentStartPTR<signalLength
                 [smoothedRates, MOCprobBoundary{idx}] = ...
                     filter(MOCfilt_b, MOCfilt_a, rates(idx,:), ...
                     MOCprobBoundary{idx});
-                smoothedRates=smoothedRates-MOCrateThreshold;
+                smoothedRates=smoothedRates-MOCrateThresholdProb;
                 smoothedRates(smoothedRates<0)=0;
                 MOCattenuation(idx,segmentStartPTR:segmentEndPTR)= ...
                     (1- smoothedRates* rateToAttenuationFactorProb);
@@ -1130,5 +1128,25 @@ while segmentStartPTR<signalLength
 
 
 end  % segment
+
+%% apply refractory correction to spike probabilities
+
+% switch AN_spikesOrProbability
+%     case 'probability'
+%         ANprobOutput=ANprobRateOutput*dt;
+%         [r c]=size(ANprobOutput);
+%         % find probability of no spikes in refractory period
+%         pNoSpikesInRefrac=ones(size(ANprobOutput));
+%         pSpike=zeros(size(ANprobOutput));
+%         for epochNo=lengthAbsRefractoryP+2:c
+%             pNoSpikesInRefrac(:,epochNo)=...
+%                 pNoSpikesInRefrac(:,epochNo-2)...
+%                 .*(1-pSpike(:,epochNo-1))...
+%                 ./(1-pSpike(:,epochNo-lengthAbsRefractoryP-1));
+%             pSpike(:,epochNo)= ANprobOutput(:,epochNo)...
+%                 .*pNoSpikesInRefrac(:,epochNo);
+%         end
+%         ANprobRateOutput=pSpike/dt;
+% end
 
 path(restorePath)

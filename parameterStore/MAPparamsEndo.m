@@ -1,5 +1,5 @@
 function method=MAPparamsEndo ...
-    (BFlist, sampleRate, showParams)
+    (BFlist, sampleRate, showParams, paramChanges)
 % MAPparams<> establishes a complete set of MAP parameters
 % Parameter file names must be of the form <MAPparams> <name>
 %
@@ -58,11 +58,11 @@ OMEParams.stapesScalar=	     45e-9;
 % i.e. a minimum ratio of 0.056.
 % 'spikes' model: AR based on brainstem spiking activity (LSR)
 OMEParams.rateToAttenuationFactor=0.006;   % * N(all ICspikes)
-%     OMEParams.rateToAttenuationFactor=0;   % * N(all ICspikes)
+% OMEParams.rateToAttenuationFactor=0;   % * N(all ICspikes)
 
 % 'probability model': Ar based on AN firing probabilities (LSR)
 OMEParams.rateToAttenuationFactorProb=0.01;% * N(all ANrates)
-%     OMEParams.rateToAttenuationFactorProb=0;% * N(all ANrates)
+% OMEParams.rateToAttenuationFactorProb=0;% * N(all ANrates)
 
 % asymptote should be around 100-200 ms
 OMEParams.ARtau=.05; % AR smoothing function
@@ -104,9 +104,9 @@ DRNLParams.MOCdelay = efferentDelay;            % must be < segment length!
 DRNLParams.rateToAttenuationFactor = .01;  % strength of MOC
 %      DRNLParams.rateToAttenuationFactor = 0;  % strength of MOC
 % 'probability' model: MOC based on AN spiking activity (HSR)
-DRNLParams.rateToAttenuationFactorProb = .005;  % strength of MOC
+DRNLParams.rateToAttenuationFactorProb = .0055;  % strength of MOC
 % DRNLParams.rateToAttenuationFactorProb = .0;  % strength of MOC
-DRNLParams.MOCrateThreshold =70;                % spikes/s probability only
+DRNLParams.MOCrateThresholdProb =70;                % spikes/s probability only
 
 DRNLParams.MOCtau =.1;                         % smoothing for MOC
 
@@ -263,6 +263,16 @@ if AN_IHCsynapseParams.numFibers<MacGregorMultiParams.fibersPerNeuron
 end
 
 
+%% now accept last minute parameter changes required by the calling program
+% paramChanges
+if nargin>3 && ~isempty(paramChanges)
+    nChanges=length(paramChanges);
+    for idx=1:nChanges
+        eval(paramChanges{idx})
+    end
+end
+
+
 %% write all parameters to the command window
 % showParams is currently set at the top of htis function
 if showParams
@@ -274,6 +284,14 @@ if showParams
         %         eval(['UTIL_showStruct(' nm{i} ', ''' nm{i} ''')'])
         if ~strcmp(nm(i), 'method')
             eval(['UTIL_showStructureSummary(' nm{i} ', ''' nm{i} ''', 10)'])
+        end
+    end
+
+    % highlight parameter changes made locally
+    if nargin>3 && ~isempty(paramChanges)
+        fprintf('\n Local parameter changes:\n')
+        for i=1:length(paramChanges)
+            disp(paramChanges{i})
         end
     end
 end

@@ -192,7 +192,7 @@ DRNLresponse= zeros(nBFs, segmentLength);
 
 MOCrateToAttenuationFactor=DRNLParams.rateToAttenuationFactor;
 rateToAttenuationFactorProb=DRNLParams.rateToAttenuationFactorProb;
-MOCrateThreshold=DRNLParams.MOCrateThreshold;
+MOCrateThresholdProb=DRNLParams.MOCrateThresholdProb;
 
 % smoothing filter for MOC
 % Nyquist=(1/ANdt)/2;
@@ -819,7 +819,7 @@ while segmentStartPTR<signalLength
                 [smoothedRates, MOCprobBoundary{idx}] = ...
                     filter(MOCfilt_b, MOCfilt_a, rates(idx,:), ...
                     MOCprobBoundary{idx});
-                smoothedRates=smoothedRates-MOCrateThreshold;
+                smoothedRates=smoothedRates-MOCrateThresholdProb;
                 smoothedRates(smoothedRates<0)=0;
                 MOCattenuation(idx,segmentStartPTR:segmentEndPTR)= ...
                     (1- smoothedRates* rateToAttenuationFactorProb);

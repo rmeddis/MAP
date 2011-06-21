@@ -26,6 +26,7 @@ showParams=0;
 useEfferent=0;  % no efferent
 
 silenceDuration=0.005;
+silenceDuration=0.015;
 maskerDuration=0.1;
 recoveryDuration=0.15;
 rampDuration=0.004;

@@ -1,5 +1,5 @@
-function method=MAPparamsOHC ...
-    (BFlist, sampleRate, showParams, paramChanges)
+function method=MAPparamsNormalTest ...
+    (BFlist, sampleRate, showParams)
 % MAPparams<> establishes a complete set of MAP parameters
 % Parameter file names must be of the form <MAPparams> <name>
 %
@@ -58,11 +58,11 @@ OMEParams.stapesScalar=	     45e-9;
 % i.e. a minimum ratio of 0.056.
 % 'spikes' model: AR based on brainstem spiking activity (LSR)
 OMEParams.rateToAttenuationFactor=0.006;   % * N(all ICspikes)
-% OMEParams.rateToAttenuationFactor=0;   % * N(all ICspikes)
+%     OMEParams.rateToAttenuationFactor=0;   % * N(all ICspikes)
 
 % 'probability model': Ar based on AN firing probabilities (LSR)
 OMEParams.rateToAttenuationFactorProb=0.01;% * N(all ANrates)
-% OMEParams.rateToAttenuationFactorProb=0;% * N(all ANrates)
+%     OMEParams.rateToAttenuationFactorProb=0;% * N(all ANrates)
 
 % asymptote should be around 100-200 ms
 OMEParams.ARtau=.05; % AR smoothing function
@@ -75,9 +75,11 @@ DRNLParams=[];  % clear the structure first
 DRNLParams.BFlist=BFlist;
 
 % DRNL nonlinear path
-DRNLParams.a=0;     % DRNL.a=0 means no OHCs (no nonlinear path)
+DRNLParams.a=5e4;     % DRNL.a=0 means no OHCs (no nonlinear path)
+DRNLParams.a=0e4;     % DRNL.a=0 means no OHCs (no nonlinear path)
 
 DRNLParams.b=8e-6;    % *compression threshold raised compression
+% DRNLParams.b=12e-6;    % *compression threshold raised compression
 % DRNLParams.b=1;    % b=1 means no compression
 
 DRNLParams.c=0.2;     % compression exponent
@@ -89,7 +91,7 @@ DRNLParams.nlBWs=  p * BFlist + q;
 DRNLParams.p=p;   DRNLParams.q=q;   % save p and q for printing only
 
 % DRNL linear path:
-DRNLParams.g=100;     % linear path gain factor
+DRNLParams.g=1000;     % linear path gain factor
 % linCF is not necessarily the same as nonlinCF
 minLinCF=153.13; coeffLinCF=0.7341;   % linCF>nonlinBF for BF < 1 kHz
 DRNLParams.linCFs=minLinCF+coeffLinCF*BFlist;
@@ -104,7 +106,7 @@ DRNLParams.MOCdelay = efferentDelay;            % must be < segment length!
 DRNLParams.rateToAttenuationFactor = .01;  % strength of MOC
 %      DRNLParams.rateToAttenuationFactor = 0;  % strength of MOC
 % 'probability' model: MOC based on AN spiking activity (HSR)
-DRNLParams.rateToAttenuationFactorProb = .0055;  % strength of MOC
+DRNLParams.rateToAttenuationFactorProb = .005;  % strength of MOC
 % DRNLParams.rateToAttenuationFactorProb = .0;  % strength of MOC
 DRNLParams.MOCrateThresholdProb =70;                % spikes/s probability only
 
@@ -115,19 +117,19 @@ DRNLParams.MOCtau =.1;                         % smoothing for MOC
 
 IHC_cilia_RPParams.tc=	0.0003;   % 0.0003 filter time simulates viscocity
 % IHC_cilia_RPParams.tc=	0.0005;   % 0.0003 filter time simulates viscocity
-IHC_cilia_RPParams.C=	0.05;      % 0.1 scalar (C_cilia ) 
-IHC_cilia_RPParams.u0=	5e-9;       
-IHC_cilia_RPParams.s0=	30e-9;
-IHC_cilia_RPParams.u1=	1e-9;
-IHC_cilia_RPParams.s1=	1e-9;
+IHC_cilia_RPParams.C=	0.01;      % 0.1 scalar (C_cilia ) 
+IHC_cilia_RPParams.u0=	5e-10;       
+IHC_cilia_RPParams.s0=	10e-10;
+IHC_cilia_RPParams.u1=	5e-10;
+IHC_cilia_RPParams.s1=	5e-10;
 
-IHC_cilia_RPParams.Gmax= 5e-9;    % 2.5e-9 maximum conductance (Siemens)
-IHC_cilia_RPParams.Ga=	1e-9;  % 4.3e-9 fixed apical membrane conductance
+IHC_cilia_RPParams.Gmax= 4e-9;    % 2.5e-9 maximum conductance (Siemens)
+IHC_cilia_RPParams.Ga=	1.5e-9;  % 4.3e-9 fixed apical membrane conductance
 
 %  #5 IHC_RP
 IHC_cilia_RPParams.Cab=	4e-012;         % IHC capacitance (F)
-IHC_cilia_RPParams.Cab=	1e-012;         % IHC capacitance (F)
-IHC_cilia_RPParams.Et=	0.1;          % endocochlear potential (V)
+IHC_cilia_RPParams.Cab=	2e-012;         % IHC capacitance (F)
+IHC_cilia_RPParams.Et=	0.100;          % endocochlear potential (V)
 
 IHC_cilia_RPParams.Gk=	2e-008;         % 1e-8 potassium conductance (S)
 IHC_cilia_RPParams.Ek=	-0.08;          % -0.084 K equilibrium potential
@@ -144,7 +146,7 @@ IHCpreSynapseParams.gamma=	100;	% determine Ca channel opening
 IHCpreSynapseParams.tauM=	0.00005;	% membrane time constant ?0.1ms
 IHCpreSynapseParams.power=	3;
 % reminder: changing z has a strong effect on HF thresholds (like Et)
-IHCpreSynapseParams.z=	    2e42;   % scalar Ca -> vesicle release rate
+IHCpreSynapseParams.z=	    1e42;   % scalar Ca -> vesicle release rate
 
 LSRtauCa=35e-6;            HSRtauCa=85e-6;            % seconds
 % LSRtauCa=35e-6;            HSRtauCa=70e-6;            % seconds
@@ -156,14 +158,14 @@ IHCpreSynapseParams.tauCa= [LSRtauCa HSRtauCa]; %LSR and HSR fiber
 AN_IHCsynapseParams=[];             % clear the structure first
 AN_IHCsynapseParams.M=	12;         % maximum vesicles at synapse
 AN_IHCsynapseParams.y=	4;          % depleted vesicle replacement rate
-AN_IHCsynapseParams.y=	6;          % depleted vesicle replacement rate
+% AN_IHCsynapseParams.y=	6;          % depleted vesicle replacement rate
 
-AN_IHCsynapseParams.x=	30;         % replenishment from re-uptake store
+AN_IHCsynapseParams.x=	10;         % replenishment from re-uptake store
 AN_IHCsynapseParams.x=	60;         % replenishment from re-uptake store
 
 % reduce l to increase saturated rate
-AN_IHCsynapseParams.l=	100; % *loss rate of vesicles from the cleft
-AN_IHCsynapseParams.l=	250; % *loss rate of vesicles from the cleft
+AN_IHCsynapseParams.l=	150; % *loss rate of vesicles from the cleft
+% AN_IHCsynapseParams.l=	250; % *loss rate of vesicles from the cleft
 
 AN_IHCsynapseParams.r=	500; % *reuptake rate from cleft into cell
 % AN_IHCsynapseParams.r=	300; % *reuptake rate from cleft into cell
@@ -263,16 +265,6 @@ if AN_IHCsynapseParams.numFibers<MacGregorMultiParams.fibersPerNeuron
 end
 
 
-%% now accept last minute parameter changes required by the calling program
-% paramChanges
-if nargin>3 && ~isempty(paramChanges)
-    nChanges=length(paramChanges);
-    for idx=1:nChanges
-        eval(paramChanges{idx})
-    end
-end
-
-
 %% write all parameters to the command window
 % showParams is currently set at the top of htis function
 if showParams
@@ -284,14 +276,6 @@ if showParams
         %         eval(['UTIL_showStruct(' nm{i} ', ''' nm{i} ''')'])
         if ~strcmp(nm(i), 'method')
             eval(['UTIL_showStructureSummary(' nm{i} ', ''' nm{i} ''', 10)'])
-        end
-    end
-
-    % highlight parameter changes made locally
-    if nargin>3 && ~isempty(paramChanges)
-        fprintf('\n Local parameter changes:\n')
-        for i=1:length(paramChanges)
-            disp(paramChanges{i})
         end
     end
 end

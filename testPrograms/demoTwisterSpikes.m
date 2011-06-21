@@ -45,9 +45,9 @@ showMapOptions=[];  % use defaults
     showMapOptions.printFiringRates=1;
     showMapOptions.showACF=0;
     showMapOptions.showEfferent=0;
-
+    showMapOptions.surfSpikes=1;
+    
 %% Generate stimuli
-
 switch signalType
     case 'tones'
         inputSignal=createMultiTone(sampleRate, toneFrequency, ...
@@ -70,16 +70,16 @@ fprintf('\n')
 disp(['Signal duration= ' num2str(length(inputSignal)/sampleRate)])
 disp([num2str(numChannels) ' channel model'])
 disp('Computing ...')
+
 MAP1_14(inputSignal, sampleRate, BFlist, ...
     MAPparamsName, AN_spikesOrProbability, paramChanges);
-toc
+
 
 % the model run is now complete. Now display the results
-UTIL_showMAP(showMapOptions)
+UTIL_showMAP(showMapOptions, paramChanges)
 
 toc
 path(restorePath)
-
 
 function inputSignal=createMultiTone(sampleRate, toneFrequency, ...
     leveldBSPL, duration, rampDuration)

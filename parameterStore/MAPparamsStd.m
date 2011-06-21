@@ -117,7 +117,7 @@ else
     DRNLParams.rateToAttenuationFactorProb = 0; % 0 = MOC off (spikes)
 end
 DRNLParams.MOCtau =.03;                         % smoothing for MOC
-DRNLParams.MOCrateThreshold =50;                % set to AN rate threshold
+DRNLParams.MOCrateThresholdProb =50;                % set to AN rate threshold
 
 
 %% #4 IHC_cilia_RPParams

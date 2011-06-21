@@ -1,4 +1,4 @@
-function UTIL_showMAP (showMapOptions)
+function UTIL_showMAP (showMapOptions, paramChanges)
 % UTIL_showMAP produces summaries of the output from MAP's mmost recent run
 %  All MAP outputs are stored in global variables and UTIL_showMAP
 %  simply assumes that they are in place.
@@ -40,15 +40,21 @@ if ~isfield(showMapOptions,'surfProbability'),showMapOptions.surfProbability=0;e
 if ~isfield(showMapOptions,'fileName'),showMapOptions.fileName=[];end
 if ~isfield(showMapOptions,'surfSpikes'),showMapOptions.surfSpikes=0;end
 
-
+%% send all model parameters to command window
 if showMapOptions.printModelParameters
     % Read parameters from MAPparams<***> file in 'parameterStore' folder
     %  and print out all parameters
-    cmd=['MAPparams' saveMAPparamsName ...
-        '(-1, 1/dt, 1);'];
-    eval(cmd);
+    if nargin>1
+        cmd=['MAPparams' saveMAPparamsName '(-1, 1/dt, 1, paramChanges);'];
+        eval(cmd);
+    else
+        cmd=['MAPparams' saveMAPparamsName '(-1, 1/dt, 1);'];
+        eval(cmd);
+        disp(' no parameter changes found')
+    end
 end
 
+%% summarise firing rates in command window
 if showMapOptions.printFiringRates
     %% print summary firing rates
     fprintf('\n\n')
@@ -71,14 +77,14 @@ if showMapOptions.printFiringRates
         %         disp(['IC by type: ' num2str(mean(ICfiberTypeRates,2)')])
     else
         disp(['AN: ' num2str(mean(mean(ANprobRateOutput)))])
-        [PSTH pointsPerBin]= UTIL_makePSTH(ANprobRateOutput, dt, 0.001);
+        PSTH= UTIL_PSTHmakerb(ANprobRateOutput, dt, 0.001);
         disp(['max max AN: ' num2str(max(max(...
-            PSTH/pointsPerBin )))])
+            PSTH )))])
     end
 end
 
 
-%% figure (99) summarises main model output
+%% figure (99): display output from all model stages
 if showMapOptions.showModelOutput
     plotInstructions.figureNo=99;
     signalRMS=mean(savedInputSignal.^2)^0.5;
@@ -150,8 +156,10 @@ if showMapOptions.showModelOutput
                 UTIL_plotMatrix(ICmembraneOutput, plotInstructions);
             end
 
-        otherwise % probability (4-6)
-            plotInstructions.displaydt=dt;
+        otherwise % AN rate based on probability of firing
+            PSTHbinWidth=0.001;
+        PSTH= UTIL_PSTHmakerb(ANprobRateOutput, dt, PSTHbinWidth);
+            plotInstructions.displaydt=PSTHbinWidth;
             plotInstructions.numPlots=2;
             plotInstructions.subPlotNo=2;
             plotInstructions.yLabel='BF';
@@ -159,13 +167,15 @@ if showMapOptions.showModelOutput
                 plotInstructions.yLabel='LSR    HSR';
                 plotInstructions.plotDivider=1;
             end
-            plotInstructions.title='AN - spike probability';
-            UTIL_plotMatrix(ANprobRateOutput, plotInstructions);
+            plotInstructions.title='AN - spike rate';
+            UTIL_plotMatrix(PSTH, plotInstructions);
     end
 end
 
 if showMapOptions.surfProbability
     %% surface plot of probability
+    if strcmp(saveAN_spikesOrProbability,'probability') && ...
+            length(savedBFlist)>2
     figure(97), clf
     % select only HSR fibers at the bottom of the matrix
     ANprobRateOutput= ANprobRateOutput(end-length(savedBFlist)+1:end,:);
@@ -185,15 +195,16 @@ if showMapOptions.surfProbability
     view([-20 60])
     %     view([0 90])
     title ([showMapOptions.fileName ':   ' num2str(signalRMSdb,'% 3.0f') ' dB'])
+    end
 end
 
 if showMapOptions.surfSpikes
-    %% surface plot of probability
+    %% surface plot of AN spikes
     figure(97), clf
     % select only HSR fibers at the bottom of the matrix
     ANoutput= ANoutput(end-length(savedBFlist)+1:end,:);
-    PSTHbinWidth=0.001; % 1 ms bins
-    PSTH=UTIL_PSTHmakerb(ANoutput, ANdt, PSTHbinWidth);
+    PSTHbinWidth=0.005; % 1 ms bins
+    PSTH=UTIL_makePSTH(ANoutput, ANdt, PSTHbinWidth);
     [nY nX]=size(PSTH);
     time=PSTHbinWidth*(1:nX);
     surf(time, savedBFlist, PSTH)
@@ -211,7 +222,7 @@ if showMapOptions.surfSpikes
 end
 
 
-%% plot efferent control values as dB
+%% figure(98) plot efferent control values as dB
 if showMapOptions.showEfferent
     plotInstructions=[];
     plotInstructions.figureNo=98;

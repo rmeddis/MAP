@@ -30,7 +30,7 @@ if showPlotsAndDetails
     options.printFiringRates=1;
     options.showACF=0;
     options.showEfferent=1;
-    UTIL_showMAP(options)
+    UTIL_showMAP(options, paramChanges)
 end
 
 % No response,  probably caused by hitting 'stop' button

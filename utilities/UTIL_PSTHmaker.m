@@ -8,9 +8,7 @@ function [PSTH dt]=UTIL_PSTHmaker(inputData, dt, PSTHbinWidth)
 %	inputData is a channel x time matrix
 %	PSTH is the reduced matrix, the sum of all elements in the bin
 %
-% mandatory fileds:
-%	method.dt
-% 	method.PSTHbinWidth
+
 [numChannels numDataPoints]= size(inputData);
 
 % Multiple fibers is the same as repeat trials

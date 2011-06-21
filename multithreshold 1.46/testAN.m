@@ -108,7 +108,7 @@ for leveldB=levels
     numHSRfibers=numLSRfibers;
 
     LSRspikes=ANoutput(1:numLSRfibers,:);
-    PSTH=UTIL_makePSTH(LSRspikes, ANdt, localPSTHbinwidth);
+    PSTH=UTIL_PSTHmaker(LSRspikes, ANdt, localPSTHbinwidth);
     PSTHLSR=mean(PSTH,1)/localPSTHbinwidth;  % across fibers rates
     PSTHtime=localPSTHbinwidth:localPSTHbinwidth:...
         localPSTHbinwidth*length(PSTH);
@@ -117,7 +117,7 @@ for leveldB=levels
 
     % HSR
     HSRspikes= ANoutput(end- numHSRfibers+1:end, :);
-    PSTH=UTIL_makePSTH(HSRspikes, ANdt, localPSTHbinwidth);
+    PSTH=UTIL_PSTHmaker(HSRspikes, ANdt, localPSTHbinwidth);
     PSTH=mean(PSTH,1)/localPSTHbinwidth; % sum across fibers (HSR only)
     AN_HSRonset(levelNo)= max(PSTH);
     AN_HSRsaturated(levelNo)= mean(PSTH(round(length(PSTH)/2): end));
@@ -150,14 +150,14 @@ for leveldB=levels
     [nCNneurons c]=size(CNoutput);
     nLSRneurons=round(nCNneurons/nTaus);
     CNLSRspikes=CNoutput(1:nLSRneurons,:);
-    PSTH=UTIL_makePSTH(CNLSRspikes, ANdt, localPSTHbinwidth);
+    PSTH=UTIL_PSTHmaker(CNLSRspikes, ANdt, localPSTHbinwidth);
     PSTH=sum(PSTH)/nLSRneurons;
     CNLSRrate(levelNo)=mean(PSTH(round(length(PSTH)/2):end))/localPSTHbinwidth;
 
     %CN HSR
     MacGregorMultiHSRspikes=...
         CNoutput(end-nLSRneurons:end,:);
-    PSTH=UTIL_makePSTH(MacGregorMultiHSRspikes, ANdt, localPSTHbinwidth);
+    PSTH=UTIL_PSTHmaker(MacGregorMultiHSRspikes, ANdt, localPSTHbinwidth);
     PSTH=sum(PSTH)/nLSRneurons;
     PSTH=mean(PSTH,1)/localPSTHbinwidth; % sum across fibers (HSR only)
 
@@ -174,13 +174,13 @@ for leveldB=levels
     [nICneurons c]=size(ICoutput);
     nLSRneurons=round(nICneurons/nTaus);
     ICLSRspikes=ICoutput(1:nLSRneurons,:);
-    PSTH=UTIL_makePSTH(ICLSRspikes, ANdt, localPSTHbinwidth);
+    PSTH=UTIL_PSTHmaker(ICLSRspikes, ANdt, localPSTHbinwidth);
     ICLSRsaturated(levelNo)=mean(PSTH(round(length(PSTH)/2):end))/localPSTHbinwidth;
 
     %IC HSR
     MacGregorMultiHSRspikes=...
         ICoutput(end-nLSRneurons:end,:);
-    PSTH=UTIL_makePSTH(MacGregorMultiHSRspikes, ANdt, localPSTHbinwidth);
+    PSTH=UTIL_PSTHmaker(MacGregorMultiHSRspikes, ANdt, localPSTHbinwidth);
     PSTH=sum(PSTH)/nLSRneurons;
     PSTH=mean(PSTH,1)/localPSTHbinwidth; % sum across fibers (HSR only)
 

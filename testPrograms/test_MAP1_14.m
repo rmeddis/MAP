@@ -42,29 +42,30 @@ MAPparamsName='Normal';
 
 
 %% #2 probability (fast) or spikes (slow) representation
-AN_spikesOrProbability='spikes';
+% AN_spikesOrProbability='spikes';
 
 % or
 % NB probabilities are not corrected for refractory effects
-% AN_spikesOrProbability='probability';
+AN_spikesOrProbability='probability';
 
 
 %% #3 pure tone, harmonic sequence or speech file input
 signalType= 'tones';
-sampleRate= 100000;
-duration=0.050;                 % seconds
+sampleRate= 50000;
+duration=0.250;                 % seconds
 % toneFrequency= 250:250:8000;    % harmonic sequence (Hz)
 toneFrequency= 1000;            % or a pure tone (Hz8
 rampDuration=.005;              % seconds
 
 % or
+
 % signalType= 'file';
 % fileName='twister_44kHz';
 
 
 %% #4 rms level
 % signal details
-leveldBSPL= 70;                  % dB SPL
+leveldBSPL= 30;                  % dB SPL
 
 
 %% #5 number of channels in the model
@@ -90,10 +91,10 @@ paramChanges=[];
 % paramChanges={'AN_IHCsynapseParams.ANspeedUpFactor=5;', ...
 %     'IHCpreSynapseParams.tauCa=86e-6;'};
 
-% paramChanges={'DRNLParams.rateToAttenuationFactorProb = 0;'};
+paramChanges={'DRNLParams.rateToAttenuationFactorProb = 0;'};
 
 % paramChanges={'IHCpreSynapseParams.tauCa=86e-6;',
-%     'AN_IHCsynapseParams.numFibers=	100;'};
+%     'AN_IHCsynapseParams.numFibers=	1000;'};
 
 
 %% delare 'showMap' options to control graphical output
@@ -152,15 +153,10 @@ disp('Computing ...')
 
 MAP1_14(inputSignal, sampleRate, BFlist, ...
     MAPparamsName, AN_spikesOrProbability, paramChanges);
-toc
+
 
 % the model run is now complete. Now display the results
-disp(' param changes to list of parameters below')
-for i=1:length(paramChanges)
-    disp(paramChanges{i})
-end
-UTIL_showMAP(showMapOptions)
-
+UTIL_showMAP(showMapOptions, paramChanges)
 
 toc
 path(restorePath)
@@ -186,7 +182,6 @@ ramp=fliplr(ramp);
 inputSignal=inputSignal.*ramp;
 
 % add 10 ms silence
-silence= zeros(1,round(0.05/dt));
 silence= zeros(1,round(0.05/dt));
 inputSignal= [silence inputSignal silence];
 

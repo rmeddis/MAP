@@ -63,16 +63,21 @@ end
 %% run the model
 tic
 
+fprintf('\n')
+disp(['Signal duration= ' num2str(length(inputSignal)/sampleRate)])
+disp([num2str(numChannels) ' channel model'])
+disp('Computing ...')
+
 MAP1_14(inputSignal, sampleRate, BFlist, ...
     MAPparamsName, AN_spikesOrProbability, paramChanges);
 
-toc
 
 % the model run is now complete. Now display the results
-UTIL_showMAP(showMapOptions)
+UTIL_showMAP(showMapOptions, paramChanges)
 
 toc
 path(restorePath)
+
 
 
 function inputSignal=createMultiTone(sampleRate, toneFrequency, ...

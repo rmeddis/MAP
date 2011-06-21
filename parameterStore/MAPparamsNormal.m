@@ -1,5 +1,5 @@
 function method=MAPparamsNormal ...
-    (BFlist, sampleRate, showParams)
+    (BFlist, sampleRate, showParams, paramChanges)
 % MAPparams<> establishes a complete set of MAP parameters
 % Parameter file names must be of the form <MAPparams> <name>
 %
@@ -11,11 +11,11 @@ function method=MAPparamsNormal ...
 % output argument
 %  method passes a miscelleny of values
 
-global inputStimulusParams OMEParams DRNLParams
+global inputStimulusParams OMEParams DRNLParams IHC_cilia_RPParams
 global IHC_VResp_VivoParams IHCpreSynapseParams  AN_IHCsynapseParams
 global MacGregorParams MacGregorMultiParams  filteredSACFParams
 global experiment % used by calls from multiThreshold only
-global IHC_cilia_RPParams
+
 
 currentFile=mfilename;                      % i.e. the name of this mfile
 method.parameterSource=currentFile(10:end); % for the record
@@ -58,11 +58,11 @@ OMEParams.stapesScalar=	     45e-9;
 % i.e. a minimum ratio of 0.056.
 % 'spikes' model: AR based on brainstem spiking activity (LSR)
 OMEParams.rateToAttenuationFactor=0.006;   % * N(all ICspikes)
-%     OMEParams.rateToAttenuationFactor=0;   % * N(all ICspikes)
+% OMEParams.rateToAttenuationFactor=0;   % * N(all ICspikes)
 
 % 'probability model': Ar based on AN firing probabilities (LSR)
 OMEParams.rateToAttenuationFactorProb=0.01;% * N(all ANrates)
-%     OMEParams.rateToAttenuationFactorProb=0;% * N(all ANrates)
+% OMEParams.rateToAttenuationFactorProb=0;% * N(all ANrates)
 
 % asymptote should be around 100-200 ms
 OMEParams.ARtau=.05; % AR smoothing function
@@ -104,9 +104,9 @@ DRNLParams.MOCdelay = efferentDelay;            % must be < segment length!
 DRNLParams.rateToAttenuationFactor = .01;  % strength of MOC
 %      DRNLParams.rateToAttenuationFactor = 0;  % strength of MOC
 % 'probability' model: MOC based on AN spiking activity (HSR)
-DRNLParams.rateToAttenuationFactorProb = .005;  % strength of MOC
+DRNLParams.rateToAttenuationFactorProb = .0055;  % strength of MOC
 % DRNLParams.rateToAttenuationFactorProb = .0;  % strength of MOC
-DRNLParams.MOCrateThreshold =70;                % spikes/s probability only
+DRNLParams.MOCrateThresholdProb =70;                % spikes/s probability only
 
 DRNLParams.MOCtau =.1;                         % smoothing for MOC
 
@@ -263,6 +263,16 @@ if AN_IHCsynapseParams.numFibers<MacGregorMultiParams.fibersPerNeuron
 end
 
 
+%% now accept last minute parameter changes required by the calling program
+% paramChanges
+if nargin>3 && ~isempty(paramChanges)
+    nChanges=length(paramChanges);
+    for idx=1:nChanges
+        eval(paramChanges{idx})
+    end
+end
+
+
 %% write all parameters to the command window
 % showParams is currently set at the top of htis function
 if showParams
@@ -276,63 +286,15 @@ if showParams
             eval(['UTIL_showStructureSummary(' nm{i} ', ''' nm{i} ''', 10)'])
         end
     end
-end
 
-
-
-% **********************************************************************  comparison data
-% store individual data here for display on the multiThreshold GUI (if used)
-% the final value in each vector is an identifier (BF or duration))
-if isstruct(experiment)
-    switch experiment.paradigm
-        case {'IFMC','IFMC_8ms'}
-            % based on MPa
-            comparisonData=[
-                66	51	49	48	46	45	54	250;
-                60	54	46	42	39	49	65	500;
-                64	51	38	32	33	59	75	1000;
-                59	51	36	30	41	81	93	2000;
-                71	63	53	44	36	76	95	4000;
-                70	64	43	35	35	66	88	6000;
-                110	110	110	110	110	110	110	8000;
-                ];
-            if length(BFlist)==1 && ~isempty(comparisonData)
-                availableFrequencies=comparisonData(:,end)';
-                findRow= find(BFlist==availableFrequencies);
-                if ~isempty (findRow)
-                    experiment.comparisonData=comparisonData(findRow,:);
-                end
-            end
-
-        case {'TMC','TMC_8ms'}
-            % based on MPa
-            comparisonData=[
-                48	58	63	68	75	80	85	92	99	250;
-                33	39	40	49	52	61	64	77	79	500;
-                39	42	50	81	83	92	96	97	110	1000;
-                24	26	32	37	46	51	59	71	78	2000;
-                65	68	77	85	91	93	110	110	110	4000;
-                20	19	26	44	80	95	96	110	110	6000;
-                ];
-            if length(BFlist)==1 && ~isempty(comparisonData)
-                availableFrequencies=comparisonData(:,end)';
-                findRow= find(BFlist==availableFrequencies);
-                if ~isempty (findRow)
-                    experiment.comparisonData=comparisonData(findRow,:);
-                end
-            end
-
-        case { 'absThreshold',  'absThreshold_8'}
-            % MPa thresholds
-            experiment.comparisonData=[
-                32	26	16	18	22	22 0.008;
-                16	13	6	9	15	11 0.500
-                ];
-
-
-        otherwise
-            experiment.comparisonData=[];
+    % highlight parameter changes made locally
+    if nargin>3 && ~isempty(paramChanges)
+        fprintf('\n Local parameter changes:\n')
+        for i=1:length(paramChanges)
+            disp(paramChanges{i})
+        end
     end
 end
 
-
+% for backward compatibility
+experiment.comparisonData=[];
