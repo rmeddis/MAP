@@ -76,10 +76,10 @@ if showMapOptions.printFiringRates
         disp(['IC: ' num2str(sum(sum(ICoutput))/duration)])
         %         disp(['IC by type: ' num2str(mean(ICfiberTypeRates,2)')])
     else
-        disp(['AN: ' num2str(mean(mean(ANprobRateOutput)))])
-        PSTH= UTIL_PSTHmakerb(ANprobRateOutput, dt, 0.001);
-        disp(['max max AN: ' num2str(max(max(...
-            PSTH )))])
+    HSRprobOutput= ANprobRateOutput(end-length(savedBFlist)+1:end,:);
+        disp(['AN(HSR): ' num2str(mean(mean(HSRprobOutput)))])
+        PSTH= UTIL_PSTHmakerb(HSRprobOutput, dt, 0.001);
+        disp(['max max AN: ' num2str(max(max(PSTH)))])
     end
 end
 
@@ -178,9 +178,9 @@ if showMapOptions.surfProbability
             length(savedBFlist)>2
     figure(97), clf
     % select only HSR fibers at the bottom of the matrix
-    ANprobRateOutput= ANprobRateOutput(end-length(savedBFlist)+1:end,:);
+    HSRprobOutput= ANprobRateOutput(end-length(savedBFlist)+1:end,:);
     PSTHbinWidth=0.001;
-    PSTH=UTIL_PSTHmakerb(ANprobRateOutput, ANdt, PSTHbinWidth);
+    PSTH=UTIL_PSTHmakerb(HSRprobOutput, ANdt, PSTHbinWidth);
     [nY nX]=size(PSTH);
     time=PSTHbinWidth*(1:nX);
     surf(time, savedBFlist, PSTH)
@@ -188,12 +188,14 @@ if showMapOptions.surfProbability
     set(gca, 'yScale','log')
     xlim([0 max(time)])
     ylim([0 max(savedBFlist)])
-    zlim([0 1000])
+    zlim([0 2000])
     xlabel('time (s)')
     ylabel('best frequency (Hz)')
     zlabel('spike rate')
     view([-20 60])
     %     view([0 90])
+            disp(['max max AN: ' num2str(max(max(PSTH)))])
+
     title ([showMapOptions.fileName ':   ' num2str(signalRMSdb,'% 3.0f') ' dB'])
     end
 end

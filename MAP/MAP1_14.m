@@ -771,14 +771,20 @@ while segmentStartPTR<signalLength
             % within-channel HSR response only
             HSRbegins=nBFs*(nANfiberTypes-1)+1;
             rates=ANrate(HSRbegins:end,:);
-            for idx=1:nBFs
-                [smoothedRates, MOCprobBoundary{idx}] = ...
-                    filter(MOCfilt_b, MOCfilt_a, rates(idx,:), ...
-                    MOCprobBoundary{idx});
-                smoothedRates=smoothedRates-MOCrateThresholdProb;
-                smoothedRates(smoothedRates<0)=0;
-                MOCattenuation(idx,segmentStartPTR:segmentEndPTR)= ...
-                    (1- smoothedRates* rateToAttenuationFactorProb);
+            if rateToAttenuationFactorProb<0
+                % negative factor implies a fixed attenuation
+                MOCattenuation(:,segmentStartPTR:segmentEndPTR)= ...
+                    ones(size(rates))* -rateToAttenuationFactorProb;
+            else
+                for idx=1:nBFs
+                    [smoothedRates, MOCprobBoundary{idx}] = ...
+                        filter(MOCfilt_b, MOCfilt_a, rates(idx,:), ...
+                        MOCprobBoundary{idx});
+                    smoothedRates=smoothedRates-MOCrateThresholdProb;
+                    smoothedRates(smoothedRates<0)=0;
+                    MOCattenuation(idx,segmentStartPTR:segmentEndPTR)= ...
+                        (1- smoothedRates* rateToAttenuationFactorProb);
+                end
             end
             MOCattenuation(MOCattenuation<0)=0.001;
 
@@ -1134,11 +1140,11 @@ end  % segment
 % switch AN_spikesOrProbability
 %     case 'probability'
 %         ANprobOutput=ANprobRateOutput*dt;
-%         [r c]=size(ANprobOutput);
+%         [r nEpochs]=size(ANprobOutput);
 %         % find probability of no spikes in refractory period
 %         pNoSpikesInRefrac=ones(size(ANprobOutput));
 %         pSpike=zeros(size(ANprobOutput));
-%         for epochNo=lengthAbsRefractoryP+2:c
+%         for epochNo=lengthAbsRefractoryP+2:nEpochs
 %             pNoSpikesInRefrac(:,epochNo)=...
 %                 pNoSpikesInRefrac(:,epochNo-2)...
 %                 .*(1-pSpike(:,epochNo-1))...
