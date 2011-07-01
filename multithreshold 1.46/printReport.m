@@ -78,8 +78,10 @@ header2 = strrep(header2, 'none', ' '); % none is not a useful header
 headers=strvcat([header1 '/'], header2);
 
 disp('thresholds')
-msg=printTabTable(sortTablesForPrinting(idx1,idx2,...
-    var1values,var2values, betweenRuns.thresholds),  headers);
+global resultsTable
+resultsTable= sortTablesForPrinting(idx1,idx2,...
+    var1values,var2values, betweenRuns.thresholds);
+msg=printTabTable(resultsTable,  headers);
 addToMsg(msg,0)
 fprintf('\n')
 

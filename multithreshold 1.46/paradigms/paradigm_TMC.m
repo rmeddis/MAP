@@ -13,7 +13,7 @@ experiment.psyFunSlope = -1;
 withinRuns.direction='up';
 
 betweenRuns.variableName1='gapDuration';
-betweenRuns.variableList1=[.05 .08 .02 .06 .04 ];
+betweenRuns.variableList1=[.05 .09 .01 .07 .03 ];
 betweenRuns.variableName2='targetFrequency';
 % retain existing targetFrequencies
 betweenRuns.variableList2=str2num(get(handles.edittargetFrequency,'string'));

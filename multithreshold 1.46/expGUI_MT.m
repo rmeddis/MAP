@@ -46,7 +46,7 @@ function varargout = expGUI_MT(varargin)
 
 % Edit the above text to modify the response to help expGUI_MT
 
-% Last Modified by GUIDE v2.5 29-May-2011 16:02:02
+% Last Modified by GUIDE v2.5 25-Jun-2011 21:41:35
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -610,59 +610,99 @@ end
 % ------------------------------------------------ pushbuttonRun_Callback
 function pushbuttonRun_Callback(hObject, eventdata, handles)
 global checkForPreviousGUI % holds screen positioning across repeated calls 
-global experiment betweenRuns paradigmNames
+global experiment betweenRuns paradigmNames errormsg
 checkForPreviousGUI.GUIposition=get(handles.figure1,'position');
 experiment.singleShot=0;
 switch experiment.paradigm
-    case 'thr_IFMC'
-        %% special option for two successive and linked measurements
-        clc
-        experiment.paradigm='threshold_16ms';
-        set(handles.editstopCriteriaBox,'string','30') % nTrials
-        run (handles)
-        
-        % use these threshold for IFMC
-        thresholds16ms=betweenRuns.thresholds;
-        optionNo=strmatch('IFMC_16ms',paradigmNames);
-        set(handles.popupmenuParadigm,'value',optionNo);
-        aParadigmSelection(handles)
-        set(handles.edittargetLevel,'string', thresholds16ms+10);
-        set(handles.editstopCriteriaBox,'string','30')  % nTrials
-        pause(.1) 
-        run (handles)
-        
-        % reset original paradigm
-        optionNo=strmatch('thr_IFMC',paradigmNames);
-        set(handles.popupmenuParadigm,'value',optionNo);
-        aParadigmSelection(handles)
-
-    case 'thr_TMC'
+    case 'profile'
         %% special option for two successive and linked measurements
         clc
         experiment.paradigm='threshold_16ms';
         set(handles.edittargetDuration,'string', num2str(0.25))
-        set(handles.editstopCriteriaBox,'string','30') % nTrials
+        set(handles.editstopCriteriaBox,'string','10') % nTrials
         run (handles)
         
+        if ~isempty(errormsg)
+            disp(errormsg)
+            optionNo=strmatch('profile',paradigmNames);
+            set(handles.popupmenuParadigm,'value',optionNo);
+            experiment.paradigm='profile';
+            aParadigmSelection(handles)
+            return
+        end
+        
+        global resultsTable
+        longTone=resultsTable(2:end,2:end);
+        
         set(handles.edittargetDuration,'string', num2str(0.016))
-        set(handles.editstopCriteriaBox,'string','30') % nTrials
+        set(handles.editstopCriteriaBox,'string','10') % nTrials
         run (handles)
+        if ~isempty(errormsg)
+            disp(errormsg)
+            optionNo=strmatch('profile',paradigmNames);
+            set(handles.popupmenuParadigm,'value',optionNo);
+            experiment.paradigm='profile';
+            experiment.stop=-0;
+            aParadigmSelection(handles)
+            return
+        end
+        
+        shortTone=resultsTable(2:end,2:end);
 
         % use these threshold for TMC
         thresholds16ms=betweenRuns.thresholds;
-        optionNo=strmatch('TMC_16ms',paradigmNames);
+        optionNo=strmatch('TMC',paradigmNames);
         set(handles.popupmenuParadigm,'value',optionNo);
         aParadigmSelection(handles)
         set(handles.edittargetLevel,'string', thresholds16ms+10);
-        set(handles.editstopCriteriaBox,'string','30')  % nTrials
+        set(handles.editstopCriteriaBox,'string','10')  % nTrials
         pause(.1) 
         run (handles)
         
+        if ~isempty(errormsg)
+            disp(errormsg)
+            optionNo=strmatch('profile',paradigmNames);
+            set(handles.popupmenuParadigm,'value',optionNo);
+            experiment.paradigm='profile';
+            experiment.stop=-0;
+            aParadigmSelection(handles)
+            return
+        end
+
+        TMC=resultsTable(2:end,2:end);
+        gaps=resultsTable(2:end,1);
+        BFs=resultsTable(1, 2:end);
+        
+        % use these threshold for IFMC
+        optionNo=strmatch('IFMC',paradigmNames);
+        set(handles.popupmenuParadigm,'value',optionNo);
+        aParadigmSelection(handles)
+        set(handles.edittargetLevel,'string', thresholds16ms+10);
+        set(handles.editstopCriteriaBox,'string','10')  % nTrials
+        pause(.1) 
+        run (handles)
+
+        if ~isempty(errormsg)
+            disp(errormsg)
+            optionNo=strmatch('profile',paradigmNames);
+            set(handles.popupmenuParadigm,'value',optionNo);
+            experiment.paradigm='profile';
+            experiment.stop=-0;
+            aParadigmSelection(handles)
+            return
+        end       
+
+        IFMCs=resultsTable(2:end,2:end);
+        offBFs=resultsTable(2:end,1);
+        
         % reset original paradigm
-        optionNo=strmatch('thr_TMC',paradigmNames);
+        optionNo=strmatch('profile',paradigmNames);
         set(handles.popupmenuParadigm,'value',optionNo);
         aParadigmSelection(handles)
 
+        save profile longTone shortTone gaps BFs TMC offBFs IFMCs
+        plotProfile(longTone,shortTone,gaps,BFs,TMC,offBFs,IFMCs)
+        
     otherwise
         run (handles)
         experiment.stop=0;
@@ -673,6 +713,7 @@ global experiment expGUIhandles stimulusParameters
 tic
 expGUIhandles=handles;
 set(handles.pushbuttonStop, 'backgroundColor', [.941 .941 .941])
+set(handles.editparamChanges,'visible','off')
 
 % message box white (removes any previous error message)
 set(handles.textMSG,...
@@ -1030,11 +1071,14 @@ global experiment
 option=get(handles.popupmenuEar,'value');
 options=get(handles.popupmenuEar,'string');			% left/right/model
 experiment.ear=options{option};
+set(handles.editparamChanges,'visible','off')
 switch experiment.ear
     case 'statsModelLogistic'
         set(handles.editStatsModel,'string', '15, 0.5')
     case 'statsModelRareEvent'
         set(handles.editStatsModel,'string', '20 1')
+    case {'MAPmodelListen',  'MAPmodelMultiCh', 'MAPmodelSingleCh'}
+        set(handles.editparamChanges,'visible','on')
 end
 earSetUp(handles)
 
@@ -1355,13 +1399,17 @@ pause(.1)
 drawnow
 
 function pushbuttonOME_Callback(hObject, eventdata, handles)
+global experiment
 aReadAndCheckParameterBoxes(handles);
-testOME
+testOME(experiment.name);
 
 function pushbuttonBM_Callback(hObject, eventdata, handles)
 global  stimulusParameters experiment
 aReadAndCheckParameterBoxes(handles);
-testBM(stimulusParameters.targetFrequency, experiment.name);
+relativeFrequencies=[0.25    .5   .75  1  1.25 1.5    2];
+
+testBM(stimulusParameters.targetFrequency, ...
+    experiment.name,relativeFrequencies);
 
 function pushbuttonAN_Callback(hObject, eventdata, handles)
 global stimulusParameters
@@ -1382,8 +1430,10 @@ aReadAndCheckParameterBoxes(handles);
 testSynapse
 
 function pushbuttonFM_Callback(hObject, eventdata, handles)
+global stimulusParameters experiment
 aReadAndCheckParameterBoxes(handles);
-testFM
+showPSTHs=1;
+testFM(stimulusParameters.targetFrequency(1),experiment.name, showPSTHs)
 
 function popupmenuPhase_Callback(hObject, eventdata, handles)
 global stimulusParameters
@@ -1399,8 +1449,11 @@ global experiment stimulusParameters
 aReadAndCheckParameterBoxes(handles);
 % print model parameters using the 'name' box (e.g. CTa -> MAPparamsCTa)
 showParams=1; BFlist=-1;
+paramChanges=get(handles.editparamChanges,'string');
+eval(paramChanges)
+
 paramFunctionName=['method=MAPparams' experiment.name ...
-    '(BFlist, stimulusParameters.sampleRate, showParams);'];
+    '(BFlist, stimulusParameters.sampleRate, showParams,paramChanges);'];
 eval(paramFunctionName) % go and fetch the parameters requesting parameter printout
 
 
@@ -1703,3 +1756,17 @@ end
 
 
     
+
+
+function editparamChanges_Callback(hObject, eventdata, handles)
+
+
+function editparamChanges_CreateFcn(hObject, eventdata, handles)
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+

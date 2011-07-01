@@ -1,6 +1,5 @@
-function testOME
+function testOME(paramsName)
 
-global experiment
 savePath=path;
 addpath (['..' filesep 'utilities'],['..' filesep 'MAP'])
 
@@ -34,7 +33,6 @@ frequencies=[200 400 HuberFrequencies 10000];
 for toneFrequency=frequencies
     inputSignal=amp*sin(2*pi*toneFrequency*time);
 
-    MAPparamsName=experiment.name;
     showPlotsAndDetails=0;
     AN_spikesOrProbability='probability';
     % switch off AR & MOC (Huber's patients were deaf)
@@ -44,7 +42,7 @@ for toneFrequency=frequencies
     global OMEoutput  OMEextEarPressure TMoutput ARattenuation
     % BF is irrelevant
     MAP1_14(inputSignal, sampleRate, -1, ...
-        MAPparamsName, AN_spikesOrProbability, paramChanges);
+        paramsName, AN_spikesOrProbability, paramChanges);
 
     peakDisplacement=max(OMEoutput(floor(end/2):end));
     peakResponses=[peakResponses peakDisplacement];
@@ -82,7 +80,7 @@ ylabel('dB')
 xlabel('frequency')
 set(gcf,'name','OME: external resonances')
 % ---------------------------------------------------------- display parameters
-disp(['parameter file was: ' experiment.name])
+disp(['parameter file was: ' paramsName])
 fprintf('\n')
 
 path(savePath);

@@ -2,7 +2,7 @@ function errormsg=nextStimulus(handles)
 % Handles everything concerned with the stimulus presentation
 %  called from startNewRun in subjGUI
 
-global experiment stimulusParameters withinRuns betweenRuns
+global experiment stimulusParameters withinRuns  
 experiment.status='presentingStimulus';
 errormsg='';
 
@@ -10,7 +10,8 @@ errormsg='';
 if experiment.stop
     disp('******** experiment manually stopped  *****************')
     experiment.status= 'waitingForStart';
-    addToMsg('manually stopped',1)
+    errormsg='manually stopped';
+    addToMsg(errormsg,1)
     return
 end
 

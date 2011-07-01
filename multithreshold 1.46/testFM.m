@@ -1,4 +1,4 @@
-function testFM(showPSTHs)
+function testFM(BFlist,paramsName,showPSTHs)
 %   specify whether you want AN 'probability' or 'spikes'
 %       spikes is more realistic but takes longer
 %       refractory effect is included only for spikes
@@ -10,7 +10,6 @@ function testFM(showPSTHs)
 %
 % Demonstration is based on Harris and Dallos
 
-global experiment  stimulusParameters
 global inputStimulusParams outerMiddleEarParams DRNLParams 
 global IHC_VResp_VivoParams IHCpreSynapseParams  AN_IHCsynapseParams
 
@@ -24,7 +23,6 @@ if nargin<1, showPSTHs=1;end
 sampleRate=50000;
 
 % fetch BF from GUI: use only the first target frequency
-BFlist=stimulusParameters.targetFrequency(1);
 maskerFrequency=BFlist;
 maskerDuration=.1;
 
@@ -141,13 +139,12 @@ for maskerLeveldB=maskerLevels
         
         global  ANprobRateOutput  tauCas  ...
 
-    MAPparamsName=experiment.name;
     showPlotsAndDetails=0;
 
 AN_spikesOrProbability='probability';
 
 MAP1_14(inputSignal, 1/dt, targetFrequency, ...
-    MAPparamsName, AN_spikesOrProbability);
+    paramsName, AN_spikesOrProbability);
  
     [nFibers c]=size(ANprobRateOutput);
     nLSRfibers=nFibers/length(tauCas);
@@ -235,7 +232,7 @@ xlim([0.001 1])
 legend(strvcat(num2str(maskerLevels'-thresholdAtCF)), -1)
 
 % ------------------------------------------------- display parameters
-disp(['parameter file was: ' experiment.name])
+disp(['parameter file was: ' paramsName])
 fprintf('\n')
 % UTIL_showStruct(inputStimulusParams, 'inputStimulusParams')
 % UTIL_showStruct(outerMiddleEarParams, 'outerMiddleEarParams')

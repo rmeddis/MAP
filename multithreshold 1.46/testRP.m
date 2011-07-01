@@ -180,10 +180,15 @@ for BFno=1:length(BFs)
     hold on,
     plot([min(levels) max(levels)], [restingRP restingRP], 'r')
     xlim([min(levels) max(levels)])
+    % animal data
+    sndLevel=[5	15	25	35	45	55	65	75];
+RPanimal=restingRP+[0.5	2	4.6	5.8	6.4	7.2	8	10.2]/1000;
+hold on, plot(sndLevel,RPanimal,'o')
+
     grid on
-    title(['Et= ' num2str(IHC_cilia_RPParams.Et) ':  RP (AC- / DC:'])
+    title(['Et= ' num2str(IHC_cilia_RPParams.Et) ':  RP data 7 kHz Patuzzi'])
     ylabel ('RP(V)'), xlabel('dB SPL')
-    ylim([-0.08 -0.02])
+    ylim([-0.08 -0.04])
     allIHC_RP_peak=[allIHC_RP_peak IHC_RP_peak];
     allIHC_RP_dc=[allIHC_RP_dc IHC_RP_dc];
 

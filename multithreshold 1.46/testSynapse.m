@@ -1,4 +1,4 @@
-function testSynapse
+function testSynapse(BFlist,paramsName)
 % testSynapse tracks the quantity of available transmitter vesicles
 %  the computations are single channel using the first frequency
 %  in the targetFrequency box of the expGUI.
@@ -18,7 +18,6 @@ sampleRate=5e4; dt=1/sampleRate;
 
 maskerLevels=-0:10:100;
 
-BFlist=stimulusParameters.targetFrequency(1);
 targetFrequency=stimulusParameters.targetFrequency;
 targetFrequency=targetFrequency(1); % only one frequency used
 
@@ -54,13 +53,12 @@ for leveldB=maskerLevels
     inputSignal=amp*signal;
 
     AN_spikesOrProbability='probability';
-    MAPparamsName=experiment.name;
     showPlotsAndDetails=0;
 
     global savePavailable
    
         MAP1_14(inputSignal, 1/dt, targetFrequency, ...
-            MAPparamsName, AN_spikesOrProbability);
+            paramsName, AN_spikesOrProbability);
 
     % ignore LSR channels (if any) at the top of the matrix
     qt=savePavailable(end, :);

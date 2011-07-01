@@ -5,15 +5,13 @@ function  MAP1_14(inputSignal, sampleRate, BFlist, MAPparamsName, ...
 %
 % All arguments are mandatory.
 %
-% BFlist is a list of BFs but can be '-1' to allow MAPparams to choose
-%
-
-%  MAPparamsName='Normal'; % source of model parameters
+%  BFlist is a vector of BFs but can be '-1' to allow MAPparams to choose
+%  MAPparamsName='Normal';          % source of model parameters
 %  AN_spikesOrProbability='spikes'; % or 'probability'
 %  paramChanges is a cell array of strings that can be used to make last
 %   minute parameter changes, e.g., to simulate OHC loss
-%   paramChanges{1}= 'DRNLParams.a=0;';
-
+%  e.g.  paramChanges{1}= 'DRNLParams.a=0;'; % disable OHCs
+%  e.g.  paramchanges={};                    % no changes
 % The model parameters are established in the MAPparams<***> file
 %  and stored as global
 
@@ -60,11 +58,11 @@ if nargin<6
     paramChanges=[];
 end
 % Read parameters from MAPparams<***> file in 'parameterStore' folder
+% Beware, 'BFlist=-1' is a legitimate argument for MAPparams<>
+%  It means that the calling program allows MAPparams to specify the list
 cmd=['method=MAPparams' MAPparamsName ...
     '(BFlist, sampleRate, 0, paramChanges);'];
 eval(cmd);
-% Beware, 'BFlist=-1' is a legitimate argument for MAPparams<>
-%  if the calling program allows MAPparams to specify the list
 BFlist=DRNLParams.nonlinCFs;
 
 % save as global for later plotting if required

@@ -1,4 +1,4 @@
-function testBM (BMlocations, paramsName)
+function testBM (BMlocations, paramsName,relativeFrequencies)
 % testBM generates input output functions for DRNL model for any number
 % of locations.
 % Computations are bast on a single channel model (channelBFs=BF)
@@ -18,9 +18,6 @@ addpath (['..' filesep 'utilities'],['..' filesep 'MAP'])
 levels=-10:10:90;   nLevels=length(levels);
 % levels= 50;   nLevels=length(levels);
 
-relativeFrequencies=[0.25    .5   .75  1  1.25 1.5    2];
-relativeFrequencies=1;
-
 % refBMdisplacement is the displacement of the BM at threshold
 % 1 nm disp at  threshold (9 kHz, Ruggero)
 refBMdisplacement= 1e-8;            % adjusted for 10 nm at 1 kHz
@@ -35,6 +32,7 @@ dbstop if error
 figure(3), clf
 set(gcf,'position',[280   350   327   326])
 set(gcf,'name','DRNL - BM')
+pause(0.1)
 
 finalSummary=[];
 nBFs=length(BMlocations);
@@ -80,8 +78,7 @@ for BF=BMlocations
             %% run the model
             MAPparamsName=paramsName;
             AN_spikesOrProbability='probability';
-            % spikes are slow but can be used to study MOC using IC units
-            AN_spikesOrProbability='spikes';
+%             AN_spikesOrProbability='spikes';
 
             global DRNLoutput MOCattenuation ARattenuation
             MAP1_14(inputSignal, sampleRate, BF, ...

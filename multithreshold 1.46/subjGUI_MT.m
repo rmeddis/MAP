@@ -35,7 +35,7 @@ varargout{1} = handles.output;
 function initializeGUI(handles)
 global experiment
 global subjectGUIHandles expGUIhandles
-        addpath (['..' filesep 'MAP'], ['..' filesep 'utilities'], ...
+addpath (['..' filesep 'MAP'], ['..' filesep 'utilities'], ...
     ['..' filesep 'parameterStore'],  ['..' filesep 'wavFileStore'],...
     ['..' filesep 'testPrograms'])
 
@@ -52,9 +52,7 @@ switch experiment.ear
         set(gcf, 'units','pixels')
         y=[0*scrnsize(3) 0.8*scrnsize(4) 0.1*scrnsize(3) 0.2*scrnsize(4)];
         set(gcf,'position',y, 'color',[.871 .961 .996])
-        
 
-        
     case 'MAPmodelListen',
         % 	subjectGUI is needed for display purposes. Make it large
         set(gcf, 'units','pixels')
@@ -69,74 +67,8 @@ switch experiment.ear
         buttonBoxIntitialize		% harmless if no button box attached
 end
 
-% function varargout = subjGUI_MT(varargin)
-% 
-% % Begin initialization code - DO NOT EDIT
-% gui_Singleton = 1;
-% gui_State = struct('gui_Name',       mfilename, ...
-%     'gui_Singleton',  gui_Singleton, ...
-%     'gui_OpeningFcn', @subjGUI_MT_OpeningFcn, ...
-%     'gui_OutputFcn',  @subjGUI_MT_OutputFcn, ...
-%     'gui_LayoutFcn',  [] , ...
-%     'gui_Callback',   []);
-% if nargin && isstr(varargin{1})
-%     gui_State.gui_Callback = str2func(varargin{1});
-% end
-% 
-% if nargout
-%     [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
-% else
-%     gui_mainfcn(gui_State, varargin{:});
-% end
-% % End initialization code - DO NOT EDIT
-% 
-% % --- Executes just before subjGUI_MT is made visible.
-% function subjGUI_MT_OpeningFcn(hObject, eventdata, handles, varargin)
-% 
-% % Choose default command line output for subjGUI_MT
-% handles.output = hObject;
-% initializeGUI(handles)
-% guidata(hObject, handles);
-% 
-% function varargout = subjGUI_MT_OutputFcn(hObject, eventdata, handles)
-% % Get default command line output from handles structure
-% varargout{1} = handles.output;
-% 
-% % -----------------------------------------------------initializeGUI
-% function initializeGUI(handles)
-% global experiment
-% global subjectGUIHandles expGUIhandles
-% 
-% dbstop if error
-% 
-% % subjectGUI size and location         % [left bottom width height]
-% scrnsize=get(0,'screensize');
-% set(0, 'units','pixels')
-% switch experiment.ear
-%     % use default size unless...
-%     case {'MAPmodel',  'MAPmodelMultiCh','MAPmodelSingleCh',  ...
-%             'statsModelLogistic','statsModelRareEvent'}
-%         % 	subjectGUI not needed for modelling so minimize subject GUI
-%         set(gcf, 'units','pixels')
-%         y=[0*scrnsize(3) 0.8*scrnsize(4) 0.1*scrnsize(3) 0.2*scrnsize(4)];
-%         set(gcf,'position',y, 'color',[.871 .961 .996])
-%         
-%     case 'MAPmodelListen',
-%         % 	subjectGUI is needed for display purposes. Make it large
-%         set(gcf, 'units','pixels')
-%         y=[.665*scrnsize(3) 0.02*scrnsize(4) ...
-%             0.33*scrnsize(3) 0.5*scrnsize(4)]; % alongside
-%         set(gcf,'position',y, 'color',[.871 .961 .996])
-% end
-% 
-% switch experiment.ear
-%     case{'left', 'right','diotic', 'dichoticLeft','dichoticRight'}
-%         % Look to see if the button box exists and, if so, initialise it
-%         buttonBoxIntitialize		% harmless if no button box attached
-% end
-
 % clear display of previous mean values. This is a new measurement series
-axes(expGUIhandles.axes4), cla           
+axes(expGUIhandles.axes4), cla
 reset (expGUIhandles.axes4)
 
 % handles needed in non-callback routines below
@@ -182,7 +114,7 @@ switch experiment.paradigm
         set(handles.pushbutton2,'string','uncomfortable')
         set(handles.pushbutton1,'string','loud')
         set(handles.pushbutton0,'string','comfortable')
-            experiment.allowCatchTrials=0;
+        experiment.allowCatchTrials=0;
 end
 
 % experiment.subjGUIfontSize is set on expGUI
@@ -209,13 +141,13 @@ experiment.pleaseRepeat=0;      % status of 'repeat' button
 experiment.buttonBoxStatus='not busy';
 
 % date and time and replace ':' with '_'
-date=datestr(now);idx=findstr(':',date);date(idx)='_'; 
+date=datestr(now);idx=findstr(':',date);date(idx)='_';
 experiment.date=date;
 timeNow=clock; betweenRuns.timeNow= timeNow;
 experiment.timeAtStart=[num2str(timeNow(4)) ':' num2str(timeNow(5))];
-experiment.minElapsed=0; 
+experiment.minElapsed=0;
 
-% unpack catch trial rates. The rate declines from the start rate 
+% unpack catch trial rates. The rate declines from the start rate
 %  to the base rate using a time constant.
 stimulusParameters.catchTrialRate=stimulusParameters.catchTrialRates(1);
 stimulusParameters.catchTrialBaseRate=...
@@ -265,7 +197,7 @@ eval(['variableList2=stimulusParameters.' betweenRuns.variableName2 ';']);
 nVar1=length(variableList1);
 nVar2=length(variableList2);
 
-% Create two sequence vectors to represent the sequence of var1 and var2 
+% Create two sequence vectors to represent the sequence of var1 and var2
 % values. 'var1' changes most rapidly.
 switch betweenRuns.randomizeSequence
     case 'fixed sequence'
@@ -289,8 +221,8 @@ switch betweenRuns.randomizeSequence
         [x idx]=sort(ranNums);
         var1Sequence=var1Sequence(idx);
         var2Sequence=var2Sequence(idx);
-        % there should be one start value for every combination 
-        %  of var1/ var2. In principle this allows these values to be 
+        % there should be one start value for every combination
+        %  of var1/ var2. In principle this allows these values to be
         % programmed. Not currently in use.
         stimulusParameters.WRVstartValues=...
             stimulusParameters.WRVstartValues(idx);
@@ -304,14 +236,14 @@ betweenRuns.caughtOut=zeros(1,length(var1Sequence));
 disp('planned sequence:')
 if min(var1Sequence)>1
     % use decidaml places only if necessary
-disp([betweenRuns.variableName1 ': ' num2str(var1Sequence,'%6.0f')  ])
+    disp([betweenRuns.variableName1 ': ' num2str(var1Sequence,'%6.0f')  ])
 else
-disp([betweenRuns.variableName1 ': ' num2str(var1Sequence,'%8.3f')  ])
+    disp([betweenRuns.variableName1 ': ' num2str(var1Sequence,'%8.3f')  ])
 end
 if min(var1Sequence)>1
-disp([betweenRuns.variableName2 ': ' num2str(var2Sequence,'%6.0f') ])
+    disp([betweenRuns.variableName2 ': ' num2str(var2Sequence,'%6.0f') ])
 else
-disp([betweenRuns.variableName2 ': ' num2str(var2Sequence,'%8.3f') ])
+    disp([betweenRuns.variableName2 ': ' num2str(var2Sequence,'%8.3f') ])
 end
 
 fprintf('\nvariable1 \t  variable2\t  \n')
@@ -331,7 +263,7 @@ switch experiment.ear
         set(handles.textMSG,'backgroundcolor', 'w')
         msg=[{'Ready to start new Experiment'}, {' '}, {'Please, click on the GO button'}];
         set(handles.textMSG,'string', msg)
-        
+
         set(handles.pushbuttoNotSure,'visible','off')
         set(handles.pushbuttonWrongButton,'visible','off')
         set(handles.pushbutton3,'visible','off')
@@ -350,9 +282,9 @@ switch experiment.ear
         stimulusParameters.calibrationdB=0;             % Pascals required!
         MAPmodelRunsGUI(handles)
         % model is now the subject
-    case  {'statsModelLogistic', 'statsModelRareEvent'}	
+    case  {'statsModelLogistic', 'statsModelRareEvent'}
         % no catch trials for the statistical model
-        stimulusParameters.catchTrialBaseRate=0;		
+        stimulusParameters.catchTrialBaseRate=0;
         stimulusParameters.catchTrialRate=0;
         statsModelRunsGUI(handles)
     otherwise
@@ -372,7 +304,7 @@ function startNewRun(handles)
 %  MAP and randomization methods call this too
 
 global experiment stimulusParameters betweenRuns withinRuns expGUIhandles
-global LevittControl rareEvent
+global LevittControl rareEvent errormsg
 
 figure(handles.figure1) % guarantee subject GUI visibility
 
@@ -447,12 +379,6 @@ end
 
 errormsg=nextStimulus(handles);				% get the show on the road
 
-% switch experiment.paradigm
-%     case 'SRT'
-%         set(handles.editdigitInput,'visible','on')
-%         uicontrol(handles.editdigitInput)
-% end
-
 % terminate if there is any kind of problem
 if ~isempty(errormsg)
     % e.g. limits exceeded, clipping
@@ -460,11 +386,12 @@ if ~isempty(errormsg)
     runCompleted(handles)
     return
 end
-
 % return route is variable (see intro to this function)
 
 % -----------------------------------------------------buttonBox_callback
 function buttonBox_callback(obj, info)
+% deals with a button press on the button box.
+
 global experiment
 global serobj
 global subjectGUIHandles
@@ -472,10 +399,9 @@ global subjectGUIHandles
 % do not accept callback if one is already in process
 if strcmp(experiment.buttonBoxStatus,'busy')
     disp(' ignored button press')
-    return
+    return % to quiescent state
 end
 experiment.buttonBoxStatus='busy';
-% fclose(serobj)
 
 % identify the code of the button pressed
 buttonPressedNo = fscanf(serobj,'%c',1);
@@ -483,12 +409,12 @@ buttonPressedNo = fscanf(serobj,'%c',1);
 % This is the map from the button to the Cedrus codes
 switch experiment.buttonBoxType
     case 'horizontal'
-        pbGo='7'; 		pb0='1';		
-        pb1='2';		pb2='3';		
+        pbGo='7'; 		pb0='1';
+        pb1='2';		pb2='3';
         pbRepeat='4';	pbWrong='6';	pbBlank='5';
     case 'square'
-        pbGo='7';		pb0='1';		
-        pb1='3';		pb2='4';		
+        pbGo='7';		pb0='1';
+        pb1='3';		pb2='4';
         pbRepeat='8';	pbWrong='6';	pbBlank='5';
 end
 
@@ -497,7 +423,7 @@ switch experiment.status
     case {'presentingStimulus', 'waitingForStart', 'trialcompleted', ...
             'endOfExperiment'}
         disp(' ignored button press')
-        
+
     case 'waitingForGO'
         % i.e. waiting for new run
         if strcmp(buttonPressedNo,pbGo)			% only GO button  accepted
@@ -505,7 +431,7 @@ switch experiment.status
         else
             disp(' ignored button press')
         end
-        
+
     case 'waitingForResponse'
         % response to stimuli
         switch buttonPressedNo
@@ -522,11 +448,11 @@ switch experiment.status
                             'defaultUicontrolBackgroundColor'))
                         userSelects0or1(subjectGUIHandles)
                 end
-                
+
             case pb1						% button 1 (bottom left)
                 switch experiment.threshEstMethod
                     case {'2I2AFC++', '2I2AFC+++'}
-                        userSelects0or1(subjectGUIHandles)   
+                        userSelects0or1(subjectGUIHandles)
                     otherwise
                         set(subjectGUIHandles.pushbutton1,...
                             'backgroundcolor','r')
@@ -536,7 +462,7 @@ switch experiment.status
                             'defaultUicontrolBackgroundColor'))
                         userSelects0or1(subjectGUIHandles)
                 end
-                
+
             case pb2						% button 2 (bottom right)
                 switch experiment.threshEstMethod
                     case {'2I2AFC++', '2I2AFC+++'}
@@ -550,13 +476,13 @@ switch experiment.status
                             'defaultUicontrolBackgroundColor'))
                         userSelects2 (subjectGUIHandles)
                 end
-                
+
             case pbRepeat                   % extreme right button
                 switch experiment.threshEstMethod
                     case {'2I2AFC++', '2I2AFC+++'}
                         disp(' ignored button press')
                     otherwise
-                        
+
                         set(subjectGUIHandles.pushbuttoNotSure,...
                             'backgroundcolor','r')
                         pause(.1)
@@ -565,21 +491,16 @@ switch experiment.status
                             'defaultUicontrolBackgroundColor'))
                         userSelectsPleaseRepeat (subjectGUIHandles)
                 end
-                
+
             case {pbWrong, pbBlank}
                 disp(' ignored button press')
-                
+
             otherwise						% unrecognised button
                 disp('ignored button press')
         end									% end (button press number)
     otherwise
         disp('ignored button press')
 end											% experiment status
-
-% All processing returns through here. 
-% 	fopen(serobj);		% flushes the input buffer
-
-% buttonPressedNo = fscanf(serobj,'%c',1);
 
 % button box remains 'busy' until after the stimulus has been presented
 experiment.buttonBoxStatus='not busy';
@@ -599,7 +520,9 @@ global experiment
 % This is a mouse click path
 
 % ignore 0 button if 2I2AFC used
-if findstr(experiment.threshEstMethod,'2I2AFC'), return, end   	
+if findstr(experiment.threshEstMethod,'2I2AFC')
+    return  % to quiescent state
+end
 
 % userDoesNotHearTarget(handles)		% only possible interpretation
 userDecides(handles, false)
@@ -637,7 +560,7 @@ userSelects0or1(handles)				% after digit string input
 function userSelects0or1(handles)
 global experiment withinRuns
 
-switch experiment.threshEstMethod			
+switch experiment.threshEstMethod
     case {'2I2AFC++', '2I2AFC+++'}
         switch withinRuns.stimulusOrder
             case 'targetFirst';
@@ -657,7 +580,7 @@ end
 % ----------------------------------------------------- userSelects2
 function userSelects2(handles)
 global experiment withinRuns
-switch experiment.threshEstMethod			
+switch experiment.threshEstMethod
     case {'2I2AFC++', '2I2AFC+++'}
         switch withinRuns.stimulusOrder
             case 'targetSecond';
@@ -676,20 +599,21 @@ end
 % ----------------------------------------------------- ---- userDecides
 function userDecides(handles, saidYes)
 global experiment stimulusParameters betweenRuns withinRuns
-global rareEvent logistic psy levelsBinVector
+global rareEvent logistic psy levelsBinVector errormsg
 
 if experiment.singleShot
-    return
+    return  % not clear why this should be here
 end
 
 % ignore click if not 'waitingForResponse'
 if ~strcmp(experiment.status,'waitingForResponse')
     disp('ignored click')
-    return
+    return % to userSelects
 end
 
 % speech reception threshold
 if strcmp(stimulusParameters.targetType,'digitStrings')
+    % read triple digits from userGUI
     digitsInput=get(handles.editdigitInput,'string');
     % must be three digits
     if ~(length(digitsInput)==3)
@@ -697,26 +621,21 @@ if strcmp(stimulusParameters.targetType,'digitStrings')
         set(handles.textMSG,'string', 'Wrong no of digits', ...
             'BackgroundColor','r', 'ForegroundColor', 'w')
         set(handles.editdigitInput,'string','')
-
         return
     end
     % obtain correct answer from file name
     x=stimulusParameters.digitString;
     idx=find(x=='O'); x(idx)='0'; % replace 'oh' with zero
-
     disp([x '   ' digitsInput])
-
     if x==digitsInput
-        saidYes=1;
+        saidYes=1;  % i.e. correct response
     else
-        saidYes=0;
+        saidYes=0;  % i.e  wrong response
     end
-set(handles.editdigitInput,'string','')
-set(handles.editdigitInput,'visible','off')
-pause(0.1)
+    set(handles.editdigitInput,'string','')
+    set(handles.editdigitInput,'visible','off')
+    pause(0.1)
 end
-
-
 
 % no button presses accepted while processing
 experiment.status='processingResponse';
@@ -726,21 +645,21 @@ if withinRuns.catchTrial
     if saidYes
         disp('catch trial - caught out')
         withinRuns.caughtOut=withinRuns.caughtOut+1;
-        
-        % special: estimate caught out rate by allowing the trial 
+
+        % special: estimate caught out rate by allowing the trial
         %  to continue after catch
         if stimulusParameters.catchTrialBaseRate==0.5
-            %  To use this facility, set the catchTrialRate and the 
+            %  To use this facility, set the catchTrialRate and the
             %   catchTrialBaseRate both to 0.5
             %    update false positive rate
             betweenRuns.caughtOut(betweenRuns.runNumber)=...
-                withinRuns.caughtOut;         
+                withinRuns.caughtOut;
             plotProgressThisTrial(handles)
             nextStimulus(handles);
             return
         end
-        
-        % Punishment: restart the trial
+
+        % Punishment: caught out restarts the trial
         set(handles.frame1,'backgroundColor','r')
         set(handles.pushbuttonGO, ...
             'visible','on', 'backgroundcolor','y') % and go again
@@ -749,28 +668,29 @@ if withinRuns.catchTrial
         set(handles.textMSG,'string',msg)
         [y,fs]=wavread('ding.wav');
         wavplay(y/100,fs)
-        
-        % raise catch trial rate temporarily. 
+
+        % raise catch trial rate temporarily.
         %  this is normally reduced on each new trial (see GO)
         stimulusParameters.catchTrialRate=...
             stimulusParameters.catchTrialRate+0.1;
-        if stimulusParameters.catchTrialRate>0.5 
-            stimulusParameters.catchTrialRate=0.5; 
+        if stimulusParameters.catchTrialRate>0.5
+            stimulusParameters.catchTrialRate=0.5;
         end
         fprintf('stimulusParameters.catchTrialRate= %6.3f\n', ...
             stimulusParameters.catchTrialRate)
-        
+
         betweenRuns.caughtOut(betweenRuns.runNumber)=...
             1+betweenRuns.caughtOut(betweenRuns.runNumber);
         betweenRuns.runNumber=betweenRuns.runNumber-1;
         experiment.status='waitingForGO';
         return % unwind and wait for button press
     else % (said No)
-        % user claims not to have heard target. fortunate as it was not
-        %  present. So, repeat the stimulus (possibly with target)
+        % user claims not to have heard target.
+        % This is good as it was not present.
+        % So, repeat the stimulus (possibly with target)
         %  and behave as if the last trial did not occur
         errormsg=nextStimulus(handles);
-        
+
         % terminate if there is any kind of problem
         if ~isempty(errormsg)
             % e.g. limits exceeded, clipping
@@ -780,9 +700,9 @@ if withinRuns.catchTrial
         end
         return      % no further action - next trial
     end
-end
+end     % of catch trial
 
-% This section analyses the responses, makes tracks and defines next stim.
+% Real target: analyse the response, make tracks and define next stim.
 
 % Define response and update response list
 if saidYes
@@ -799,7 +719,7 @@ trialNumber=length(withinRuns.responseList);
 % identify direction of change during initial period
 if saidYes
     % default step size before first reversal
-    WRVinitialStep=-stimulusParameters.WRVinitialStep; 
+    WRVinitialStep=-stimulusParameters.WRVinitialStep;
     WRVsmallStep=-stimulusParameters.WRVsmallStep;
     % if the previous direction was 'less difficult', this must be a peak
     if strcmp(withinRuns.direction,'less difficult') ...
@@ -807,13 +727,12 @@ if saidYes
         withinRuns.peaks=[withinRuns.peaks withinRuns.variableValue];
     end
     withinRuns.direction='more difficult';
-    
 else
     % said 'no'
     % default step size before first reversal
-    WRVinitialStep=stimulusParameters.WRVinitialStep; 
+    WRVinitialStep=stimulusParameters.WRVinitialStep;
     WRVsmallStep=stimulusParameters.WRVsmallStep;
-    
+
     % if the previous direction was 'up', this must be a peak
     if strcmp(withinRuns.direction,'more difficult') ...
             && length(withinRuns.levelList)>1
@@ -822,12 +741,11 @@ else
     withinRuns.direction='less difficult';
 end
 
-% phase 2 is all the levels after and incuding the first reversal 
+% phase 2 is all the levels after and incuding the first reversal
 %  plus the level before that
+% Look for the end of phase 1
 if ~withinRuns.nowInPhase2 && length(withinRuns.peaks)+ ...
         length(withinRuns.troughs)>0
-% if ~withinRuns.nowInPhase2 && (~isempty(withinRuns.peaks) ...
-%         || ~isempty(withinRuns.troughs))
     % define phase 2
     withinRuns.beginningOfPhase2=trialNumber-1;
     withinRuns.nowInPhase2=1;
@@ -844,7 +762,6 @@ else
     withinRuns.levelsPhaseTwo=[];
 end
 
-
 % get (or substitute) threshold estimate
 switch experiment.threshEstMethod
     case {'2I2AFC++', '2I2AFC+++'}
@@ -854,13 +771,14 @@ switch experiment.threshEstMethod
                 bestFitPsychometicFunctions...
                 (withinRuns.levelsPhaseTwo,  withinRuns.responsesPhaseTwo);
         end
-        
+
         if ~isempty(withinRuns.peaks) && ~isempty(withinRuns.troughs)
             thresholdEstimate= ...
                 mean([mean(withinRuns.peaks) mean(withinRuns.troughs)]);
         else
             thresholdEstimate=NaN;
         end
+
     otherwise
         % single interval methods
         try
@@ -916,16 +834,16 @@ switch experiment.threshEstMethod
         else
             [WRVinitialStep, msg]=Levitt2('miss',withinRuns.variableValue);
         end
-        
+
         % empty message means continue as normal
-        if ~isempty(msg)				
+        if ~isempty(msg)
             runCompleted(handles)
             return
         end
         newWRVvalue=withinRuns.variableValue-WRVinitialStep;
-        
+
     case {'MaxLikelihood', 'oneIntervalUpDown'}
-        % run completed by virtue of number of trials               
+        % run completed by virtue of number of trials
         % or restart because listener is in trouble
         if length(withinRuns.levelsPhaseTwo)== experiment.maxTrials
             % Use bonomial test to decide if there is an imbalance in the
@@ -952,14 +870,14 @@ switch experiment.threshEstMethod
                 return
             end
         end
-        
+
         % set new value for WRV
         if withinRuns.nowInPhase2
             % phase 2
             currentMeanEst=withinRuns.thresholdEstimateTrack(end);
             switch experiment.threshEstMethod
                 case 'MaxLikelihood'
-                    newWRVvalue=currentMeanEst;                    
+                    newWRVvalue=currentMeanEst;
                 case {'oneIntervalUpDown'}
                     newWRVvalue=withinRuns.variableValue+WRVsmallStep;
             end
@@ -1013,7 +931,7 @@ if ~strcmp(experiment.status,'waitingForResponse')
     disp('ignored click')
     return
 end
-% Take no action other than to make a 
+% Take no action other than to make a
 %  tally of repeat requests
 experiment.pleaseRepeat=experiment.pleaseRepeat+1;
 withinRuns.thisIsRepeatTrial=1;
@@ -1024,7 +942,7 @@ function userSelectsWrongButton(handles)
 global withinRuns experiment
 % restart is the simplest solution for a 'wrong button' request
 withinRuns.wrongButton=withinRuns.wrongButton+1;
-set(handles.pushbuttonGO, 'visible','on', 'backgroundcolor','y') 
+set(handles.pushbuttonGO, 'visible','on', 'backgroundcolor','y')
 msg=[{'Start again: wrong button pressed'}, {' '},...
     {'Please,click on the GO button'}];
 set(handles.textMSG,'string',msg)
@@ -1032,11 +950,10 @@ experiment.status='waitingForGO';
 
 % ------------------------------------------------- plotProgressThisTrial
 function plotProgressThisTrial(handles)
+% updates GUI: used for all responses
 
-% used for all responses
 global experiment stimulusParameters betweenRuns withinRuns expGUIhandles
 global  psy levelsBinVector binFrequencies rareEvent logistic statsModel
-
 
 % plot the levelTrack and the threshold track
 
@@ -1070,9 +987,8 @@ ylim(stimulusParameters.WRVlimits)
 grid on
 
 % Panel 4: Summary of threshold estimates (not used here)
-% Earlier estimates are set in 'runCompleted'
-% However, title shows runs/trials remaining
-
+% Estimates from previous runs are set in 'runCompleted'
+% It is only necessary to change title showing runs/trials remaining
 axes(expGUIhandles.axes4)
 runsToGo=length(betweenRuns.var1Sequence)-betweenRuns.runNumber;
 if withinRuns.beginningOfPhase2>0
@@ -1096,12 +1012,12 @@ switch experiment.threshEstMethod
                 withinRuns.levelList(withinRuns.beginningOfPhase2:end);
             withinRuns.responsesPhaseTwo=...
                 withinRuns.responseList(withinRuns.beginningOfPhase2:end);
-            
+
             % organise data as psychometric function
             [psy, levelsBinVector, binFrequencies]= ...
                 psychometricFunction(withinRuns.levelsPhaseTwo,...
                 withinRuns.responsesPhaseTwo, experiment.psyBinWidth);
-            
+
             % Plot the function
             %   point by point with circles of appropiate weighted size
             hold on,
@@ -1112,25 +1028,20 @@ switch experiment.threshEstMethod
             % save info for later
             betweenRuns.psychometicFunction{betweenRuns.runNumber}=...
                 [levelsBinVector; psy];
-            
+
             % fitPsychometric functions is  computed in 'userDecides'
             % plot(rareEvent.predictionLevels, rareEvent.predictionsRE,'k')
             plot(logistic.predictionLevels, logistic.predictionsLOG, 'r')
             plot(rareEvent.predictionLevels, rareEvent.predictionsRE, 'k')
             if ~isnan(logistic.bestThreshold )
-%                 xlim([ (logistic.bestThreshold -20) ...
-%                     (logistic.bestThreshold +20) ])
                 xlim([ 0 100 ])
-%                 if logistic.bestK< max(experiment.possLogSlopes)
-                    title(['k= ' num2str(logistic.bestK, '%6.2f') ' g= '...
-                        num2str(rareEvent.bestGain,'%6.3f') '  A=' ...
-                        num2str(rareEvent.bestVMin,'%8.1f')])
-%                     title('')
-%                 end
+                title(['k= ' num2str(logistic.bestK, '%6.2f') ' g= '...
+                    num2str(rareEvent.bestGain,'%6.3f') '  A=' ...
+                    num2str(rareEvent.bestVMin,'%8.1f')])
             else
                 title(' ')
             end
-            
+
             switch experiment.ear
                 %plot green line for statsModel a priori model
                 case 'statsModelLogistic'
@@ -1150,8 +1061,8 @@ switch experiment.threshEstMethod
                     hold on,    plot(levelsBinVector, p,'g')
             end %(estMethod)
         end
+
     otherwise           % 2A2IFC
-        
         message3= ...
             ([ 'peaks='  num2str(withinRuns.peaks) ...
             'troughs='  num2str(withinRuns.troughs)]);
@@ -1191,7 +1102,7 @@ global rareEvent expGUIhandles
 % disp('run completed')
 
 experiment.status='runCompleted';
-
+% quick update after final trial just to make sure
 plotProgressThisTrial(handles)
 
 switch experiment.ear
@@ -1226,7 +1137,7 @@ else
     [psy, levelsPhaseTwoBinVector, logistic, rareEvent]= ...
         bestFitPsychometicFunctions...
         (withinRuns.levelsPhaseTwo, withinRuns.responsesPhaseTwo);
-    
+
     % plot final psychometric function
     axes(expGUIhandles.axes5),cla
     hold on, plot(rareEvent.predictionLevels, rareEvent.predictionsRE, 'k')
@@ -1242,26 +1153,25 @@ else
             'markersize', 50*binFrequencies(i)/sum(binFrequencies))
     end
 
-    
     % experimental
     medianThreshold=median(withinRuns.levelsPhaseTwo);
     warning off
     meanThreshold=mean(withinRuns.levelsPhaseTwo);
-    
+
     % identify the current threshold estimate
     switch experiment.paradigm
         case 'discomfort'
             % most recent value (not truely a mean value)
             threshold=withinRuns.levelList(end);
-            stdev=NaN;            
+            stdev=NaN;
         otherwise
             switch experiment.threshEstMethod
                 case {'MaxLikelihood', 'oneIntervalUpDown'}
                     % last value in the list
-%                     threshold=withinRuns.meanEstTrack(end);
+                    %                     threshold=withinRuns.meanEstTrack(end);
                     threshold=withinRuns.thresholdEstimateTrack(end);
                     stdev=NaN;
-                    
+
                 case {'2I2AFC++', '2I2AFC+++'}
                     % use peaks and troughs
                     try		% there may not be enough values to use
@@ -1300,7 +1210,7 @@ betweenRuns.catchTrials=...
 % add variable length tracks to cell arrays
 if withinRuns.beginningOfPhase2>0
     betweenRuns.bestThresholdTracks{length(betweenRuns.thresholds)}=...
-        withinRuns.thresholdEstimateTrack;   
+        withinRuns.thresholdEstimateTrack;
     betweenRuns.levelTracks{length(betweenRuns.thresholds)}=...
         withinRuns.levelList(withinRuns.beginningOfPhase2:end);
     betweenRuns.responseTracks{length(betweenRuns.thresholds)}=...
@@ -1338,9 +1248,6 @@ for i=1:length(betweenRuns.thresholds)
     switch betweenRuns.variableName1
         case {'targetFrequency', 'maskerRelativeFrequency'}
             if min(betweenRuns.var1Sequence)>0
-                %             semilogx(betweenRuns.var1Sequence(1:betweenRuns.runNumber), ...
-                %                 betweenRuns.thresholds,  'o', ...
-                %                 'markerSize', 5,'markerFaceColor',faceColor)
                 semilogx(betweenRuns.var1Sequence(i), ...
                     betweenRuns.thresholds(i),  'o', ...
                     'markerSize', 5,'markerFaceColor',faceColor)
@@ -1353,9 +1260,6 @@ for i=1:length(betweenRuns.thresholds)
                     'markerSize', 5,'markerFaceColor',faceColor)
             end
         otherwise
-            %         plot(betweenRuns.var1Sequence(1:betweenRuns.runNumber),  ...
-            %             betweenRuns.thresholds,  'o', 'markerSize', 5,...
-            %             'markerFaceColor',faceColor)
             plot(betweenRuns.var1Sequence(i),  ...
                 betweenRuns.thresholds(i),  'o', 'markerSize', 5,...
                 'markerFaceColor',faceColor)
@@ -1374,25 +1278,14 @@ catch
 end
 grid on, set(gca,'XMinorGrid', 'off')
 
-% If comparison data is available in pearmeter file, plot it now
-if ~isempty (experiment.comparisonData)
-    comparisonData=experiment.comparisonData(:,1:end-1); % ignore final BF
-    [x, ncols]=size(comparisonData);
-    if  length(betweenRuns.variableList1)==ncols
-        hold on
-        plot (sort(betweenRuns.variableList1), comparisonData, 'r')
-        hold off
-    end
-end
-
-% End of the Experiment also?
+% final run?
 if betweenRuns.runNumber==length(betweenRuns.var1Sequence)
     % yes, end of experiment
     fileName=['savedData/' experiment.name experiment.date ...
         experiment.paradigm];
     % 	save (fileName, 'experiment', 'stimulusParameters', 'betweenRuns', 'withinRuns', 'variableNames', 'paradigmNames', 'LevittControl')
     disp('Experiment completed')
-    
+
     % update subject GUI to acknowledge end of run
     subjGUImsg=[{'Experiment completed'}, {' '}, {'Thank you!'}];
     set(handles.textMSG,'string', subjGUImsg   )
@@ -1401,12 +1294,12 @@ if betweenRuns.runNumber==length(betweenRuns.var1Sequence)
     musicGain=10^(stimulusParameters.musicLeveldB/20);
     y=y*musicGain;
     wavplay(y/100,fs, 'async')
-    
+
     % update experimenter GUI
     addToMsg('Experiment completed.',1)
-    
+
     printReport
-    experiment.status='endOfExperiment';  
+    experiment.status='endOfExperiment';
     return
 else
     % No, hang on.
@@ -1423,9 +1316,9 @@ else
                 *(1-exp(-stimulusParameters.catchTrialTimeConstant));
             fprintf('stimulusParameters.catchTrialRate= %6.3f\n', ...
                 stimulusParameters.catchTrialRate)
-            
+
             % and go again
-            set(handles.pushbuttonGO,'backgroundcolor','y') 
+            set(handles.pushbuttonGO,'backgroundcolor','y')
             set(handles.frame1,'visible','off')
             set(handles.pushbuttonGO,'visible','on')
             msg=[{'Ready to start new trial'}, {' '},...
@@ -1434,7 +1327,7 @@ else
     end
     experiment.status='waitingForGO';
     %     fprintf('\n')
-    
+
     [y,fs,nbits]=wavread('CHIMES.wav');
     musicGain=10^(stimulusParameters.musicLeveldB/20);
     y=y*musicGain;
@@ -1448,69 +1341,48 @@ global experiment stimulusParameters method expGUIhandles
 global AN_IHCsynapseParams
 method=[];
 
-while strcmp(experiment.status,'waitingForGO') 
+while strcmp(experiment.status,'waitingForGO')
     % no catch trials for MAP model
     experiment.allowCatchTrials=0;
-    
-    % initiates run and plays first stimulus and it returns 
-    %  without waiting for button press
-    startNewRun(handles)	
 
-    if sum(strcmp(experiment.ear,...
-            {'MAPmodelMultiCh', 'MAPmodelListen'}))
-        % use BFlist specified in MAPparams file
-        BFlist= -1;
-    else
-        BFlist=stimulusParameters.targetFrequency;
-    end
-    showParams=0;
-    %  find model parameters using the 'name' box (e.g. CTa ->MAPparamsCTa)
-    paramFunctionName=['method=MAPparams' experiment.name ...
-        '(BFlist, stimulusParameters.sampleRate, showParams);'];
-    eval(paramFunctionName) % go and fetch the parameters
-    
+    % initiates run and plays first stimulus and it returns
+    %  without waiting for button press
+    startNewRun(handles)
 
     % show sample Rate on GUI; it must be set in MAPparams
     set(expGUIhandles.textsampleRate,'string',...
         num2str(stimulusParameters.sampleRate))
-    
+
     if experiment.singleShot
-%         AN_IHCsynapseParams.showSummaryStatistics=1;
-        method.showSummaryStatistics=1;
         AN_IHCsynapseParams.plotSynapseContents=1;
     else
-        method.showSummaryStatistics=0;
         AN_IHCsynapseParams.plotSynapseContents=0;
     end
-    
-    if strcmp(experiment.ear, 'MAPmodelSingleCh')
-    method.MGmembranePotentialSave=1;
-    end
-    
+
     % continuous loop until the program stops itself
     while strcmp(experiment.status,'waitingForResponse')
         %  NB at this point the stimulus has been played
         pause(0.1)  % to allow interrupt with CTRL/C
-        
+
         switch experiment.ear
             case { 'MAPmodelListen'}
-            set(handles.pushbutton1,'backgroundcolor','y','visible','on')
-            set(handles.pushbutton2,'backgroundcolor','y','visible','on')
+                % flash the buttons to show model response
+                set(handles.pushbutton1,'backgroundcolor','y','visible','on')
+                set(handles.pushbutton2,'backgroundcolor','y','visible','on')
         end
 
-AN_IHCsynapseParams.mode=	'spikes';
+        % Analayse the current stimulus using MAP
+        [modelResponse earObject]= MAPmodel;
 
-% Analayse the current stimulus using MAP
-        [modelResponse earObject]= MAPmodel( experiment.MAPplot, method);
-        
         if experiment.stop || experiment.singleShot
             % trap for single trial or user interrupt using 'stop' button.
             experiment.status= 'waitingForStart';
             experiment.stop=0;
-            addToMsg('manually stopped',1);
+            errormsg='manually stopped';
+            addToMsg(errormsg,1)
             return
         end
-        
+
         switch modelResponse
             case 1
                 %     userDoesNotHearTarget(handles)
@@ -1533,7 +1405,7 @@ AN_IHCsynapseParams.mode=	'spikes';
                             'r','visible','on')
                         set(handles.pushbutton1,'backgroundcolor','y')
                 end
-                
+
                 switch experiment.paradigm
                     case 'discomfort'
                         % always treat discomfort as 'not heard'
@@ -1548,7 +1420,8 @@ AN_IHCsynapseParams.mode=	'spikes';
     end
 end
 
-function [modelResponse, MacGregorResponse]=MAPmodel( MAPplot, method)
+% -------------------------------------------------------MAPmodel
+function [modelResponse, MacGregorResponse]=MAPmodel
 
 global experiment stimulusParameters audio withinRuns
 global outerMiddleEarParams DRNLParams AN_IHCsynapseParams
@@ -1562,18 +1435,34 @@ MacGregorResponse=[];
 audio=audio(:,1)';
 
 % if stop button pressed earlier
-if experiment.stop, return, end
+if experiment.stop
+    errormsg='manually stopped';
+    addToMsg(errormsg,1)
+    return
+end
 
-% -------------------------------------------------------------- run Model
+% ---------------------------------------------- run Model
 MAPparamsName=experiment.name;
 showPlotsAndDetails=experiment.MAPplot;
 AN_spikesOrProbability='spikes';
+AN_spikesOrProbability='probability';
 
 % [response, method]=MAPsequenceSeg(audio, method, 1:8);
-global ICoutput ANdt
-    MAP1_14(audio, 1/method.dt, method.nonlinCF,...
-        MAPparamsName, AN_spikesOrProbability);
-    
+global ICoutput ANdt dt savedBFlist ANprobRateOutput expGUIhandles
+global stimulusParameters experiment
+
+if sum(strcmp(experiment.ear,{'MAPmodelMultiCh', 'MAPmodelListen'}))
+    % use BFlist specified in MAPparams file
+    BFlist= -1;
+else
+    BFlist=stimulusParameters.targetFrequency;
+end
+paramChanges=get(expGUIhandles.editparamChanges,'string');
+eval(paramChanges)
+
+MAP1_14(audio, stimulusParameters.sampleRate, BFlist,...
+    MAPparamsName, AN_spikesOrProbability, paramChanges);
+
 if showPlotsAndDetails
     options.printModelParameters=0;
     options.showModelOutput=1;
@@ -1586,29 +1475,47 @@ if showPlotsAndDetails
 end
 
 % No response,  probably caused by hitting 'stop' button
-if isempty(ICoutput), return, end
-
-% MacGregor response is the sum total of all final stage spiking
-MacGregorResponse= sum(ICoutput,1);                 % use IC
-
+if strcmp(AN_spikesOrProbability,'spikes') && isempty(ICoutput)
+    return
+end
 % ---------------------------------------------------------- end model run
 
-dt=ANdt;
-time=dt:dt:dt*length(MacGregorResponse);
+if strcmp(AN_spikesOrProbability,'spikes')
+    MacGregorResponse= sum(ICoutput,1);                 % use IC
+    dt=ANdt;
+    time=dt:dt:dt*length(MacGregorResponse);
+else
+    % for one channel, ANprobResponse=ANprobRateOutput
+    % for multi channel take strongest in any epoch
+    nChannels=length(savedBFlist);
+    % use only HSR fibers
+    ANprobRateOutput=ANprobRateOutput(end-nChannels+1:end,:);
+    time=dt:dt:dt*length(ANprobRateOutput);
+end
 
-% group delay on unit response
-MacGonsetDelay= 0.004;
-MacGoffsetDelay= 0.022;
+% group delay on unit response - these values are iffy
+windowOnsetDelay= 0.004;
+windowOffsetDelay= 0.022; % long ringing time
 
 % now find the response of the MacGregor model during the target presentation + group delay
 switch experiment.threshEstMethod
     case {'2I2AFC++', '2I2AFC+++'}
-        idx= time>stimulusParameters.testTargetBegins+MacGonsetDelay ...
-            & time<stimulusParameters.testTargetEnds+MacGoffsetDelay;
+        idx= time>stimulusParameters.testTargetBegins+windowOnsetDelay ...
+            & time<stimulusParameters.testTargetEnds+windowOffsetDelay;
         nSpikesTrueWindow=sum(MacGregorResponse(:,idx));
-        idx=find(time>stimulusParameters.testNonTargetBegins+MacGonsetDelay ...
-            & time<stimulusParameters.testNonTargetEnds+MacGoffsetDelay);
-        nSpikesFalseWindow=sum(MacGregorResponse(:,idx));
+        idx=find(time>stimulusParameters.testNonTargetBegins+windowOnsetDelay ...
+            & time<stimulusParameters.testNonTargetEnds+windowOffsetDelay);
+        if strcmp(AN_spikesOrProbability,'spikes')
+            nSpikesFalseWindow=sum(MacGregorResponse(:,idx));
+        else
+            nSpikesDuringTarget=mean(ANprobRateOutput(end,idx));
+            % compare with spontaneous rate
+            if nSpikesDuringTarget>ANprobRateOutput(end,1)+10
+                nSpikesDuringTarget=1;  % i.e. at leastone MacG spike
+            else
+                nSpikesDuringTarget=0;
+            end
+        end
         % nSpikesDuringTarget is +ve when more spikes are found
         %   in the target window
         difference= nSpikesTrueWindow-nSpikesFalseWindow;
@@ -1631,27 +1538,23 @@ switch experiment.threshEstMethod
         disp(['level target dummy decision: ' ...
             num2str([withinRuns.variableValue nSpikesTrueWindow ...
             nSpikesFalseWindow  nSpikesDuringTarget], '%4.0f') ] )
-
     otherwise
-        % idx=find(time>stimulusParameters.testTargetBegins+MacGonsetDelay ...
-        %         & time<stimulusParameters.testTargetEnds+MacGoffsetDelay);
-        % no delay at onset
-        idx=find(time>stimulusParameters.testTargetBegins +MacGonsetDelay...
-            & time<stimulusParameters.testTargetEnds+MacGoffsetDelay);
-        nSpikesDuringTarget=sum(MacGregorResponse(:,idx));
-        
-        % find(MacGregorResponse)*dt-stimulusParameters.stimulusDelay
-        timeX=time(idx);
-end
+        % single interval
+        idx=find(time>stimulusParameters.testTargetBegins +windowOnsetDelay...
+            & time<stimulusParameters.testTargetEnds+windowOffsetDelay);
+        if strcmp(AN_spikesOrProbability,'spikes')
+            nSpikesDuringTarget=sum(MacGregorResponse(:,idx));
+            timeX=time(idx);
+        else
+            % probability, use channel with the highest average rate
+            nSpikesDuringTarget=max(mean(ANprobRateOutput(:,idx),2));
+            if nSpikesDuringTarget>ANprobRateOutput(end,1)+10
+                nSpikesDuringTarget=1;
+            else
+                nSpikesDuringTarget=0;
+            end
 
-% now find the response of the MacGregor model at the end of the masker
-idx2=find(time>stimulusParameters.testTargetBegins-0.02 ...
-    & time<stimulusParameters.testTargetBegins);
-if ~isempty(idx2)
-    maskerRate=mean(mean(MacGregorResponse(idx2)));
-else
-    %e.g. no masker
-    maskerRate=0;
+        end
 end
 
 if experiment.MAPplot
@@ -1659,31 +1562,18 @@ if experiment.MAPplot
     figure(99), subplot(6,1,6)
     hold on
     yL=get(gca,'YLim');
-    plot([stimulusParameters.testTargetBegins + MacGonsetDelay ...
-        stimulusParameters.testTargetBegins   + MacGonsetDelay],yL,'r')
-    plot([stimulusParameters.testTargetEnds   + MacGoffsetDelay ...
-        stimulusParameters.testTargetEnds     + MacGoffsetDelay],yL,'r')
+    plot([stimulusParameters.testTargetBegins + windowOnsetDelay ...
+        stimulusParameters.testTargetBegins   + windowOnsetDelay],yL,'r')
+    plot([stimulusParameters.testTargetEnds   + windowOffsetDelay ...
+        stimulusParameters.testTargetEnds     + windowOffsetDelay],yL,'r')
 end
 
 % specify unambiguous response
-switch experiment.paradigm
-    case 'gapDetection'
-        gapResponse=(maskerRate-nSpikesDuringTarget)/maskerRate;
-        if gapResponse>0.2
-            modelResponse=2;    % gap detected
-        else
-            modelResponse=1;    % gap not detected
-        end
-        [nSpikesDuringTarget maskerRate gapResponse modelResponse]
-        figure(22), plot(timeX,earObject(idx))
-    otherwise
-        if nSpikesDuringTarget>experiment.MacGThreshold
-            modelResponse=2;    % stimulus detected
-        else
-            modelResponse=1;    % nothing heard (default)
-        end
+if nSpikesDuringTarget>experiment.MacGThreshold
+    modelResponse=2;    % stimulus detected
+else
+    modelResponse=1;    % nothing heard (default)
 end
-
 
 path(savePath)
 
@@ -1704,12 +1594,12 @@ while strcmp(experiment.status,'waitingForGO')
         addToMsg('manually stopped',1)
         return
     end
-    
+
     % initiates run and plays first stimulus and it returns
     %  without waiting for button press
     % NB stimulus is not actually generated (for speed)
     startNewRun(handles)
-    
+
     while strcmp(experiment.status,'waitingForResponse')
         % create artificial response here
         modelResponse=statsModelGetResponse;
@@ -1738,13 +1628,13 @@ switch experiment.ear
         %         if experiment.psyFunSlope<0,
         %             prob=1-prob;
         %         end
-        
+
     case 'statsModelRareEvent'
         if experiment.psyFunSlope<0
             addToMsg('statsModelRareEvent cannot be used with negative slope',0)
             error('statsModelRareEvent cannot be used with negative slope')
         end
-        
+
         % standard formula is prob = 1 – exp(-d (g P – A))
         % here A->A;  To find Pmin use A/gain
         pressure=28*10^(withinRuns.variableValue/20);
@@ -1767,7 +1657,7 @@ switch experiment.threshEstMethod
         else
             modelResponse=1; %nothing heard
         end
-        
+
     case {'2I2AFC++', '2I2AFC+++'}
         if rand<prob
             modelResponse=2; %bingo
@@ -1859,7 +1749,7 @@ try
     set(serobj, 'BytesAvailableFcnCount', 1)
     set(serobj, 'BytesAvailableFcnMode', 'byte')
     % set(serobj, 'BreakInterruptFcn', '@buttonBox_Calback')
-    
+
     fopen(serobj);
     buttonBoxStatus=get(serobj,'status');
 catch

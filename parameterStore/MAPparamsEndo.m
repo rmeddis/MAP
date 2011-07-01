@@ -11,11 +11,11 @@ function method=MAPparamsEndo ...
 % output argument
 %  method passes a miscelleny of values
 
-global inputStimulusParams OMEParams DRNLParams
+global inputStimulusParams OMEParams DRNLParams IHC_cilia_RPParams
 global IHC_VResp_VivoParams IHCpreSynapseParams  AN_IHCsynapseParams
 global MacGregorParams MacGregorMultiParams  filteredSACFParams
 global experiment % used by calls from multiThreshold only
-global IHC_cilia_RPParams
+
 
 currentFile=mfilename;                      % i.e. the name of this mfile
 method.parameterSource=currentFile(10:end); % for the record
@@ -76,6 +76,7 @@ DRNLParams.BFlist=BFlist;
 
 % DRNL nonlinear path
 DRNLParams.a=5e4;     % DRNL.a=0 means no OHCs (no nonlinear path)
+DRNLParams.a=2e4;     % DRNL.a=0 means no OHCs (no nonlinear path)
 
 DRNLParams.b=8e-6;    % *compression threshold raised compression
 % DRNLParams.b=1;    % b=1 means no compression
@@ -115,19 +116,21 @@ DRNLParams.MOCtau =.1;                         % smoothing for MOC
 
 IHC_cilia_RPParams.tc=	0.0003;   % 0.0003 filter time simulates viscocity
 % IHC_cilia_RPParams.tc=	0.0005;   % 0.0003 filter time simulates viscocity
-IHC_cilia_RPParams.C=	0.05;      % 0.1 scalar (C_cilia ) 
+IHC_cilia_RPParams.C=	0.03;      % 0.1 scalar (C_cilia ) 
 IHC_cilia_RPParams.u0=	5e-9;       
 IHC_cilia_RPParams.s0=	30e-9;
 IHC_cilia_RPParams.u1=	1e-9;
 IHC_cilia_RPParams.s1=	1e-9;
 
-IHC_cilia_RPParams.Gmax= 5e-9;    % 2.5e-9 maximum conductance (Siemens)
+IHC_cilia_RPParams.Gmax= 6e-9;    % 2.5e-9 maximum conductance (Siemens)
 IHC_cilia_RPParams.Ga=	1e-9;  % 4.3e-9 fixed apical membrane conductance
+IHC_cilia_RPParams.Ga=	.8e-9;  % 4.3e-9 fixed apical membrane conductance
 
 %  #5 IHC_RP
 IHC_cilia_RPParams.Cab=	4e-012;         % IHC capacitance (F)
-IHC_cilia_RPParams.Cab=	1e-012;         % IHC capacitance (F)
-IHC_cilia_RPParams.Et=	0.07;          % endocochlear potential (V)
+% IHC_cilia_RPParams.Cab=	1e-012;         % IHC capacitance (F)
+IHC_cilia_RPParams.Et=	0.100;          % endocochlear potential (V)
+IHC_cilia_RPParams.Et=	0.05;          % endocochlear potential (V)
 
 IHC_cilia_RPParams.Gk=	2e-008;         % 1e-8 potassium conductance (S)
 IHC_cilia_RPParams.Ek=	-0.08;          % -0.084 K equilibrium potential
@@ -204,7 +207,7 @@ switch MacGregorMultiType
 
         MacGregorMultiParams.dendriteLPfreq=50;   % dendritic filter
         MacGregorMultiParams.currentPerSpike=35e-9; % *per spike
-        MacGregorMultiParams.currentPerSpike=30e-9; % *per spike
+%         MacGregorMultiParams.currentPerSpike=30e-9; % *per spike
         
         MacGregorMultiParams.Cap=1.67e-8; % ??cell capacitance (Siemens)
         MacGregorMultiParams.tauM=0.002;  % membrane time constant (s)
@@ -225,7 +228,7 @@ MacGregorParams.type = 'chopper cell';
 MacGregorParams.fibersPerNeuron=10; % N input fibers
 MacGregorParams.dendriteLPfreq=100; % dendritic filter
 MacGregorParams.currentPerSpike=120e-9;% *(A) per spike
-MacGregorParams.currentPerSpike=30e-9;% *(A) per spike
+MacGregorParams.currentPerSpike=40e-9;% *(A) per spike
 
 MacGregorParams.Cap=16.7e-9;        % cell capacitance (Siemens)
 MacGregorParams.tauM=0.002;         % membrane time constant (s)
@@ -296,61 +299,5 @@ if showParams
     end
 end
 
-
-
-% **********************************************************************  comparison data
-% store individual data here for display on the multiThreshold GUI (if used)
-% the final value in each vector is an identifier (BF or duration))
-if isstruct(experiment)
-    switch experiment.paradigm
-        case {'IFMC','IFMC_8ms'}
-            % based on MPa
-            comparisonData=[
-                66	51	49	48	46	45	54	250;
-                60	54	46	42	39	49	65	500;
-                64	51	38	32	33	59	75	1000;
-                59	51	36	30	41	81	93	2000;
-                71	63	53	44	36	76	95	4000;
-                70	64	43	35	35	66	88	6000;
-                110	110	110	110	110	110	110	8000;
-                ];
-            if length(BFlist)==1 && ~isempty(comparisonData)
-                availableFrequencies=comparisonData(:,end)';
-                findRow= find(BFlist==availableFrequencies);
-                if ~isempty (findRow)
-                    experiment.comparisonData=comparisonData(findRow,:);
-                end
-            end
-
-        case {'TMC','TMC_8ms'}
-            % based on MPa
-            comparisonData=[
-                48	58	63	68	75	80	85	92	99	250;
-                33	39	40	49	52	61	64	77	79	500;
-                39	42	50	81	83	92	96	97	110	1000;
-                24	26	32	37	46	51	59	71	78	2000;
-                65	68	77	85	91	93	110	110	110	4000;
-                20	19	26	44	80	95	96	110	110	6000;
-                ];
-            if length(BFlist)==1 && ~isempty(comparisonData)
-                availableFrequencies=comparisonData(:,end)';
-                findRow= find(BFlist==availableFrequencies);
-                if ~isempty (findRow)
-                    experiment.comparisonData=comparisonData(findRow,:);
-                end
-            end
-
-        case { 'absThreshold',  'absThreshold_8'}
-            % MPa thresholds
-            experiment.comparisonData=[
-                32	26	16	18	22	22 0.008;
-                16	13	6	9	15	11 0.500
-                ];
-
-
-        otherwise
-            experiment.comparisonData=[];
-    end
-end
-
-
+% for backward compatibility
+experiment.comparisonData=[];
