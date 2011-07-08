@@ -1,9 +1,9 @@
 % expGUI_MT = 'experimenter GUI for multiThreshold
 % allows the experimenter to design experiments.
 % The *running* of experiments is left to subjGUI.m
-% 
+%
 % There are three kinds of experiments known as 'earOptions':
-% 1. Measurements using real listeners 
+% 1. Measurements using real listeners
 %  'left', 'right',  'diotic', 'dichoticLeft', 'dichoticRight'
 % 2. Measurements using the MAP model as the subject
 %   'MAPmodelListen',  'MAPmodelMultiCh', 'MAPmodelSingleCh'
@@ -88,7 +88,7 @@ varargout{1} = handles.output;
 setLocationOfGUIs(handles)
 
 function setLocationOfGUIs(handles)
-global checkForPreviousGUI  % holds screen positioning across repeated calls 
+global checkForPreviousGUI  % holds screen positioning across repeated calls
 scrnsize=get(0,'screensize');
 checkForPreviousGUI=[];
 % if isstruct(checkForPreviousGUI)...
@@ -140,6 +140,7 @@ addpath ('paradigms')   % preset paradigm informations is stored here
 % addpath (['..' filesep 'modules'], ['..' filesep 'utilities'], ...
 %     ['..' filesep 'parameterStore'],  ['..' filesep 'wavFileStore'],...
 %     ['..' filesep 'testPrograms'])
+addpath (['..' filesep 'testPrograms'])
 
 % specify all variables that  need to be set on the GUI
 variableNames={'stimulusDelay','maskerDuration','maskerLevel',...
@@ -314,7 +315,7 @@ chosenOption=get(handles.popupmenuParadigm,'value');
 paradigm=paradigmNames{chosenOption};
 experiment.paradigm=paradigm;
 
-        %Paradigm: read in all relevant parameters
+%Paradigm: read in all relevant parameters
 % a file must exist with this name 'paradigm_<paradigm>'
 % 'handles' are only occasionally used
 addpath ('paradigms')
@@ -347,7 +348,7 @@ cmd=['stimulusParameters.' ...
 eval (cmd);
 
 % establish popup menus on the basis of the paradigm file
-set(handles.popupmenuRandomize,'value', betweenRuns.randomizeSequence)	
+set(handles.popupmenuRandomize,'value', betweenRuns.randomizeSequence)
 set(handles.popupmenuPhase,'string', stimulusParameters.maskerPhase)
 if stimulusParameters.includeCue
     set(handles.popupmenuCueNoCue,'value', 1)
@@ -383,14 +384,14 @@ aResetPopupMenus(handles)
 
 % ------------------------------------------------------ aResetPopupMenus
 function aResetPopupMenus(handles)
-global   stimulusParameters betweenRuns variableNames 
+global   stimulusParameters betweenRuns variableNames
 global targetTypes maskerTypes experiment backgroundTypes
 
 switch experiment.threshEstMethod
     case {'MaxLikelihood','oneIntervalUpDown'}
         set(handles.editstopCriteriaBox, 'string', ...
             num2str(experiment.singleIntervalMaxTrials))
-        
+
     case {'2I2AFC++','2I2AFC+++'}
         set(handles.editstopCriteriaBox, 'string', ...
             num2str(experiment.stopCriteria2IFC))
@@ -410,7 +411,7 @@ variableParameter1ID=0; variableParameter2ID=0;
 for i=1:length(variableNames)
     if strcmp(variableNames{i},betweenRuns.variableName1)
         variableParameter1ID=i;
-    end   
+    end
     if strcmp(variableNames{i},betweenRuns.variableName2)
         variableParameter2ID=i;
     end
@@ -453,7 +454,7 @@ switch experiment.ear
         set(handles.editStatsModel, 'visible', 'on')
         set(handles.textStatsModel, 'visible', 'on')
         set(handles.pushbuttonStop, 'visible', 'on')
-showModelPushButtons(handles, 0)
+        showModelPushButtons(handles, 0)
         set(handles.editCatchTrialRate, 'visible', 'off')
         set(handles.textCatchTrials, 'visible', 'off')
         set(handles.editcalibrationdB, 'visible', 'off')
@@ -462,25 +463,25 @@ showModelPushButtons(handles, 0)
         set(handles.textCue, 'visible', 'off')
         set(handles.editMusicLevel,'visible', 'off')
         set(handles.textMusicLevel,'visible', 'off')
-        
+
     case {'MAPmodel',  'MAPmodelListen', 'MAPmodelMultiCh', 'MAPmodelSingleCh'}
         set(handles.popupmenuCueNoCue, 'visible', 'off')
         set(handles.editStatsModel, 'visible', 'off')
         set(handles.textStatsModel, 'visible', 'off')
         set(handles.pushbuttonStop, 'visible', 'on')
-showModelPushButtons(handles, 1)
+        showModelPushButtons(handles, 1)
         set(handles.editcalibrationdB, 'visible', 'off')
         set(handles.textcalibration, 'visible', 'off')
         set(handles.textCue, 'visible', 'off')
         set(handles.editMusicLevel,'visible', 'off')
         set(handles.textMusicLevel,'visible', 'off')
-        
+
     otherwise
         % i.e. using real subjects (left, right, diotic, dichotic)
         set(handles.editStatsModel, 'visible', 'off')
         set(handles.textStatsModel, 'visible', 'off')
         set(handles.pushbuttonStop, 'visible', 'off')
-showModelPushButtons(handles, 0)
+        showModelPushButtons(handles, 0)
         set(handles.editCatchTrialRate, 'visible', 'on')
         set(handles.textCatchTrials, 'visible', 'on')
         set(handles.editcalibrationdB, 'visible', 'on')
@@ -497,7 +498,7 @@ switch experiment.threshEstMethod
         set(handles.textCue,'visible', 'on')
         set(handles.editstopCriteriaBox, 'string', ...
             num2str(experiment.singleIntervalMaxTrials))
-        
+
         if stimulusParameters.includeCue==0
             set(handles.editcueTestDifference,'visible', 'off')
             set(handles.textcueTestDifference,'visible', 'off')
@@ -505,7 +506,7 @@ switch experiment.threshEstMethod
             set(handles.editcueTestDifference,'visible', 'on')
             set(handles.textcueTestDifference,'visible', 'on')
         end
-        
+
     case {'2I2AFC++','2I2AFC+++'}
         set(handles.editCatchTrialRate, 'visible', 'off')
         set(handles.textCatchTrials, 'visible', 'off')
@@ -609,7 +610,7 @@ end
 
 % ------------------------------------------------ pushbuttonRun_Callback
 function pushbuttonRun_Callback(hObject, eventdata, handles)
-global checkForPreviousGUI % holds screen positioning across repeated calls 
+global checkForPreviousGUI % holds screen positioning across repeated calls
 global experiment betweenRuns paradigmNames errormsg
 checkForPreviousGUI.GUIposition=get(handles.figure1,'position');
 experiment.singleShot=0;
@@ -621,8 +622,8 @@ switch experiment.paradigm
         set(handles.edittargetDuration,'string', num2str(0.25))
         set(handles.editstopCriteriaBox,'string','10') % nTrials
         run (handles)
-        
-        if ~isempty(errormsg)
+
+        if strcmp(errormsg,'manually stopped')
             disp(errormsg)
             optionNo=strmatch('profile',paradigmNames);
             set(handles.popupmenuParadigm,'value',optionNo);
@@ -630,14 +631,14 @@ switch experiment.paradigm
             aParadigmSelection(handles)
             return
         end
-        
+
         global resultsTable
         longTone=resultsTable(2:end,2:end);
-        
+
         set(handles.edittargetDuration,'string', num2str(0.016))
         set(handles.editstopCriteriaBox,'string','10') % nTrials
         run (handles)
-        if ~isempty(errormsg)
+        if strcmp(errormsg,'manually stopped')
             disp(errormsg)
             optionNo=strmatch('profile',paradigmNames);
             set(handles.popupmenuParadigm,'value',optionNo);
@@ -646,7 +647,7 @@ switch experiment.paradigm
             aParadigmSelection(handles)
             return
         end
-        
+
         shortTone=resultsTable(2:end,2:end);
 
         % use these threshold for TMC
@@ -656,10 +657,10 @@ switch experiment.paradigm
         aParadigmSelection(handles)
         set(handles.edittargetLevel,'string', thresholds16ms+10);
         set(handles.editstopCriteriaBox,'string','10')  % nTrials
-        pause(.1) 
+        pause(.1)
         run (handles)
-        
-        if ~isempty(errormsg)
+
+        if strcmp(errormsg,'manually stopped')
             disp(errormsg)
             optionNo=strmatch('profile',paradigmNames);
             set(handles.popupmenuParadigm,'value',optionNo);
@@ -672,29 +673,20 @@ switch experiment.paradigm
         TMC=resultsTable(2:end,2:end);
         gaps=resultsTable(2:end,1);
         BFs=resultsTable(1, 2:end);
-        
+
         % use these threshold for IFMC
         optionNo=strmatch('IFMC',paradigmNames);
         set(handles.popupmenuParadigm,'value',optionNo);
         aParadigmSelection(handles)
         set(handles.edittargetLevel,'string', thresholds16ms+10);
         set(handles.editstopCriteriaBox,'string','10')  % nTrials
-        pause(.1) 
+        pause(.1)
         run (handles)
 
-        if ~isempty(errormsg)
-            disp(errormsg)
-            optionNo=strmatch('profile',paradigmNames);
-            set(handles.popupmenuParadigm,'value',optionNo);
-            experiment.paradigm='profile';
-            experiment.stop=-0;
-            aParadigmSelection(handles)
-            return
-        end       
 
         IFMCs=resultsTable(2:end,2:end);
         offBFs=resultsTable(2:end,1);
-        
+
         % reset original paradigm
         optionNo=strmatch('profile',paradigmNames);
         set(handles.popupmenuParadigm,'value',optionNo);
@@ -702,7 +694,16 @@ switch experiment.paradigm
 
         save profile longTone shortTone gaps BFs TMC offBFs IFMCs
         plotProfile(longTone,shortTone,gaps,BFs,TMC,offBFs,IFMCs)
-        
+
+        if strcmp(errormsg,'manually stopped')
+            disp(errormsg)
+            optionNo=strmatch('profile',paradigmNames);
+            set(handles.popupmenuParadigm,'value',optionNo);
+            experiment.paradigm='profile';
+            experiment.stop=-0;
+            aParadigmSelection(handles)
+            return
+        end
     otherwise
         run (handles)
         experiment.stop=0;
@@ -713,7 +714,7 @@ global experiment expGUIhandles stimulusParameters
 tic
 expGUIhandles=handles;
 set(handles.pushbuttonStop, 'backgroundColor', [.941 .941 .941])
-set(handles.editparamChanges,'visible','off')
+% set(handles.editparamChanges,'visible','off')
 
 % message box white (removes any previous error message)
 set(handles.textMSG,...
@@ -742,7 +743,7 @@ toc
 
 % --- Executes on button press in pushbuttonSingleShot.
 function pushbuttonSingleShot_Callback(hObject, eventdata, handles)
-global experiment 
+global experiment
 experiment.singleShot=1;
 
 % special test for spontaneous activity
@@ -764,7 +765,7 @@ set(handles.edittargetDuration, 'string', y)
 % ------------------------------------------aReadAndCheckParameterBoxes
 function errorMsg=aReadAndCheckParameterBoxes(handles)
 global experiment  stimulusParameters betweenRuns  statsModel
-global variableNames  LevittControl
+global variableNames  LevittControl paramChanges
 % When the program sets the parameters all should be well
 % But when the user changes them...
 
@@ -780,8 +781,8 @@ experiment.ear=strings{option};
 
 switch experiment.ear
     case { 'MAPmodel', 'MAPmodelMultiCh', ...
-            'MAPmodelSingleCh', 'MAPmodelListen'}         
-        % MAPmodel writes forced parameter settings to the screen 
+            'MAPmodelSingleCh', 'MAPmodelListen'}
+        % MAPmodel writes forced parameter settings to the screen
         %  so that they can be read from there
         set(handles.popupmenuRandomize,'value',2)       % fixed sequence
         set(handles.editstimulusDelay,'string','0.01')  % no stimulus delay
@@ -840,13 +841,13 @@ if strcmp(betweenRuns.variableName1,betweenRuns.variableName2) ...
 end
 
 % calibration
-%  this is used to *reduce* the output signal from what it otherwise 
+%  this is used to *reduce* the output signal from what it otherwise
 %  would be
 % signal values are between 1 - 2^23
 %  these are interpreted as microPascals between -29 dB and 128 dB SPL
-% calibrationdB adjusts these values to compensate for equipment 
+% calibrationdB adjusts these values to compensate for equipment
 %  characteristics
-%  this will change the range. e.g. a 7 dB calibration will yield 
+%  this will change the range. e.g. a 7 dB calibration will yield
 %   a range of -36 to 121 dB SPL
 % Calibration is not used when modelling. Values are treated as dB SPL
 stimulusParameters.calibrationdB=...
@@ -946,7 +947,7 @@ switch experiment.threshEstMethod
         % start value for step until reduced
         LevittControl.startLevelStep= stimulusParameters.WRVsteps(1);
         % reduced step size
-        LevittControl.steadyLevittStep= stimulusParameters.WRVsteps(2); 
+        LevittControl.steadyLevittStep= stimulusParameters.WRVsteps(2);
         LevittControl.TurnsToSmallSteps= 2;
         LevittControl.useLastNturns= 2*experiment.peaksUsed;
         LevittControl.minReversals= ...
@@ -1006,7 +1007,7 @@ end
 
 % Check WRVstartValues for length and compatibility with randomization
 % only one start value supplied so all start values are the same
-if length(stimulusParameters.WRVstartValues)==1     
+if length(stimulusParameters.WRVstartValues)==1
     stimulusParameters.WRVstartValues= ...
         repmat(stimulusParameters.WRVstartValues, 1, ...
         length(betweenRuns.variableList1)...
@@ -1051,13 +1052,17 @@ switch experiment.paradigm
                 stimulusParameters.maskerDuration)
             addToMsg(...
                 'Warning: masker and target duration not the same.',1,1)
-        end        
+        end
         if ~isequal(stimulusParameters.maskerLevel, ...
                 stimulusParameters.targetLevel)
             addToMsg(['Warning: masker and target level different.'...
                 'They will be changed to be equal',1,1]);
         end
 end
+
+% identify model parameter changes if any
+paramChanges=get(handles.editparamChanges,'string');
+eval(paramChanges);
 
 % -------------------------------------------- aSetSampleRate
 function aSetSampleRate(sampleRate, handles)
@@ -1106,24 +1111,24 @@ switch experiment.ear
     case {'statsModelLogistic', 'statsModelRareEvent'}
         set(handles.editStatsModel, 'visible', 'off')
         set(handles.textStatsModel, 'visible', 'off')
-        
+
         % default psychometric bin size and logistic slopes
         set(handles.popupmenuRandomize,'value',2)   % fixed sequence
         set(handles.editName,'string', 'statsModel')
         %         experiment.headphonesUsed=0;
-        
+
     case {'MAPmodelListen', 'MAPmodelMultiCh', 'MAPmodelSingleCh'}
         stimulusParameters.includeCue=0;						 % no cue
         set(handles.popupmenuCueNoCue,'value', 2)
-        
+
         set(handles.editCatchTrialRate,'string','0 0  2 ');%no catch trials
         set(handles.editName,'string', 'Normal')			% force name
         experiment.name=get(handles.editName,'string');	% read name back
-        set(handles.editcalibrationdB,'string','0')	
-        
+        set(handles.editcalibrationdB,'string','0')
+
         set(handles.popupmenuRandomize,'value',2)       % fixed sequence
         set(handles.editstimulusDelay,'string','0')
-        
+
         set(handles.editSaveData,'string', '0')
         set(handles.editSubjectFont,'string', '10');
         experiment.MacGThreshold=0; % num MacG spikes to exceed threshold
@@ -1178,7 +1183,7 @@ switch experiment.threshEstMethod
             case 'training'
                 experiment.possLogSlopes=0.5;
         end
-        
+
     case 'oneIntervalUpDown'
         experiment.functionEstMethod='logisticLS';
         set(handles.textstopCriteria,'string', 'stop criteria \ maxTrials')
@@ -1189,7 +1194,7 @@ switch experiment.threshEstMethod
             otherwise
                 experiment.allowCatchTrials= 1;
         end
-        
+
     case {'2I2AFC++',  '2I2AFC+++'}
         LevittControl.rule='++'; %  e.g. '++' or '+++'
         experiment.singleIntervalMaxTrials=experiment.stopCriteria2IFC;
@@ -1209,7 +1214,7 @@ set(handles.editstopCriteriaBox,'string',...
 % NB responsibility for this is now transferred to the paradigm file
 switch experiment.threshEstMethod
     % only one value required for level change
-    case {'2I2AFC++', '2A2AIFC+++'}		
+    case {'2I2AFC++', '2A2AIFC+++'}
         stimulusParameters.subjectText=...
             'did the tone occur in window 1 or 2?';
     case {'MaxLikelihood',  'oneIntervalUpDown'};
@@ -1399,41 +1404,49 @@ pause(.1)
 drawnow
 
 function pushbuttonOME_Callback(hObject, eventdata, handles)
-global experiment
+global experiment paramChanges
 aReadAndCheckParameterBoxes(handles);
-testOME(experiment.name);
+testOME(experiment.name, paramChanges);
 
 function pushbuttonBM_Callback(hObject, eventdata, handles)
-global  stimulusParameters experiment
+global  stimulusParameters experiment paramChanges
 aReadAndCheckParameterBoxes(handles);
 relativeFrequencies=[0.25    .5   .75  1  1.25 1.5    2];
-
+AN_spikesOrProbability='probability';
 testBM(stimulusParameters.targetFrequency, ...
-    experiment.name,relativeFrequencies);
+    experiment.name,relativeFrequencies, AN_spikesOrProbability, ...
+    paramChanges);
 
 function pushbuttonAN_Callback(hObject, eventdata, handles)
-global stimulusParameters
+global stimulusParameters experiment paramChanges
 aReadAndCheckParameterBoxes(handles);
 % now carry out tests
 showPSTHs=0;
 targetFrequency=stimulusParameters.targetFrequency(1);
 BFlist=targetFrequency;
 
-testAN(targetFrequency,BFlist);
+testAN(targetFrequency,BFlist,-10:10:90,experiment.name, paramChanges);
 
 function pushbuttonPhLk_Callback(hObject, eventdata, handles)
+global experiment
 aReadAndCheckParameterBoxes(handles);
-testPhaseLocking
+testPhaseLocking(experiment.name)
 
 function pushbuttonSYN_Callback(hObject, eventdata, handles)
+global stimulusParameters experiment paramChanges
 aReadAndCheckParameterBoxes(handles);
-testSynapse
+% now carry out tests
+showPSTHs=0;
+targetFrequency=stimulusParameters.targetFrequency(1);
+BFlist=targetFrequency;
+testSynapse(BFlist,experiment.name, paramChanges)
 
 function pushbuttonFM_Callback(hObject, eventdata, handles)
-global stimulusParameters experiment
+global stimulusParameters experiment paramChanges
 aReadAndCheckParameterBoxes(handles);
 showPSTHs=1;
-testFM(stimulusParameters.targetFrequency(1),experiment.name, showPSTHs)
+testFM(stimulusParameters.targetFrequency(1),experiment.name, ...
+    showPSTHs, paramChanges)
 
 function popupmenuPhase_Callback(hObject, eventdata, handles)
 global stimulusParameters
@@ -1447,10 +1460,9 @@ stimulusParameters.targetPhase=phase;
 function pushbuttonParams_Callback(hObject, eventdata, handles)
 global experiment stimulusParameters
 aReadAndCheckParameterBoxes(handles);
-% print model parameters using the 'name' box (e.g. CTa -> MAPparamsCTa)
 showParams=1; BFlist=-1;
 paramChanges=get(handles.editparamChanges,'string');
-eval(paramChanges)
+eval(paramChanges);
 
 paramFunctionName=['method=MAPparams' experiment.name ...
     '(BFlist, stimulusParameters.sampleRate, showParams,paramChanges);'];
@@ -1459,10 +1471,10 @@ eval(paramFunctionName) % go and fetch the parameters requesting parameter print
 
 % --- Executes on button press in pushbuttonRP.
 function pushbuttonRP_Callback(hObject, eventdata, handles)
-global experiment stimulusParameters
+global experiment stimulusParameters paramChanges
 aReadAndCheckParameterBoxes(handles);
 % now carry out test
-testRP(stimulusParameters.targetFrequency,experiment.name)
+testRP(stimulusParameters.targetFrequency,experiment.name, paramChanges)
 
 % function handles % ??
 
@@ -1755,7 +1767,7 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-    
+
 
 
 function editparamChanges_Callback(hObject, eventdata, handles)

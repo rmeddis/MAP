@@ -4,7 +4,7 @@ global experiment stimulusParameters audio withinRuns
 global outerMiddleEarParams DRNLParams AN_IHCsynapseParams
 
 savePath=path;
-addpath('..\MAP')
+addpath(['..' filesep 'MAP'], ['..' filesep 'utilities'])
 modelResponse=[];
 MacGregorResponse=[];
 
@@ -25,12 +25,12 @@ global ICoutput ANdt
         MAPparamsName, AN_spikesOrProbability);
     
 if showPlotsAndDetails
-    options.showModelParameters=0;
+    options.printModelParameters=0;
     options.showModelOutput=1;
     options.printFiringRates=1;
     options.showACF=0;
     options.showEfferent=1;
-    UTIL_showMAP(options, paramChanges)
+    UTIL_showMAP(options)
 end
 
 % No response,  probably caused by hitting 'stop' button

@@ -1349,11 +1349,11 @@ while strcmp(experiment.status,'waitingForGO')
     %  without waiting for button press
     startNewRun(handles)
 
-    % show sample Rate on GUI; it must be set in MAPparams
+    % show sample Rate on GUI; it must be set in MAPparams ##??
     set(expGUIhandles.textsampleRate,'string',...
         num2str(stimulusParameters.sampleRate))
 
-    if experiment.singleShot
+    if experiment.singleShot % ##??
         AN_IHCsynapseParams.plotSynapseContents=1;
     else
         AN_IHCsynapseParams.plotSynapseContents=0;
@@ -1424,7 +1424,9 @@ end
 function [modelResponse, MacGregorResponse]=MAPmodel
 
 global experiment stimulusParameters audio withinRuns
-global outerMiddleEarParams DRNLParams AN_IHCsynapseParams
+% global outerMiddleEarParams DRNLParams AN_IHCsynapseParams
+global ICoutput ANdt dt savedBFlist ANprobRateOutput expGUIhandles
+global paramChanges
 
 savePath=path;
 addpath(['..' filesep 'MAP'], ['..' filesep 'utilities'])
@@ -1444,12 +1446,12 @@ end
 % ---------------------------------------------- run Model
 MAPparamsName=experiment.name;
 showPlotsAndDetails=experiment.MAPplot;
+
+% important buried constant ##??
 AN_spikesOrProbability='spikes';
 AN_spikesOrProbability='probability';
 
 % [response, method]=MAPsequenceSeg(audio, method, 1:8);
-global ICoutput ANdt dt savedBFlist ANprobRateOutput expGUIhandles
-global stimulusParameters experiment
 
 if sum(strcmp(experiment.ear,{'MAPmodelMultiCh', 'MAPmodelListen'}))
     % use BFlist specified in MAPparams file
@@ -1458,7 +1460,8 @@ else
     BFlist=stimulusParameters.targetFrequency;
 end
 paramChanges=get(expGUIhandles.editparamChanges,'string');
-eval(paramChanges)
+% convert from string to a cell array
+eval(paramChanges);
 
 MAP1_14(audio, stimulusParameters.sampleRate, BFlist,...
     MAPparamsName, AN_spikesOrProbability, paramChanges);

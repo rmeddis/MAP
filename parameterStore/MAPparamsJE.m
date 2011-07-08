@@ -1,4 +1,4 @@
-function method=MAPparamsEndo ...
+function method=MAPparamsJE ...
     (BFlist, sampleRate, showParams, paramChanges)
 % MAPparams<> establishes a complete set of MAP parameters
 % Parameter file names must be of the form <MAPparams> <name>
@@ -90,7 +90,7 @@ DRNLParams.nlBWs=  p * BFlist + q;
 DRNLParams.p=p;   DRNLParams.q=q;   % save p and q for printing only
 
 % DRNL linear path:
-DRNLParams.g=100;     % linear path gain factor
+DRNLParams.g=1000;     % linear path gain factor
 % linCF is not necessarily the same as nonlinCF
 minLinCF=153.13; coeffLinCF=0.7341;   % linCF>nonlinBF for BF < 1 kHz
 DRNLParams.linCFs=minLinCF+coeffLinCF*BFlist;

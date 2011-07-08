@@ -5,7 +5,6 @@ paradigm_training(handles) % default
 
 betweenRuns.variableName1='targetFrequency';
 betweenRuns.variableList1=[250 500 1000 2000 4000 8000 ];
-betweenRuns.variableList1=str2num(get(handles.edittargetFrequency,'string'));
 betweenRuns.variableName2='targetDuration';
 betweenRuns.variableList2=0.016;
 betweenRuns.randomizeSequence=1; % 'random sequence'
@@ -15,7 +14,7 @@ betweenRuns.randomizeSequence=1; % 'random sequence'
 
 stimulusParameters.targetType='tone';
 stimulusParameters.targetPhase='sin';
-stimulusParameters.targetFrequency=1000;
+stimulusParameters.targetFrequency=[250 500 1000 2000 4000 8000 ];
 stimulusParameters.targetDuration=0.016;
 stimulusParameters.targetLevel=stimulusParameters.WRVstartValues(1);
 

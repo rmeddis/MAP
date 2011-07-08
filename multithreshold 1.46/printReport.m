@@ -6,7 +6,7 @@ function printReport(fileName, printTracks)
 
 global experiment stimulusParameters betweenRuns withinRuns statsModel   audio
 global LevittControl expGUIhandles
-
+global paramChanges
 
 global inputStimulusParams OMEParams DRNLParams
 global IHC_VResp_VivoParams IHCpreSynapseParams  AN_IHCsynapseParams
@@ -24,7 +24,9 @@ if nargin==0
     printReportGuide.showTracks=experiment.printTracks;
     printReportGuide.fileName=[];
     if experiment.saveData
-        saveFileName=['savedData/' experiment.name '_' experiment.date '_' experiment.paradigm];
+        saveFileName=...
+            ['savedData/' experiment.name '_' ...
+            experiment.date '_' experiment.paradigm];
     else
         % save this data (just in case)
         saveFileName=['savedData/mostRecentResults'];
@@ -84,6 +86,7 @@ resultsTable= sortTablesForPrinting(idx1,idx2,...
 msg=printTabTable(resultsTable,  headers);
 addToMsg(msg,0)
 fprintf('\n')
+disp(paramChanges)
 
 % sort tracks into the same order
 betweenRuns.levelTracks=betweenRuns.levelTracks(idx1);
@@ -181,6 +184,7 @@ if length(var1values)==1 && length(var2values)==1 && experiment.maxTrials>49
 end
 
 fprintf('\nparadigm:\t%s\n ', experiment.paradigm)
+disp(paramChanges)
 
 % ------------------------------------------------------- sortTablesForPrinting
 function table= sortTablesForPrinting(idx1,idx2, var1values,var2values, x)
