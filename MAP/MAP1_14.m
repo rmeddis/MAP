@@ -313,15 +313,15 @@ IHC_cilia_output= zeros(nBFs,signalLength);
 % Fiber types are specified in terms of tauCa
 nANfiberTypes= length(IHCpreSynapseParams.tauCa);
 tauCas= IHCpreSynapseParams.tauCa;
-nChannels= nANfiberTypes*nBFs;
-synapticCa= zeros(nChannels,segmentLength);
+nANchannels= nANfiberTypes*nBFs;
+synapticCa= zeros(nANchannels,segmentLength);
 
 % Calcium control (more calcium, greater release rate)
 ECa=IHCpreSynapseParams.ECa;
 gamma=IHCpreSynapseParams.gamma;
 beta=IHCpreSynapseParams.beta;
 tauM=IHCpreSynapseParams.tauM;
-mICa=zeros(nChannels,segmentLength);
+mICa=zeros(nANchannels,segmentLength);
 GmaxCa=IHCpreSynapseParams.GmaxCa;
 synapse_z= IHCpreSynapseParams.z;
 synapse_power=IHCpreSynapseParams.power;
@@ -329,9 +329,9 @@ synapse_power=IHCpreSynapseParams.power;
 % tauCa vector is established across channels to allow vectorization
 %  (one tauCa per channel). Do not confuse with tauCas (one pre fiber type)
 tauCa=repmat(tauCas, nBFs,1);
-tauCa=reshape(tauCa, nChannels, 1);
+tauCa=reshape(tauCa, nANchannels, 1);
 
-% presynapse startup values (vectors, length:nChannels)
+% presynapse startup values (vectors, length:nANchannels)
 % proportion (0 - 1) of Ca channels open at IHCrestingV
 mICaCurrent=((1+beta^-1 * exp(-gamma*IHCrestingV))^-1)...
     *ones(nBFs*nANfiberTypes,1);
@@ -349,7 +349,7 @@ kt0= -synapse_z * CaCurrent.^synapse_power;
 % The results computed either for probabiities *or* for spikes (not both)
 % Spikes are necessary if CN and IC are to be computed
 nFibersPerChannel= AN_IHCsynapseParams.numFibers;
-nANfibers= nChannels*nFibersPerChannel;
+nANfibers= nANchannels*nFibersPerChannel;
 AN_refractory_period= AN_IHCsynapseParams.refractory_period;
 
 y=AN_IHCsynapseParams.y;
@@ -359,10 +359,10 @@ r=AN_IHCsynapseParams.r;
 M=round(AN_IHCsynapseParams.M);
 
 % probability            (NB initial 'P' on everything)
-PAN_ydt = repmat(AN_IHCsynapseParams.y*dt, nChannels,1);
-PAN_ldt = repmat(AN_IHCsynapseParams.l*dt, nChannels,1);
-PAN_xdt = repmat(AN_IHCsynapseParams.x*dt, nChannels,1);
-PAN_rdt = repmat(AN_IHCsynapseParams.r*dt, nChannels,1);
+PAN_ydt = repmat(AN_IHCsynapseParams.y*dt, nANchannels,1);
+PAN_ldt = repmat(AN_IHCsynapseParams.l*dt, nANchannels,1);
+PAN_xdt = repmat(AN_IHCsynapseParams.x*dt, nANchannels,1);
+PAN_rdt = repmat(AN_IHCsynapseParams.r*dt, nANchannels,1);
 PAN_rdt_plus_ldt = PAN_rdt + PAN_ldt;
 PAN_M=round(AN_IHCsynapseParams.M);
 
@@ -371,12 +371,12 @@ Pcleft    = kt0* y* M ./ (y*(l+r)+ kt0* l);
 Pavailable    = Pcleft*(l+r)./kt0;
 Preprocess    = Pcleft*r/x; % canbe fractional
 
-ANprobability=zeros(nChannels,segmentLength);
-ANprobRateOutput=zeros(nChannels,signalLength);
+ANprobability=zeros(nANchannels,segmentLength);
+ANprobRateOutput=zeros(nANchannels,signalLength);
 lengthAbsRefractoryP= round(AN_refractory_period/dt);
 % special variables for monitoring synaptic cleft (specialists only)
-savePavailableSeg=zeros(nChannels,segmentLength);
-savePavailable=zeros(nChannels,signalLength);
+savePavailableSeg=zeros(nANchannels,segmentLength);
+savePavailable=zeros(nANchannels,signalLength);
 
 % spikes     % !  !  !    ! !        !   !  !
 lengthAbsRefractory= round(AN_refractory_period/ANdt);
@@ -406,27 +406,39 @@ ANoutput= false(nANfibers,reducedSignalLength);
 %% CN (first brain stem nucleus - could be any subdivision of CN)
 % Input to a CN neuorn is a random selection of AN fibers within a channel
 %  The number of AN fibers used is ANfibersFanInToCN
-ANfibersFanInToCN=MacGregorMultiParams.fibersPerNeuron;
-nCNneuronsPerChannel=MacGregorMultiParams.nNeuronsPerBF;
 % CNtauGk (Potassium time constant) determines the rate of firing of
 %  the unit when driven hard by a DC input (not normally >350 sp/s)
-CNtauGk=MacGregorMultiParams.tauGk;
-ANavailableFibersPerChan=AN_IHCsynapseParams.numFibers;
-nCNneurons=nCNneuronsPerChannel*nChannels;
-% nCNneuronsPerFiberType= nCNneurons/nANfiberTypes;
+% If there is more than one value, everything is replicated accordingly
 
+ANavailableFibersPerChan=AN_IHCsynapseParams.numFibers;
+ANfibersFanInToCN=MacGregorMultiParams.fibersPerNeuron;
+
+CNtauGk=MacGregorMultiParams.tauGk; % row vector of CN types (by tauGk)
+nCNtauGk=length(CNtauGk);
+
+% the total number of 'channels' is now greater
+nCNchannels=nANchannels*nCNtauGk;
+
+nCNneuronsPerChannel=MacGregorMultiParams.nNeuronsPerBF;
+tauGk=repmat(CNtauGk, nCNneuronsPerChannel,1);
+tauGk=reshape(tauGk,nCNneuronsPerChannel*nCNtauGk,1);
+
+% Now the number of neurons has been increased
+nCNneurons=nCNneuronsPerChannel*nCNchannels;
 CNmembranePotential=zeros(nCNneurons,reducedSegmentLength);
 
 % establish which ANfibers (by name) feed into which CN nuerons
-CNinputfiberLists=zeros(nChannels*nCNneuronsPerChannel, ANfibersFanInToCN);
+CNinputfiberLists=zeros(nANchannels*nCNneuronsPerChannel, ANfibersFanInToCN);
 unitNo=1;
-for ch=1:nChannels
+for ch=1:nANchannels
     % Each channel contains a number of units =length(listOfFanInValues)
     for idx=1:nCNneuronsPerChannel
-        fibersUsed=(ch-1)*ANavailableFibersPerChan + ...
-            ceil(rand(1,ANfibersFanInToCN)* ANavailableFibersPerChan);
-        CNinputfiberLists(unitNo,:)=fibersUsed;
-        unitNo=unitNo+1;
+        for idx2=1:nCNtauGk
+            fibersUsed=(ch-1)*ANavailableFibersPerChan + ...
+                ceil(rand(1,ANfibersFanInToCN)* ANavailableFibersPerChan);
+            CNinputfiberLists(unitNo,:)=fibersUsed;
+            unitNo=unitNo+1;
+        end
     end
 end
 
@@ -468,14 +480,14 @@ CN_Er=CN_Er.*ones(nCNneurons,1);
 CNtimeSinceLastSpike=zeros(nCNneurons,1);
 % tauGk is the main distinction between neurons
 %  in fact they are all the same in the standard model
-tauGk=repmat(CNtauGk,nChannels*nCNneuronsPerChannel,1);
+tauGk=repmat(tauGk,nANchannels,1);
 
-CN_PSTH=zeros(nChannels,reducedSegmentLength);
 CNoutput=false(nCNneurons,reducedSignalLength);
 
 
 %% MacGregor (IC - second nucleus) --------
-nICcells=nChannels;  % one cell per channel
+nICcells=nANchannels*nCNtauGk;  % one cell per channel
+CN_PSTH=zeros(nICcells ,reducedSegmentLength);
 
 ICspikeWidth=0.00015;   % this may need revisiting
 epochsPerSpike=round(ICspikeWidth/ANdt);
@@ -515,7 +527,7 @@ ICcurrentTemp=...
 ICtrailingAlphas=zeros(nICcells, length(IC_CNalphaFunction));
 
 ICfiberTypeRates=zeros(nANfiberTypes,reducedSignalLength);
-ICoutput=false(nChannels,reducedSignalLength);
+ICoutput=false(nICcells,reducedSignalLength);
 
 ICmembranePotential=zeros(nICcells,reducedSegmentLength);
 ICmembraneOutput=zeros(nICcells,signalLength);
@@ -799,7 +811,7 @@ while segmentStartPTR<signalLength
                 % releaseProb is the release probability per channel
                 %  but each channel has many synapses
                 releaseProb=repmat(releaseProb',nFibersPerChannel,1);
-                releaseProb=reshape(releaseProb, nFibersPerChannel*nChannels,1);
+                releaseProb=reshape(releaseProb, nFibersPerChannel*nANchannels,1);
 
                 % AN_available=round(AN_available); % vesicles must be integer, (?needed)
                 M_q=AN_M- AN_available;     % number of missing vesicles
@@ -883,7 +895,7 @@ while segmentStartPTR<signalLength
             % Create the dendritic current for that neuron
             % First get input spikes to this neuron
             synapseNo=1;
-            for ch=1:nChannels
+            for ch=1:nCNchannels
                 for idx=1:nCNneuronsPerChannel
                     % determine candidate fibers for this unit
                     fibersUsed=CNinputfiberLists(synapseNo,:);
@@ -992,7 +1004,8 @@ while segmentStartPTR<signalLength
             %% IC ----------------------------------------------
                 %  MacGregor or some other second order neurons
 
-                % combine CN neurons in same channel, i.e. same BF & same tauCa
+                % combine CN neurons in same channel, 
+                %  i.e. same BF & same tauCa
                 %  to generate inputs to single IC unit
                 channelNo=0;
                 for idx=1:nCNneuronsPerChannel:nCNneurons-nCNneuronsPerChannel+1;

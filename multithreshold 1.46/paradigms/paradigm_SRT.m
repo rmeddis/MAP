@@ -28,20 +28,12 @@ betweenRuns.variableName1='targetFrequency';
 betweenRuns.variableList1=1000;
 betweenRuns.variableName2='maskerDuration';
 betweenRuns.variableList2=0.1 ;
-% 1='fixed sequence', 2='randomize within blocks', 3='randomize across
-% blocks'
-betweenRuns.randomizeSequence=1; % 'random sequence'
 
 % delay > masker > gap > target
-
 stimulusParameters.stimulusDelay=0.3;
 
 % maskerTypes={'tone','noise', 'pinkNoise','TEN','whiteNoise'};
-stimulusParameters.maskerType='tone';
-stimulusParameters.maskerPhase='sin';
-stimulusParameters.maskerDuration=0.0;
-stimulusParameters.maskerLevel= -50;
-stimulusParameters.maskerRelativeFrequency= 1 ;  % not used
+experiment.maskerInUse=0;
 
 stimulusParameters.gapDuration=0.0;
 

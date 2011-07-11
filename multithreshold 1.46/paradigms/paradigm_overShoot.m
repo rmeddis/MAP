@@ -1,5 +1,5 @@
 function paradigm_overShoot(handles)
-global stimulusParameters  betweenRuns
+global stimulusParameters  betweenRuns experiment
 
 paradigm_training(handles) % default
 
@@ -14,11 +14,11 @@ betweenRuns.variableList1=[-.399 -.2];
 % betweenRuns.variableList1=[-.350 -.238 -.213 -.180 -.160 -.100 -.040 -.020 0 .010 .040 .140];
 betweenRuns.variableName2='maskerLevel';
 betweenRuns.variableList2=50;
-betweenRuns.randomizeSequence=1; % 'random sequence'
 
 % delay > masker > gap > target
 stimulusParameters.stimulusDelay=0.3;
 
+experiment.maskerInUse=1;
 stimulusParameters.maskerType='tone';
 stimulusParameters.maskerPhase='sin';
 stimulusParameters.maskerDuration=0.4;

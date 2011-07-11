@@ -16,8 +16,8 @@ betweenRuns.variableName1='targetLevel';
 betweenRuns.variableList1=25: 5: 70;
 betweenRuns.variableName2='maskerRelativeFrequency';
 betweenRuns.variableList2=[1 0.5];
-betweenRuns.randomizeSequence=1; % 'random sequence'
 
+experiment.maskerInUse=1;
 stimulusParameters.maskerType='tone';
 stimulusParameters.maskerPhase='sin';
 stimulusParameters.maskerDuration=0.104;

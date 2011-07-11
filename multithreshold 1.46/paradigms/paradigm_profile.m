@@ -7,10 +7,6 @@ betweenRuns.variableName1='targetFrequency';
 betweenRuns.variableList1=[250 500 1000 2000 4000 8000 ];
 betweenRuns.variableName2='targetDuration';
 betweenRuns.variableList2=0.016;
-betweenRuns.randomizeSequence=1; % 'random sequence'
-
-% delay > masker > gap > target
-
 
 stimulusParameters.targetType='tone';
 stimulusParameters.targetPhase='sin';

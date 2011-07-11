@@ -11,13 +11,13 @@ stimulusParameters.WRVlimits=[-30 110];
 betweenRuns.variableName1='gapDuration';
 betweenRuns.variableList1=[.005 0.01 0.02 0.04];
 betweenRuns.variableName2='maskerLevel';
-betweenRuns.variableList2=[20 40 60 80];
-betweenRuns.randomizeSequence=1; % 'random sequence'
+betweenRuns.variableList2=[80 60 40 20];
 
+experiment.maskerInUse=1;
 stimulusParameters.maskerType='tone';
-stimulusParameters.maskerPhase='sin';
+stimulusParameters.maskerPhase='cos';
 stimulusParameters.maskerDuration=0.108;
-stimulusParameters.maskerLevel=betweenRuns.variableList2;
+stimulusParameters.maskerLevel=20;
 stimulusParameters.maskerRelativeFrequency=1;
 
 stimulusParameters.gapDuration=betweenRuns.variableList1;

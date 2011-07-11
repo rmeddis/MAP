@@ -200,6 +200,8 @@ nVar2=length(variableList2);
 % Create two sequence vectors to represent the sequence of var1 and var2
 % values. 'var1' changes most rapidly.
 switch betweenRuns.randomizeSequence
+    % {'randomize within blocks', 'fixed sequence',...
+    %  'randomize across blocks'}
     case 'fixed sequence'
         var1Sequence=repmat(betweenRuns.variableList1, 1,nVar2);
         var2Sequence=reshape(repmat(betweenRuns.variableList2, ...

@@ -1471,7 +1471,8 @@ signal=signal.*ramp;
 
 
 %--------------------------------------------------------------------checkDescriptors
-function [globalStimParams, stimComponents]=checkDescriptors(globalStimParams, stimComponents);
+function [globalStimParams, stimComponents]=...
+    checkDescriptors(globalStimParams, stimComponents)
 
 try
     % if FS exists, it takes priority
@@ -1481,7 +1482,10 @@ catch
     globalStimParams.FS=1/globalStimParams.dt;
 end
 
-globalStimParams.nSignalPoints=round(globalStimParams.overallDuration/globalStimParams.dt);
+sampleRate=globalStimParams.FS;
+
+globalStimParams.nSignalPoints=...
+    round(globalStimParams.overallDuration* sampleRate);
 
 % optional field (ears)
 try
@@ -1513,8 +1517,6 @@ catch
     % no plotting unless explicitly requested
     globalStimParams.doPlot=0;
 end
-
-
 
 [ears nComponentSounds]=size(stimComponents);
 
@@ -1567,16 +1569,17 @@ for ear=1:2 % 1=left/ 2=right
 
         % end silence is measured to fit into the global duration
         if stimComponents(ear,componentNo).endSilence==-1,
-            endSilenceNpoints=...
-                globalStimParams.nSignalPoints ...
-                -round(stimComponents(ear,componentNo).beginSilence*globalStimParams.FS)...
-                -round(stimComponents(ear,componentNo).toneDuration*globalStimParams.FS);
-            stimComponents(ear,componentNo).endSilence=endSilenceNpoints/globalStimParams.FS;
-            % if endSilence < 0, we have a problem
-            if stimComponents(ear,componentNo).endSilence<0
-                globalStimParams
-                descriptorError( 'component durations greater than overallDuration', stimComponents, ear, componentNo)
-            end
+            stimComponents(ear,componentNo).endSilence=...
+                globalStimParams.overallDuration-...
+                stimComponents(ear,componentNo).beginSilence -...
+                stimComponents(ear,componentNo).toneDuration;
+            
+            endSilenceNpoints=stimComponents(ear,componentNo).endSilence...
+                *sampleRate;
+        end
+        if stimComponents(ear,componentNo).endSilence<0
+            globalStimParams
+            descriptorError( 'component durations greater than overallDuration', stimComponents, ear, componentNo)
         end
 
         % check overall duration of this component against global duration
@@ -1590,25 +1593,11 @@ for ear=1:2 % 1=left/ 2=right
             globalStimParams.overallDuration= totalDuration;
         end
 
-
-        if round(totalDuration*globalStimParams.FS)>round(globalStimParams.overallDuration*globalStimParams.FS)
-            globalStimParams
-            descriptorError( 'Component durations greater than overallDuration', stimComponents, ear, componentNo)
-        end
-
         % check total duration
-        totalSignalPoints= round((stimComponents(ear,componentNo).beginSilence+ stimComponents(ear,componentNo).toneDuration+...
-            stimComponents(ear,componentNo).endSilence)/globalStimParams.dt);
+        totalSignalPoints= round(totalDuration* sampleRate);
         if totalSignalPoints  >globalStimParams.nSignalPoints
             descriptorError( 'Signal component duration does not match overall duration ', stimComponents, ear, componentNo)
         end
-
-        % no ramps for clicks please!
-        %         if strcmp(stimComponents(ear,componentNo).type, 'clicks') & stimComponents(ear,componentNo).clickRepeatFrequency==-1
-        %         if strcmp(stimComponents(ear,componentNo).type, 'clicks')
-        %             stimComponents(ear,componentNo).rampOnDur=0;
-        %             stimComponents(ear,componentNo).rampOffDur=0;
-        %         end
 
         if isfield(stimComponents(ear,componentNo), 'filter')
             if ~isequal(length(stimComponents(ear,componentNo).filter), 3)

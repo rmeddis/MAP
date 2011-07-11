@@ -30,26 +30,26 @@ betweenRuns.variableName1='targetFrequency';
 betweenRuns.variableList1=1000;
 betweenRuns.variableName2='targetDuration';
 betweenRuns.variableList2=0.1 ;
-% 1='fixed sequence', 2='randomize within blocks', 3='randomize across
-% blocks'
-betweenRuns.randomizeSequence=1; % 'random sequence'
+% 'randomize within blocks', 'fixed sequence', 'randomize across blocks'
+betweenRuns.randomizeSequence='randomize within blocks'; 
 
 % delay > masker > gap > target
 
 stimulusParameters.stimulusDelay=0.3;
 
 % maskerTypes={'tone','noise', 'pinkNoise','TEN','whiteNoise'};
+experiment.maskerInUse=0;
 stimulusParameters.maskerType='tone';
-stimulusParameters.maskerPhase='sin';
+stimulusParameters.maskerPhase='cos';
 stimulusParameters.maskerDuration=0.0;
 stimulusParameters.maskerLevel= -50;
-stimulusParameters.maskerRelativeFrequency= 1 ;  % not used
+stimulusParameters.maskerRelativeFrequency= 1 ; 
 
 stimulusParameters.gapDuration=0.0;
 
 % targetTypes={'tone','noise', 'pinkNoise','whiteNoise','OHIO'};
 stimulusParameters.targetType='tone';
-stimulusParameters.targetPhase='sin';
+stimulusParameters.targetPhase='cos'; %{'sin','cos','alt','rand'}
 stimulusParameters.targetFrequency=1000;
 stimulusParameters.targetDuration=0.1;
 stimulusParameters.targetLevel=stimulusParameters.WRVstartValues(1);

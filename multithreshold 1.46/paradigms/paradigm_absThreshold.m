@@ -8,6 +8,8 @@ betweenRuns.variableList1=[250 500 1000 2000 4000 8000 ];
 betweenRuns.variableName2='targetDuration';
 betweenRuns.variableList2= 0.25;
 
+experiment.maskerInUse=0;
+
 stimulusParameters.targetFrequency=betweenRuns.variableList1;
 stimulusParameters.targetDuration=betweenRuns.variableList2;
 stimulusParameters.targetLevel=stimulusParameters.WRVstartValues(1);

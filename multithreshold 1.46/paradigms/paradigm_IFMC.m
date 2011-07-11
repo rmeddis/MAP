@@ -16,8 +16,10 @@ betweenRuns.variableList1=[1       0.5       1.6   .9 .7   1.1 1.3      ];
 betweenRuns.variableName2='targetFrequency';
 % keep old list of target frequencies
 betweenRuns.variableList2=str2num(get(handles.edittargetFrequency,'string'));
-betweenRuns.randomizeSequence=1; % 'random sequence'
 
+experiment.maskerInUse=1;
+stimulusParameters.maskerType='tone';
+stimulusParameters.maskerPhase='sin';
 stimulusParameters.maskerDuration=0.108;
 stimulusParameters.maskerLevel=stimulusParameters.WRVstartValues(1);
 stimulusParameters.maskerRelativeFrequency=betweenRuns.variableList1;

@@ -8,10 +8,8 @@ betweenRuns.variableList1=1000;
 betweenRuns.variableList1=str2num(get(handles.edittargetFrequency,'string'));
 betweenRuns.variableName2='targetDuration';
 betweenRuns.variableList2=0.016;
-betweenRuns.randomizeSequence=1; % 'random sequence'
 
-% delay > masker > gap > target
-
+experiment.maskerInUse=0;
 
 stimulusParameters.targetType='tone';
 stimulusParameters.targetPhase='sin';

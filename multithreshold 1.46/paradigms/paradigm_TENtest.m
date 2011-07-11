@@ -12,7 +12,8 @@ betweenRuns.variableName1='targetFrequency';
 betweenRuns.variableList1=[250 500 1000 2000 4000 8000 ];
 betweenRuns.variableName2='targetDuration';
 betweenRuns.variableList2= 0.25;
-betweenRuns.randomizeSequence=1; % 'random sequence'
+
+experiment.maskerInUse=0;
 
 stimulusParameters.targetType='tone';
 stimulusParameters.targetPhase='sin';

@@ -85,38 +85,37 @@ function varargout = expGUI_MT_OutputFcn(hObject, eventdata, handles)
 % Get default command line output from handles structure
 initializeGUI(handles)
 varargout{1} = handles.output;
-setLocationOfGUIs(handles)
 
-function setLocationOfGUIs(handles)
-global checkForPreviousGUI  % holds screen positioning across repeated calls
-scrnsize=get(0,'screensize');
-checkForPreviousGUI=[];
-% if isstruct(checkForPreviousGUI)...
-%         && checkForPreviousGUI.GUIalreadyStarted==1 ...
-%         && isfield(checkForPreviousGUI,'GUIposition')
-%     set(handles.figure1,'position',checkForPreviousGUI.GUIposition)
-% else
-%     % relocate the GUI only if this is the first time of use
-%     set(0, 'units','pixels')
-%     % occupies top to bottom of screen but only 60% width
-%     % [left bottom width height]
-%     firstPos=[0.01*scrnsize(4) 0.03*scrnsize(3) 0.6*scrnsize(3) 0.92*scrnsize(4)];
-%     firstPos=[4 0.045*scrnsize(4) 0.6*scrnsize(3) 0.93*scrnsize(4)];
-%     set(handles.figure1, 'units','pixels')
-%     set(handles.figure1,'position',firstPos)
-%     checkForPreviousGUI.GUIalreadyStarted=1;
-%     checkForPreviousGUI.GUIposition=firstPos;
-% end
-set(handles.figure1,'color',[.871 .961 .996])
-set(handles.figure1,'name', pwd)
-
-% MAP model figure; sits alongside GUI if requested
-figure(99)
-% [left bottom width height]
-MAPpos=[0.615*scrnsize(3) 0.05*scrnsize(4) 0.15*scrnsize(3) 0.85*scrnsize(4)];
-% visible only on request.
-set(gcf,'position',MAPpos , 'visible','off')
-
+% function setLocationOfGUIs(handles)
+% global checkForPreviousGUI  % holds screen positioning across repeated calls
+% scrnsize=get(0,'screensize');
+% checkForPreviousGUI=[];
+% % if isstruct(checkForPreviousGUI)...
+% %         && checkForPreviousGUI.GUIalreadyStarted==1 ...
+% %         && isfield(checkForPreviousGUI,'GUIposition')
+% %     set(handles.figure1,'position',checkForPreviousGUI.GUIposition)
+% % else
+% %     % relocate the GUI only if this is the first time of use
+% %     set(0, 'units','pixels')
+% %     % occupies top to bottom of screen but only 60% width
+% %     % [left bottom width height]
+% %     firstPos=[0.01*scrnsize(4) 0.03*scrnsize(3) 0.6*scrnsize(3) 0.92*scrnsize(4)];
+% %     firstPos=[4 0.045*scrnsize(4) 0.6*scrnsize(3) 0.93*scrnsize(4)];
+% %     set(handles.figure1, 'units','pixels')
+% %     set(handles.figure1,'position',firstPos)
+% %     checkForPreviousGUI.GUIalreadyStarted=1;
+% %     checkForPreviousGUI.GUIposition=firstPos;
+% % end
+% set(handles.figure1,'color',[.871 .961 .996])
+% set(handles.figure1,'name', pwd)
+% 
+% % MAP model figure; sits alongside GUI if requested
+% figure(99)
+% % [left bottom width height]
+% MAPpos=[0.615*scrnsize(3) 0.05*scrnsize(4) 0.15*scrnsize(3) 0.85*scrnsize(4)];
+% % visible only on request.
+% set(gcf,'position',MAPpos , 'visible','off')
+% 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -128,19 +127,12 @@ global stimulusParameters experiment betweenRuns
 global targetTypes maskerTypes backgroundTypes
 global variableNames paradigmNames threshEstNames  cueNames
 
-% dbstop if error         % allow for debugging and user error reporting
-% dbstop if warning
-
-% specify structure fields for pretty automatic printing
-% It also initialises some simple variables
+% Specify order of fields in main structures
+% identify as empty values or empty strings only
 orderGlobals
 
-addpath ('paradigms')   % preset paradigm informations is stored here
-% filesep is usd to be compatible with other operating systems
-% addpath (['..' filesep 'modules'], ['..' filesep 'utilities'], ...
-%     ['..' filesep 'parameterStore'],  ['..' filesep 'wavFileStore'],...
-%     ['..' filesep 'testPrograms'])
-addpath (['..' filesep 'testPrograms'])
+addpath ('paradigms')   %paradigm informations is stored here
+addpath (['..' filesep 'testPrograms']) % model physiology tests
 
 % specify all variables that  need to be set on the GUI
 variableNames={'stimulusDelay','maskerDuration','maskerLevel',...
@@ -149,19 +141,13 @@ variableNames={'stimulusDelay','maskerDuration','maskerLevel',...
     'cueTestDifference', 'WRVstartValues', 'WRVsteps', 'WRVlimits'};
 
 % Variable variables
-% (specifies paradigm paramaters that can changed on a 'between runs' basis)
-% make them options in the two between runs variable menus
-% NB 'numOHIOtones' is used only to solve a problem; it should not be
-% selected manually
+%  (names of variable that can changed between runs)
 betweenRunsVariables={'stimulusDelay','maskerDuration','maskerLevel',...
     'maskerRelativeFrequency','targetFrequency', 'gapDuration',...
     'targetDuration','targetLevel','numOHIOtones'};
+% populate the 'between runs variable' menus
 set(handles.popupmenuVaryParameter1,'string',betweenRunsVariables)
 set(handles.popupmenuVaryParameter2,'string',betweenRunsVariables)
-
-% NB 'Warning: popupmenu control requires a scalar Value'
-% indicates that an inappropriate 'value' is being set.
-% when testing for this, always clear the GUI before running
 
 % Trial presentation order - randomize at startup
 presentationOrderNames={'randomize within blocks', 'fixed sequence', ...
@@ -184,13 +170,14 @@ backgroundTypes={'none','noise', 'pinkNoise', 'TEN','noiseDich',...
     '16TalkerBabble','8TalkerBabble','4TalkerBabble',...
     '4TalkerReversedBabble','2TalkerBabble','1TalkerBabble'};
 set(handles.popupmenuBackgroundType, 'string', backgroundTypes);
-set(handles.editBackgroundLevel,'string',...
-    num2str(stimulusParameters.backgroundLevel))
+set(handles.editBackgroundLevel,'string', '0')
 
 % Establish available paradigms by scanning paradigms folder
 paradigmNames= what('paradigms');
-paradigmNames=paradigmNames.m;       % m files only
-for i=1:length(paradigmNames), paradigmNames{i}=paradigmNames{i}(10:end-2); end
+paradigmNames= paradigmNames.m; % select m files only
+for i=1:length(paradigmNames)   % strip off file extension
+    paradigmNames{i}=paradigmNames{i}(10:end-2); 
+end
 set(handles.popupmenuParadigm,'string', paradigmNames)
 
 % startup paradigm, 'training' (could be anywhere on the list)
@@ -199,7 +186,7 @@ idx= find(strcmp(paradigmNames,startupParadigm));
 if ~isempty(idx)
     set(handles.popupmenuParadigm,'value', idx)
 else
-    % training paradigm is always the startup paradigm
+    % training paradigm must exist
     error(['expGUI_MT\initializeGUI: No ' startupParadigm...
         ' paradigm found in paradigms folder'])
 end
@@ -213,13 +200,15 @@ experiment.ear=earOptions{defaultOption};
 set(handles.popupmenuEar,'value', defaultOption)    % 'left' is deafult
 set(handles.pushbuttonSingleShot, 'visible', 'off') % use only for MAP
 
-% masker phase box- value must be set in paradigm
+% phase
 phaseOptions={'sin','cos','alt','rand'};
 set(handles.popupmenuPhase,'string', phaseOptions)
+set(handles.popupmenuPhase,'value', 1)
 
 % Cue
 cueNames={'cued', 'noCue'};
 set(handles.popupmenuCueNoCue, 'string', cueNames);
+set(handles.popupmenuCueNoCue, 'value', 1);
 
 % threshold assessment method - value must be set in paradigm
 threshEstNames={'oneIntervalUpDown', 'MaxLikelihood', ...
@@ -265,7 +254,7 @@ experiment.functionEstMethod='logisticLS';
 
 % message box
 set(handles.textMSG,'backgroundcolor', 'w', 'ForegroundColor', 'b', 'string', '')
-set(handles.editMsgFont,'string','7')
+set(handles.editMsgFont,'string','10')
 set(handles.editSubjectFont,'string','14')
 
 % default psychometric bin size and logistic slopes
@@ -328,14 +317,17 @@ catch
 end
 rmpath ('paradigms')
 
-switch experiment.paradigm
-    % identify masker free paradigms
-    case {'training', 'discomfort','absThreshold', 'absThreshold_8',...
-            'absThreshold_16','TENtest', 'threshold_duration','SRT'...
-            'paradigm_thr_IFMC'}
-        experiment.maskerInUse=0;
-    otherwise
-        experiment.maskerInUse=1;
+if ~isfield(experiment,'maskerInUse')
+    error('selected paradigm does not specify if masker is used')
+end
+
+
+if ~experiment.maskerInUse
+    stimulusParameters.maskerType='tone';
+    stimulusParameters.maskerPhase='sin';
+    stimulusParameters.maskerDuration=0.0;
+    stimulusParameters.maskerLevel= -50;
+    stimulusParameters.maskerRelativeFrequency= 1 ;
 end
 
 % if a variable is subject to change, specify list of values here
@@ -348,8 +340,15 @@ cmd=['stimulusParameters.' ...
 eval (cmd);
 
 % establish popup menus on the basis of the paradigm file
-set(handles.popupmenuRandomize,'value', betweenRuns.randomizeSequence)
-set(handles.popupmenuPhase,'string', stimulusParameters.maskerPhase)
+% set(handles.popupmenuRandomize,'value', betweenRuns.randomizeSequence)
+sequenceOptions=get(handles.popupmenuRandomize,'string');
+idx=find(strcmp(betweenRuns.randomizeSequence, sequenceOptions)==1);
+set(handles.popupmenuRandomize,'value', idx)
+
+phaseOptions=get(handles.popupmenuPhase,'string');
+idx=find(strcmp(stimulusParameters.maskerPhase, phaseOptions)==1);
+set(handles.popupmenuPhase,'value', idx)
+
 if stimulusParameters.includeCue
     set(handles.popupmenuCueNoCue,'value', 1)
 else
@@ -614,6 +613,8 @@ global checkForPreviousGUI % holds screen positioning across repeated calls
 global experiment betweenRuns paradigmNames errormsg
 checkForPreviousGUI.GUIposition=get(handles.figure1,'position');
 experiment.singleShot=0;
+experiment.stop=0;
+
 switch experiment.paradigm
     case 'profile'
         %% special option for two successive and linked measurements
@@ -784,6 +785,8 @@ switch experiment.ear
             'MAPmodelSingleCh', 'MAPmodelListen'}
         % MAPmodel writes forced parameter settings to the screen
         %  so that they can be read from there
+        % {'randomize within blocks', 'fixed sequence',...
+        %  'randomize across blocks'}
         set(handles.popupmenuRandomize,'value',2)       % fixed sequence
         set(handles.editstimulusDelay,'string','0.01')  % no stimulus delay
         stimulusParameters.includeCue=0;                % no cue for MAP
@@ -1301,8 +1304,8 @@ experiment.absThresholds=	[];
 experiment.threshEstMethod=	'';
 experiment.functionEstMethod=	'';
 experiment.psyBinWidth=	[];
-experiment.maxLogisticK=2;
-experiment.numPossLogisticK=100;
+experiment.maxLogisticK=[];
+experiment.numPossLogisticK=[];
 experiment.possLogSlopes=	[];
 experiment.meanSearchStep=	[];
 experiment.psyFunSlope=	[];
@@ -1311,7 +1314,7 @@ experiment.predictionLevels=[];
 experiment.buttonBoxType=	'';
 experiment.buttonBoxStatus=	'';
 experiment.status=	'';
-experiment.stop=	0;
+experiment.stop=	[];
 experiment.pleaseRepeat=	[];
 experiment.justInitialized=[];
 
@@ -1334,8 +1337,6 @@ betweenRuns.var2Sequence=	[];
 betweenRuns.randomizeSequence=[];
 betweenRuns.timeNow=	[];
 betweenRuns.runNumber=	[];
-% betweenRuns.variableCount1=	[];
-% betweenRuns.variableCount2=	[];
 betweenRuns.thresholds=	[];
 betweenRuns.forceThresholds=	[];
 betweenRuns.observationCount=	[];
@@ -1357,8 +1358,8 @@ betweenRuns.caughtOut=	[];
 
 withinRuns=[];
 withinRuns.trialNumber=[];
-withinRuns.nowInPhase2=0;
-withinRuns.beginningOfPhase2=0;
+withinRuns.nowInPhase2=[];
+withinRuns.beginningOfPhase2=[];
 withinRuns.variableValue=[];
 withinRuns.direction='';
 withinRuns.peaks=[];
@@ -1375,7 +1376,7 @@ withinRuns.catchTrial=	[];
 withinRuns.caughtOut=[];
 withinRuns.catchTrialCount=[];
 withinRuns.wrongButton=	[];
-withinRuns.babblePlaying=0;
+withinRuns.babblePlaying=[];
 
 % --- Executes on selection change in popupmenuBackgroundType.
 function popupmenuBackgroundType_Callback(hObject, eventdata, handles)

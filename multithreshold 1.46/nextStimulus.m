@@ -560,7 +560,7 @@ duration(2)=precedingSilence+maskerDuration+gapDuration...
 duration(3)=precedingSilence+maskerDuration+ terminalSilence;
 globalStimParams.overallDuration=max(duration);
 globalStimParams.nSignalPoints=...
-    round(globalStimParams.overallDuration/globalStimParams.dt);
+    round(globalStimParams.overallDuration*globalStimParams.FS);
 
 %           ----------------------------------------------cue stimulus
 % cue masker
