@@ -4,7 +4,7 @@ function UTIL_showMAP (showMapOptions, paramChanges)
 %  simply assumes that they are in place.
 %
 % showMapOptions
-% showMapOptions.printModelParameters=1; % print model parameters 
+% showMapOptions.printModelParameters=1; % print model parameters
 % showMapOptions.showModelOutput=1;      % plot all stages output
 % showMapOptions.printFiringRates=1;     % mean activity at all stages
 % showMapOptions.showACF=1;              % SACF (probabilities only)
@@ -14,13 +14,15 @@ function UTIL_showMAP (showMapOptions, paramChanges)
 
 dbstop if warning
 
-global dt ANdt saveAN_spikesOrProbability savedBFlist saveMAPparamsName...
-    savedInputSignal TMoutput OMEoutput ARattenuation ...
+global dt ANdt  savedBFlist saveAN_spikesOrProbability saveMAPparamsName...
+    savedInputSignal OMEextEarPressure TMoutput OMEoutput ARattenuation ...
     DRNLoutput IHC_cilia_output IHCrestingCiliaCond IHCrestingV...
-    IHCoutput ANprobRateOutput ANoutput savePavailable tauCas  ...
-    CNoutput  ICoutput ICmembraneOutput ICfiberTypeRates MOCattenuation
+    IHCoutput ANprobRateOutput ANoutput savePavailable ANtauCas  ...
+    CNtauGk CNoutput  ICoutput ICmembraneOutput ICfiberTypeRates ...
+    MOCattenuation
 global OMEParams DRNLParams IHC_cilia_RPParams IHCpreSynapseParams
 global AN_IHCsynapseParams MacGregorParams MacGregorMultiParams
+global ICrate
 
 
 restorePath=path;
@@ -31,7 +33,7 @@ if nargin<1
 end
 % defaults (plot staged outputs and print rates only) if options omitted
 if ~isfield(showMapOptions,'printModelParameters')
-        showMapOptions.printModelParameters=0; end
+    showMapOptions.printModelParameters=0; end
 if ~isfield(showMapOptions,'showModelOutput'),showMapOptions.showModelOutput=1;end
 if ~isfield(showMapOptions,'printFiringRates'),showMapOptions.printFiringRates=1;end
 if ~isfield(showMapOptions,'showACF'),showMapOptions.showACF=0;end
@@ -39,6 +41,7 @@ if ~isfield(showMapOptions,'showEfferent'),showMapOptions.showEfferent=0;end
 if ~isfield(showMapOptions,'surfProbability'),showMapOptions.surfProbability=0;end
 if ~isfield(showMapOptions,'fileName'),showMapOptions.fileName=[];end
 if ~isfield(showMapOptions,'surfSpikes'),showMapOptions.surfSpikes=0;end
+if ~isfield(showMapOptions,'ICrates'),showMapOptions.ICrates=0;end
 
 %% send all model parameters to command window
 if showMapOptions.printModelParameters
@@ -61,22 +64,25 @@ if showMapOptions.printFiringRates
     disp('summary')
     disp(['AR: ' num2str(min(ARattenuation))])
     disp(['MOC: ' num2str(min(min(MOCattenuation)))])
-    nANfiberTypes=length(tauCas);
+    nANfiberTypes=length(ANtauCas);
     if strcmp(saveAN_spikesOrProbability, 'spikes')
         nANfibers=size(ANoutput,1);
         nHSRfibers=nANfibers/nANfiberTypes;
         duration=size(TMoutput,2)*dt;
-        disp(['AN: ' num2str(sum(sum(ANoutput(end-nHSRfibers+1:end,:)))/...
+        disp(['AN(HSR): ' num2str(sum(sum(ANoutput(end-nHSRfibers+1:end,:)))/...
             (nHSRfibers*duration))])
 
         nCNneurons=size(CNoutput,1);
         nHSRCNneuronss=nCNneurons/nANfiberTypes;
-        disp(['CN: ' num2str(sum(sum(CNoutput(end-nHSRCNneuronss+1:end,:)))...
+        disp(['CN(HSR): ' num2str(sum(sum(CNoutput(end-nHSRCNneuronss+1:end,:)))...
             /(nHSRCNneuronss*duration))])
-        disp(['IC: ' num2str(sum(sum(ICoutput))/duration)])
+        nICneurons=size(ICoutput,1);
+        nHSRICneurons= round(nICneurons/nANfiberTypes);
+        ICrate=sum(sum(ICoutput(end-nHSRICneurons:end,:)))/duration/nHSRICneurons;
+        disp(['IC(HSR): ' num2str(ICrate)])
         %         disp(['IC by type: ' num2str(mean(ICfiberTypeRates,2)')])
     else
-    HSRprobOutput= ANprobRateOutput(end-length(savedBFlist)+1:end,:);
+        HSRprobOutput= ANprobRateOutput(end-length(savedBFlist)+1:end,:);
         disp(['AN(HSR): ' num2str(mean(mean(HSRprobOutput)))])
         PSTH= UTIL_PSTHmakerb(HSRprobOutput, dt, 0.001);
         disp(['max max AN: ' num2str(max(max(PSTH)))])
@@ -120,7 +126,7 @@ if showMapOptions.showModelOutput
             plotInstructions.yLabel='BF';
             plotInstructions.yValues= savedBFlist;
             plotInstructions.rasterDotSize=1;
-            if length(tauCas)==2
+            if length(ANtauCas)==2
                 plotInstructions.plotDivider=1;
             else
                 plotInstructions.plotDivider=0;
@@ -143,7 +149,7 @@ if showMapOptions.showModelOutput
             plotInstructions.displaydt=ANdt;
             plotInstructions.subPlotNo=6;
             plotInstructions.title='IC';
-            if size(ICoutput,1)>3
+            if size(ICoutput,1)>1
                 if sum(sum(ICoutput))<100
                     plotInstructions.rasterDotSize=3;
                 end
@@ -158,7 +164,7 @@ if showMapOptions.showModelOutput
 
         otherwise % AN rate based on probability of firing
             PSTHbinWidth=0.001;
-        PSTH= UTIL_PSTHmakerb(ANprobRateOutput, dt, PSTHbinWidth);
+            PSTH= UTIL_PSTHmakerb(ANprobRateOutput, dt, PSTHbinWidth);
             plotInstructions.displaydt=PSTHbinWidth;
             plotInstructions.numPlots=2;
             plotInstructions.subPlotNo=2;
@@ -172,32 +178,32 @@ if showMapOptions.showModelOutput
     end
 end
 
-if showMapOptions.surfProbability
+if showMapOptions.surfProbability &&...
+        strcmp(saveAN_spikesOrProbability,'probability') && ...
+        length(savedBFlist)>2
     %% surface plot of probability
-    if strcmp(saveAN_spikesOrProbability,'probability') && ...
-            length(savedBFlist)>2
-    figure(97), clf
-    % select only HSR fibers at the bottom of the matrix
-    HSRprobOutput= ANprobRateOutput(end-length(savedBFlist)+1:end,:);
-    PSTHbinWidth=0.001;
-    PSTH=UTIL_PSTHmakerb(HSRprobOutput, ANdt, PSTHbinWidth);
-    [nY nX]=size(PSTH);
-    time=PSTHbinWidth*(1:nX);
-    surf(time, savedBFlist, PSTH)
-    shading interp
-    set(gca, 'yScale','log')
-    xlim([0 max(time)])
-    ylim([0 max(savedBFlist)])
-    zlim([0 2000])
-    xlabel('time (s)')
-    ylabel('best frequency (Hz)')
-    zlabel('spike rate')
-    view([-20 60])
-    %     view([0 90])
-            disp(['max max AN: ' num2str(max(max(PSTH)))])
+        % select only HSR fibers
+        figure(97), clf
+        HSRprobOutput= ANprobRateOutput(end-length(savedBFlist)+1:end,:);
+        PSTHbinWidth=0.001;
+        PSTH=UTIL_PSTHmakerb(HSRprobOutput, ANdt, PSTHbinWidth);
+        [nY nX]=size(PSTH);
+        time=PSTHbinWidth*(1:nX);
+        surf(time, savedBFlist, PSTH)
+        shading interp
+        set(gca, 'yScale','log')
+        xlim([0 max(time)])
+        ylim([0 max(savedBFlist)])
+        zlim([0 1000])
+        xlabel('time (s)')
+        ylabel('best frequency (Hz)')
+        zlabel('spike rate')
+        view([-20 60])
+        %     view([0 90])
+        disp(['max max AN: ' num2str(max(max(PSTH)))])
 
-    title ([showMapOptions.fileName ':   ' num2str(signalRMSdb,'% 3.0f') ' dB'])
-    end
+        title (['firing probability of HSR fibers only. Level= ' ...
+            num2str(signalRMSdb,'% 3.0f') ' dB'])
 end
 
 if showMapOptions.surfSpikes
@@ -214,7 +220,7 @@ if showMapOptions.surfSpikes
     set(gca, 'yScale','log')
     xlim([0 max(time)])
     ylim([0 max(savedBFlist)])
-%     zlim([0 1000])
+    %     zlim([0 1000])
     xlabel('time (s)')
     ylabel('best frequency (Hz)')
     zlabel('spike rate')
@@ -320,3 +326,20 @@ if showMapOptions.showACF
 end
 
 path(restorePath)
+
+%% IC chopper analysis
+global ICrate
+if showMapOptions.ICrates
+[r nEpochs]=size(ICoutput);
+ICrate=zeros(1,length(CNtauGk));
+% convert ICoutput to a 4-D matrix (time, CNtau, BF, fiberType)
+%  NB only one IC unit for any combination.
+y=reshape(ICoutput', ...
+    nEpochs, length(CNtauGk),length(savedBFlist),length(ANtauCas));
+for i=1:length(CNtauGk)
+    ICrate(i)=sum(sum(sum(y(:,i,:,:))))/duration;
+    fprintf('%10.5f\t%6.0f\n', CNtauGk(i), ICrate(i))
+end
+figure(95), plot(CNtauGk,ICrate)
+title ('ICrate'), xlabel('CNtauGk'), ylabel('ICrate')
+end

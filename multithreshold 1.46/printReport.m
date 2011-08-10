@@ -4,16 +4,16 @@ function printReport(fileName, printTracks)
 % *or*
 % reprint previous report from file
 
-global experiment stimulusParameters betweenRuns withinRuns statsModel   audio
+global experiment stimulusParameters betweenRuns withinRuns statsModel
 global LevittControl expGUIhandles
 global paramChanges
 
+% NB all globals are used even though this is not obvious
 global inputStimulusParams OMEParams DRNLParams
 global IHC_VResp_VivoParams IHCpreSynapseParams  AN_IHCsynapseParams
 global MacGregorParams MacGregorMultiParams  filteredSACFParams
 global experiment % used by calls from multiThreshold only
 global IHC_cilia_RPParams
-
 
 printReportGuide.structures=1;
 printReportGuide.showPsychometric=0;
@@ -35,7 +35,7 @@ if nargin==0
     save(saveFileName, 'experiment', 'stimulusParameters',...
         'betweenRuns', 'withinRuns', 'statsModel', 'expGUIhandles')
     disp(['data saved as: ' saveFileName]);
-    
+
 else
     % reprint request (i.e print out old data)
     printReportGuide.fileName=fileName;
@@ -85,8 +85,10 @@ resultsTable= sortTablesForPrinting(idx1,idx2,...
     var1values,var2values, betweenRuns.thresholds);
 msg=printTabTable(resultsTable,  headers);
 addToMsg(msg,0)
-fprintf('\n')
-disp(paramChanges)
+if ~isempty(paramChanges)
+    fprintf('\n')
+    disp(paramChanges)
+end
 
 % sort tracks into the same order
 betweenRuns.levelTracks=betweenRuns.levelTracks(idx1);
@@ -98,19 +100,22 @@ betweenRuns.bestThresholdTracks=betweenRuns.bestThresholdTracks(idx2);
 
 if printReportGuide.structures
     maxNoArrayValues=30;
-    showStructureSummary(stimulusParameters, 'stimulusParameters', maxNoArrayValues)
+    showStructureSummary(stimulusParameters, 'stimulusParameters', ...
+        maxNoArrayValues)
     showStructureSummary(experiment, 'experiment',maxNoArrayValues)
     showStructureSummary(betweenRuns, 'betweenRuns',maxNoArrayValues)
     showStructureSummary(withinRuns, 'withinRuns')
-    
+
     switch experiment.threshEstMethod
         case {'2I2AFC++', '2I2AFC+++'}
-            showStructureSummary(LevittControl, 'LevittControl', maxNoArrayValues)
+            showStructureSummary(LevittControl, 'LevittControl', ...
+                maxNoArrayValues)
     end
-    
+
     switch experiment.ear
         case {'statsModelLogistic','statsModelRareEvent'}
-            showStructureSummary(statsModel, 'statsModel', maxNoArrayValues)
+            showStructureSummary(statsModel, 'statsModel', ...
+                maxNoArrayValues)
     end
 end
 
@@ -118,22 +123,24 @@ if printReportGuide.showTracks
     % NB this procedure can only be used if all the tracks are present and
     % of equal length
     bigTable=[]; header=[];
-    disp(' '); disp('Leveltracks starting from 1 response before the first reversal')
+    disp(' '); 
+    disp('Leveltracks starting from 1 response before the first reversal')
     for i=1:length(betweenRuns.levelTracks)
         if printReportGuide.HorizontalTracks
             printTabTable(betweenRuns.levelTracks{i});
         end
         header=strvcat(header, 'level');
     end
-    
-    disp(' '); disp('Response tracks starting from 1 response before the first reversal')
+
+    disp(' '); 
+    disp('Response tracks  from 1 response before the first reversal')
     for i=1:length(betweenRuns.responseTracks)
         if printReportGuide.HorizontalTracks
             printTabTable(betweenRuns.responseTracks{i});
         end
         header=strvcat(header, 'resp');
     end
-    
+
     disp(' '); disp('threshold tracks starting from the first reversal')
     for i=1:length(betweenRuns.bestThresholdTracks)
         if printReportGuide.HorizontalTracks
@@ -141,7 +148,7 @@ if printReportGuide.showTracks
         printTabTable(betweenRuns.bestThresholdTracks{i});
         header=strvcat(header, 'mean');
     end
-    
+
 end
 
 switch experiment.ear
@@ -166,27 +173,32 @@ end
 fprintf('\n')
 fprintf('\n')
 disp('thresholds')
-msg=printTabTable(sortTablesForPrinting(idx1,idx2,var1values,var2values, betweenRuns.thresholds),  headers);
+msg=printTabTable(sortTablesForPrinting...
+    (idx1,idx2,var1values,var2values, betweenRuns.thresholds),  headers);
 addToMsg(msg,0)
 fprintf('\n')
 
-if length(var1values)==1 && length(var2values)==1 && experiment.maxTrials>49
-    [psy, levelsBinVector, binFrequencies, nNo, nYes]= ...
-        psychometricFunction(withinRuns.levelsPhaseTwo,withinRuns.responsesPhaseTwo, experiment.psyBinWidth);
+if length(var1values)==1 && length(var2values)==1 ...
+        && experiment.maxTrials>49
+    [psy, levelsBinVector, binFrequencies]= ...
+        psychometricFunction(withinRuns.levelsPhaseTwo,...
+        withinRuns.responsesPhaseTwo, experiment.psyBinWidth);
     disp('Psychometric function')
     fprintf(' level  \tfreq\tprob\n')
-    fprintf('%6.0f\t%6.2f\t%6.0f\n', [levelsBinVector; binFrequencies; psy])
+    fprintf('%6.0f\t%6.2f\t%6.0f\n',[levelsBinVector; binFrequencies; psy])
     fprintf('\n')
     fprintf('k \t %6.2f\n',logistic.bestK)
     fprintf('g  \t%7.5f\n',rareEvent.bestGain)
     fprintf('\n')
-    
+
 end
 
 fprintf('\nparadigm:\t%s\n ', experiment.paradigm)
-disp(paramChanges)
+if ~isempty(paramChanges)
+    disp(paramChanges)
+end
 
-% ------------------------------------------------------- sortTablesForPrinting
+% ------------------------------------------------- sortTablesForPrinting
 function table= sortTablesForPrinting(idx1,idx2, var1values,var2values, x)
 % table converts a vector to a table
 % after sorting according to idx1 and idx2
@@ -197,7 +209,7 @@ xMatrix=reshape(x,length(var1values),length(var2values));
 
 table=[[-1000 var2values]; [var1values' xMatrix]];
 
-% ------------------------------------------------------- showStructureSummary
+% --------------------------------------------------- showStructureSummary
 function showStructureSummary(structure, name, maxNoArrayValues)
 % showStructureSummary prints out the values of a single structure
 % The header is the structure name and each row is a field
@@ -224,32 +236,33 @@ for i=1:length(fields)
             % vectors
             [r c]=size(y);
             if r>c, y=y'; end
-            
+
             [r c]=size(y);
             if r>1
-                %                 fprintf('\n%s.%s=\t%g x %g matrix',name, fields{i}, r, c)
+                % fprintf('\n%s.%s=\t%g x %g matrix',name, fields{i}, r, c)
                 fprintf('\n%s=\t%g x %g matrix',fields{i}, r, c)
-                
+
             elseif c<maxNoArrayValues
-                %                     fprintf('\n%s=\t[%s]',  fields{i},num2str(y))
+                %  fprintf('\n%s=\t[%s]',  fields{i},num2str(y))
                 fprintf('\n%s=',  fields{i})
                 fprintf('\t%g',y)
-                
+
             else
-                fprintf('\n%s=\t %g...   [%g element array]', fields{i}, y(1),c)
+                fprintf('\n%s=\t %g...   [%g element array]', ...
+                    fields{i}, y(1),c)
             end
         else
             % single valued arrays
-            %             fprintf('\n%s.%s=\t%s;', name, fields{i},num2str(y))
+            % fprintf('\n%s.%s=\t%s;', name, fields{i},num2str(y))
             fprintf('\n%s=\t%s', fields{i},num2str(y))
         end
     elseif iscell(y)
         fprintf('\n%s=\t cell array', fields{i})
-        
+
     elseif isstruct(y)
         fprintf('\n%s=\t structure', fields{i})
     end,
-    
+
 end,
 fprintf('\n')
 
@@ -267,7 +280,8 @@ if nargin>1
     for no=1:r
         % print all headers in a row
         fprintf('%s\t',headers(no,:))
-        strings{stringCount}=sprintf('%s\t',headers(no,:)); stringCount=stringCount+1;
+        strings{stringCount}=...
+            sprintf('%s\t',headers(no,:)); stringCount=stringCount+1;
     end
     fprintf('\n')
 end
@@ -277,7 +291,7 @@ end
 for row=1:r
     string=[];
     for col=1:c
-        if row==1 & col==1 & M(1,1)==-1000
+        if row==1 && col==1 && M(1,1)==-1000
             %   Print nothing (tab follows below)
         else
             fprintf('%s',num2str(M(row,col)))
@@ -285,7 +299,7 @@ for row=1:r
         end
         if col<c
             fprintf('\t')
-            % 			strings{stringCount}=sprintf('\t'); stringCount=stringCount+1;
+            %strings{stringCount}=sprintf('\t'); stringCount=stringCount+1;
         end
     end % col
     strings{stringCount}=string; stringCount=stringCount+1;

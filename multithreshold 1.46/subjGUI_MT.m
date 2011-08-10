@@ -1451,7 +1451,7 @@ showPlotsAndDetails=experiment.MAPplot;
 
 % important buried constant ##??
 AN_spikesOrProbability='spikes';
-AN_spikesOrProbability='probability';
+% AN_spikesOrProbability='probability';
 
 % [response, method]=MAPsequenceSeg(audio, method, 1:8);
 

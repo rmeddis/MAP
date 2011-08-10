@@ -1,12 +1,9 @@
 function vectorStrength=testANprob(targetFrequency,BFlist, levels, ...
     paramsName, paramChanges)
-% testIHC used either for IHC I/O function ...
-%  or receptive field (doReceptiveFields=1)
 
 global IHC_VResp_VivoParams  IHC_cilia_RPParams IHCpreSynapseParams
 global AN_IHCsynapseParams
-
-global ANprobRateOutput dt tauCas
+global ANprobRateOutput dt ANtauCas
 global ARattenuation MOCattenuation
 
 AN_spikesOrProbability='probability';
@@ -90,7 +87,7 @@ for leveldB=levels
     MAP1_14(inputSignal, 1/dt, BFlist, ...
         paramsName, AN_spikesOrProbability, paramChanges);
 
-    nTaus=length(tauCas);
+    nTaus=length(ANtauCas);
 
     %LSR (same as HSR if no LSR fibers present)
     [nANFibers nTimePoints]=size(ANprobRateOutput);

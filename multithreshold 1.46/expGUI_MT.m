@@ -637,7 +637,7 @@ switch experiment.paradigm
         longTone=resultsTable(2:end,2:end);
 
         set(handles.edittargetDuration,'string', num2str(0.016))
-        set(handles.editstopCriteriaBox,'string','10') % nTrials
+        set(handles.editstopCriteriaBox,'string','20') % nTrials
         run (handles)
         if strcmp(errormsg,'manually stopped')
             disp(errormsg)
@@ -1447,7 +1447,7 @@ global stimulusParameters experiment paramChanges
 aReadAndCheckParameterBoxes(handles);
 showPSTHs=1;
 testFM(stimulusParameters.targetFrequency(1),experiment.name, ...
-    showPSTHs, paramChanges)
+    'probability', paramChanges)
 
 function popupmenuPhase_Callback(hObject, eventdata, handles)
 global stimulusParameters

@@ -34,15 +34,6 @@ BFlist=round(logspace(log10(lowestBF), log10(highestBF), numChannels));
 %% #6 no change to model parameters
 paramChanges=[];
 
-
-%% delare showMap options
-showMapOptions.printModelParameters=1;
-showMapOptions.showModelOutput=1;
-showMapOptions.printFiringRates=1;
-showMapOptions.showACF=0;
-showMapOptions.showEfferent=0;
-showMapOptions.surfProbability=1;       % 2D plot of HSR response 
-
 %% Generate stimuli
 
 switch signalType
@@ -72,7 +63,16 @@ MAP1_14(inputSignal, sampleRate, BFlist, ...
     MAPparamsName, AN_spikesOrProbability, paramChanges);
 
 
-% the model run is now complete. Now display the results
+%% the model run is finished. Now display the results
+
+%% delare showMap options
+showMapOptions.printModelParameters=1;
+showMapOptions.showModelOutput=1;
+showMapOptions.printFiringRates=1;
+showMapOptions.showACF=0;
+showMapOptions.showEfferent=0;
+showMapOptions.surfProbability=1;       % 2D plot of HSR response 
+
 UTIL_showMAP(showMapOptions, paramChanges)
 
 toc

@@ -150,7 +150,7 @@ IHCpreSynapseParams.z=	    2e42;   % scalar Ca -> vesicle release rate
 
 LSRtauCa=35e-6;            HSRtauCa=85e-6;            % seconds
 % LSRtauCa=35e-6;            HSRtauCa=70e-6;            % seconds
-IHCpreSynapseParams.tauCa= [ HSRtauCa]; %LSR and HSR fiber
+IHCpreSynapseParams.tauCa= [  HSRtauCa]; %LSR and HSR fiber
 
 %%  #6 AN_IHCsynapse
 % c=kym/(y(l+r)+kl)	(spontaneous rate)
@@ -212,7 +212,7 @@ switch MacGregorMultiType
         MacGregorMultiParams.tauM=0.002;  % membrane time constant (s)
         MacGregorMultiParams.Ek=-0.01;    % K+ eq. potential (V)
         MacGregorMultiParams.dGkSpike=1.33e-4; % K+ cond.shift on spike,S
-        MacGregorMultiParams.tauGk=	[0.001 0.0005];% K+ conductance tau (s)
+        MacGregorMultiParams.tauGk=	[0.0005:0.0001:0.002];% K+ conductance tau (s)
         MacGregorMultiParams.Th0=	0.01; % equilibrium threshold (V)
         MacGregorMultiParams.c=	0;        % threshold shift on spike, (V)
         MacGregorMultiParams.tauTh=	0.02; % variable threshold tau

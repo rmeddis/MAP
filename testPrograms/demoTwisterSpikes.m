@@ -45,8 +45,9 @@ showMapOptions=[];  % use defaults
     showMapOptions.printFiringRates=1;
     showMapOptions.showACF=0;
     showMapOptions.showEfferent=0;
-    showMapOptions.surfSpikes=1;
-    
+    showMapOptions.surfSpikes=0;
+    showMapOptions.surfProbability=0;       % 2D plot of HSR response 
+
 %% Generate stimuli
 switch signalType
     case 'tones'

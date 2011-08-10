@@ -1,4 +1,7 @@
-function test_MAP1_14
+function pitchModel_RM
+% Modification of testMAP_14 to replicate the pitch model published
+%  in JASA 2006.
+%
 % test_MAP1_14 is a general purpose test routine that can be adjusted to
 % test a number of different applications of MAP1_14
 %
@@ -37,6 +40,21 @@ restorePath=path;
 addpath (['..' filesep 'MAP'],    ['..' filesep 'wavFileStore'], ...
     ['..' filesep 'utilities'])
 
+% Pitch model modification here
+global ICrate           % used to collect rate profile from showMAP temporary
+rates=[]; F0count=0;
+
+% F0s=[150 200 250];          % fundamental frequency
+% harmonics= 3:5;
+
+% F0s=[3000];          % fundamental frequency
+F0s=50:5:1000;
+harmonics= 1;
+% F0s=150;
+for F0=F0s
+    F0count=F0count+1;
+    
+
 %%  #1 parameter file name
 MAPparamsName='Normal';
 
@@ -52,11 +70,11 @@ AN_spikesOrProbability='spikes';
 %% #3 pure tone, harmonic sequence or speech file input
 signalType= 'tones';
 sampleRate= 50000;
-duration=0.250;                 % seconds
-toneFrequency= 1000;            % or a pure tone (Hz8
+duration=0.50;                 % seconds
+% toneFrequency= 1000;            % or a pure tone (Hz8
 
-F0=210;
-toneFrequency= F0:F0:8000;  % harmonic sequence (Hz)
+% F0=210;
+toneFrequency= F0*harmonics;  % harmonic sequence (Hz)
 
 rampDuration=.005;              % raised cosine ramp (seconds)
 
@@ -68,7 +86,7 @@ rampDuration=.005;              % raised cosine ramp (seconds)
 
 %% #4 rms level
 % signal details
-leveldBSPL= 20;                  % dB SPL
+leveldBSPL= 50;                  % dB SPL
 
 
 %% #5 number of channels in the model
@@ -79,7 +97,8 @@ BFlist=round(logspace(log10(lowestBF), log10(highestBF), numChannels));
 
 %   or specify your own channel BFs
 % numChannels=1;
-% BFlist=toneFrequency;
+BFlist=toneFrequency;
+% BFlist=500;
 
 
 %% #6 change model parameters
@@ -103,18 +122,28 @@ paramChanges=[];
 % paramChanges={'DRNLParams.rateToAttenuationFactorProb=-0.005;'};
 
 % slow the CN chopping rate
-paramChanges={' MacGregorMultiParams.tauGk=	0.0004;'};
+% paramChanges={'IHCpreSynapseParams.tauCa= 70e-6;'...'
+%     'MacGregorMultiParams.tauGk=	[0.75e-3:.0001 : 3e-3];'...
+%     ' MacGregorParams.dendriteLPfreq=4000;'...
+%     'MacGregorParams.tauGk=	1e-4;'...
+%     'MacGregorParams.currentPerSpike=220e-8;'...
+% };
+paramChanges={...
+    'MacGregorMultiParams.currentPerSpike=25e-9;'...
+    'MacGregorMultiParams.tauGk=	[0.1e-3:.00005 : 1e-3];'...
+'MacGregorParams.currentPerSpike=40e-9;'...
+};
 
 %% delare 'showMap' options to control graphical output
 
-showMapOptions.printModelParameters=1;   % prints all parameters
+showMapOptions.printModelParameters=0;   % prints all parameters
 showMapOptions.showModelOutput=1;       % plot of all stages
 showMapOptions.printFiringRates=1;      % prints stage activity levels
 showMapOptions.showACF=0;               % shows SACF (probability only)
-showMapOptions.showEfferent=1;          % tracks of AR and MOC
-showMapOptions.surfProbability=1;       % 2D plot of HSR response 
-showMapOptions.surfSpikes=1;            % 2D plot of spikes histogram
-showMapOptions.ICrates=0;               % IC rates by CNtauGk
+showMapOptions.showEfferent=0;          % tracks of AR and MOC
+showMapOptions.surfProbability=0;       % 2D plot of HSR response 
+showMapOptions.surfSpikes=0;            % 2D plot of spikes histogram
+showMapOptions.ICrates=1;               % IC rates by CNtauGk
 
 % disable certain silly options
 if strcmp(AN_spikesOrProbability, 'spikes')
@@ -158,6 +187,7 @@ tic
 fprintf('\n')
 disp(['Signal duration= ' num2str(length(inputSignal)/sampleRate)])
 disp([num2str(numChannels) ' channel model'])
+disp([num2str(F0) ' F0'])
 disp('Computing ...')
 
 MAP1_14(inputSignal, sampleRate, BFlist, ...
@@ -167,8 +197,24 @@ MAP1_14(inputSignal, sampleRate, BFlist, ...
 % the model run is now complete. Now display the results
 UTIL_showMAP(showMapOptions, paramChanges)
 
-toc
+%% pitch model Collect and analyse data
+% ICrate is global and computed in showMAP
+%  a vector of 'stage4' rates; one value for each tauCNGk
+rates=[rates; ICrate];
+figure(92), imagesc(rates)
+ylabel ('F0 no'), xlabel('tauGk')
+% figure(92), plot(rates), ylim([0 inf])
+
+h=figure(99); CNmovie(F0count)=getframe(h);
+figure(91), plot(rates'),ylim([0 inf])
+pause (0.1)
 path(restorePath)
+
+end
+%% show results
+toc
+figure(91), plot(F0s,rates'), xlabel('F0'), ylabel('rate'),ylim([0 inf])
+% figure(99),clf,movie(CNmovie,1,4)
 
 
 function inputSignal=createMultiTone(sampleRate, toneFrequency, ...
@@ -191,6 +237,6 @@ ramp=fliplr(ramp);
 inputSignal=inputSignal.*ramp;
 
 % add 10 ms silence
-silence= zeros(1,round(0.05/dt));
+silence= zeros(1,round(0.005/dt));
 inputSignal= [silence inputSignal silence];
 

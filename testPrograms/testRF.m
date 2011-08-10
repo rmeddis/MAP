@@ -115,7 +115,7 @@ for leveldB=levels
 
         global ANdt ARAttenuation TMoutput OMEoutput ...
     DRNLoutput IHC_cilia_output IHCrestingCiliaCond IHCrestingV...
-    IHCoutput ANprobRateOutput ANoutput savePavailable tauCas  ...
+    IHCoutput ANprobRateOutput ANoutput savePavailable ANtauCas  ...
     CNoutput  ICoutput ICmembraneOutput ICfiberTypeRates MOCattenuation
 
 AN_spikesOrProbability='spikes';
@@ -136,7 +136,7 @@ MAP1_14(inputSignal, 1/dt, targetFrequency, ...
         AN_IHCsynapseAllData=ANoutput;
         method.PSTHbinWidth=0.001;
         
-        nTaus=length(tauCas);
+        nTaus=length(ANtauCas);
         numANfibers=size(ANoutput,1);
         numLSRfibers=numANfibers/nTaus;
         

@@ -1,12 +1,7 @@
 
-function  MAP1_14(inputSignal, sampleRate, BFlist, MAPparamsName, ...
+function  MAP1_14AP(inputSignal, sampleRate, BFlist, MAPparamsName, ...
     AN_spikesOrProbability, paramChanges)
 % To test this function use test_MAP1_14 in this folder
-%
-% example:
-% <navigate to 'MAP1_14\MAP'>
-%  [inputSignal FS] = wavread('../wavFileStore/twister_44kHz');
-%  MAP1_14(inputSignal, FS, -1, 'Normal', 'probability', [])
 %
 % All arguments are mandatory.
 %
@@ -23,6 +18,10 @@ function  MAP1_14(inputSignal, sampleRate, BFlist, MAPparamsName, ...
 restorePath=path;
 addpath (['..' filesep 'parameterStore'])
 
+
+CONVOLUTION_CHANGE_TEST = 0; %for debug
+
+
 global OMEParams DRNLParams IHC_cilia_RPParams IHCpreSynapseParams
 global AN_IHCsynapseParams MacGregorParams MacGregorMultiParams
 
@@ -30,9 +29,8 @@ global AN_IHCsynapseParams MacGregorParams MacGregorMultiParams
 global dt ANdt  savedBFlist saveAN_spikesOrProbability saveMAPparamsName...
     savedInputSignal OMEextEarPressure TMoutput OMEoutput ARattenuation ...
     DRNLoutput IHC_cilia_output IHCrestingCiliaCond IHCrestingV...
-    IHCoutput ANprobRateOutput ANoutput savePavailable ANtauCas  ...
-    CNtauGk CNoutput  ICoutput ICmembraneOutput ICfiberTypeRates ...
-    MOCattenuation
+    IHCoutput ANprobRateOutput ANoutput savePavailable tauCas  ...
+    CNoutput  ICoutput ICmembraneOutput ICfiberTypeRates MOCattenuation
 
 % Normally only ICoutput(logical spike matrix) or ANprobRateOutput will be
 % needed by the user; so the following will suffice
@@ -318,7 +316,7 @@ IHC_cilia_output= zeros(nBFs,signalLength);
 % The number of channels is nBFs x nANfiberTypes
 % Fiber types are specified in terms of tauCa
 nANfiberTypes= length(IHCpreSynapseParams.tauCa);
-ANtauCas= IHCpreSynapseParams.tauCa;
+tauCas= IHCpreSynapseParams.tauCa;
 nANchannels= nANfiberTypes*nBFs;
 synapticCa= zeros(nANchannels,segmentLength);
 
@@ -333,8 +331,8 @@ synapse_z= IHCpreSynapseParams.z;
 synapse_power=IHCpreSynapseParams.power;
 
 % tauCa vector is established across channels to allow vectorization
-%  (one tauCa per channel). Do not confuse with ANtauCas (one pre fiber type)
-tauCa=repmat(ANtauCas, nBFs,1);
+%  (one tauCa per channel). Do not confuse with tauCas (one pre fiber type)
+tauCa=repmat(tauCas, nBFs,1);
 tauCa=reshape(tauCa, nANchannels, 1);
 
 % presynapse startup values (vectors, length:nANchannels)
@@ -495,12 +493,12 @@ CNoutput=false(nCNneurons,reducedSignalLength);
 nICcells=nANchannels*nCNtauGk;  % one cell per channel
 CN_PSTH=zeros(nICcells ,reducedSegmentLength);
 
-% ICspikeWidth=0.00015;   % this may need revisiting
-% epochsPerSpike=round(ICspikeWidth/ANdt);
-% if epochsPerSpike<1
-%     error(['MacGregorMulti: sample rate too low to support ' ...
-%         num2str(ICspikeWidth*1e6) '  microsec spikes']);
-% end
+ICspikeWidth=0.00015;   % this may need revisiting
+epochsPerSpike=round(ICspikeWidth/ANdt);
+if epochsPerSpike<1
+    error(['MacGregorMulti: sample rate too low to support ' ...
+        num2str(ICspikeWidth*1e6) '  microsec spikes']);
+end
 
 % short names
 IC_tauM=MacGregorParams.tauM;
@@ -912,14 +910,90 @@ while segmentStartPTR<signalLength
                     synapseNo=synapseNo+1;
                 end
             end
+            
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+                        
+            
             % One alpha function per spike
             [alphaRows alphaCols]=size(CNtrailingAlphas);
 
-            for unitNo=1:nCNneurons
-                CNcurrentTemp(unitNo,:)= ...
-                    conv2(AN_PSTH(unitNo,:),CNalphaFunction);
+           for unitNo=1:nCNneurons 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+                 CNcurrentTemp0(unitNo,:)= ...
+                      conv(AN_PSTH(unitNo,:),CNalphaFunction);
+              
+
+                 
+                 CNcurrentTemp(unitNo,:)= ...
+                      conv2(AN_PSTH(unitNo,:),CNalphaFunction);
+            % Changed conv to conv2 because it runs faster. (Andreas)   
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% 
+%              
+%                 f = CNalphaFunction;
+%                 g = AN_PSTH(unitNo,:);
+% 
+% 
+%                 g = [g zeros(1,length(f)-1)];
+% 
+%                 spikePos = find(g)';
+% 
+%                 result = zeros(1,length(g));
+% 
+%                 for index = 1:length(spikePos)
+%                     k = spikePos(index);
+%                     result(k:(k+length(f)-1)) = result(k:(k+length(f)-1)) + g(k)*f;
+%                 end
+%              
+%                 CNcurrentTemp2(unitNo,:) = result;    
+
+
             end
+            
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%            
+
+
+         
+            
+            f = CNalphaFunction;
+            g = AN_PSTH;
+
+            g = [g zeros(size(g,1),length(f)-1)];
+
+            [r c] = find(g);
+
+            CNcurrentTemp2 = zeros(size(g));
+
+            for index = 1:length(r)
+
+                row = r(index);
+                col = c(index);
+
+               CNcurrentTemp2(row,col:col+length(f)-1) =  CNcurrentTemp2(row,col:col+length(f)-1) + f*g(row,col);
+
+            end
+
+
+
+CONVOLUTION_CHANGE_TEST =  CONVOLUTION_CHANGE_TEST + sum(abs(CNcurrentTemp2 - CNcurrentTemp))+ sum(abs(CNcurrentTemp0 - CNcurrentTemp));
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
 %             disp(['sum(AN_PSTH)= ' num2str(sum(AN_PSTH(1,:)))])
             % add post-synaptic current  left over from previous segment
             CNcurrentTemp(:,1:alphaCols)=...
@@ -1024,6 +1098,7 @@ while segmentStartPTR<signalLength
                 for ICneuronNo=1:nICcells
                     ICcurrentTemp(ICneuronNo,:)= ...
                         conv2(CN_PSTH(ICneuronNo,:),  IC_CNalphaFunction);
+                % Changed conv to conv2 because it runs faster. (Andreas)
                 end
 
                 % add the unused current from the previous convolution
@@ -1089,7 +1164,7 @@ while segmentStartPTR<signalLength
                 ICoutput(:,reducedSegmentPTR:shorterSegmentEndPTR)=ICspikes;
                 
                 % store membrane output on original dt scale
-                if nICcells==1  % single channel
+                if nBFs==1  % single channel
                     x= repmat(ICmembranePotential(1,:), ANspeedUpFactor,1);
                     x= reshape(x,1,segmentLength);
                     if nANfiberTypes>1  % save HSR and LSR
@@ -1151,6 +1226,10 @@ while segmentStartPTR<signalLength
 
 
 end  % segment
+
+disp('CONVOLUTION_CHANGE_TEST (if followed by zero all is good)')
+disp(max(CONVOLUTION_CHANGE_TEST)) %% for debugging
+
 
 %% apply refractory correction to spike probabilities
 
