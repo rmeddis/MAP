@@ -1379,7 +1379,7 @@ while strcmp(experiment.status,'waitingForGO')
         if experiment.stop || experiment.singleShot
             % trap for single trial or user interrupt using 'stop' button.
             experiment.status= 'waitingForStart';
-            experiment.stop=0;
+%             experiment.stop=0;
             errormsg='manually stopped';
             addToMsg(errormsg,1)
             return

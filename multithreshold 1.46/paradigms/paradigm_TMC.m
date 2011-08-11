@@ -8,6 +8,7 @@ stimulusParameters.WRVstartValues=50;
 stimulusParameters.WRVsteps= [-10 -4];
 stimulusParameters.WRVlimits=[-30 110];
 
+
 stimulusParameters.cueTestDifference = 10;
 experiment.psyFunSlope = -1;
 withinRuns.direction='up';

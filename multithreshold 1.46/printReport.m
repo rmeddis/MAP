@@ -23,14 +23,8 @@ if nargin==0
     % print new report
     printReportGuide.showTracks=experiment.printTracks;
     printReportGuide.fileName=[];
-    if experiment.saveData
-        saveFileName=...
-            ['savedData/' experiment.name '_' ...
-            experiment.date '_' experiment.paradigm];
-    else
-        % save this data (just in case)
-        saveFileName=['savedData/mostRecentResults'];
-    end
+    % save this data (just in case)
+    saveFileName=['savedData/mostRecentResults'];
     experiment.minElapsed=etime(clock, betweenRuns.timeNow)/60;
     save(saveFileName, 'experiment', 'stimulusParameters',...
         'betweenRuns', 'withinRuns', 'statsModel', 'expGUIhandles')
@@ -87,7 +81,7 @@ msg=printTabTable(resultsTable,  headers);
 addToMsg(msg,0)
 if ~isempty(paramChanges)
     fprintf('\n')
-    disp(paramChanges)
+    fprintf('%s\n', char(paramChanges))
 end
 
 % sort tracks into the same order
@@ -195,7 +189,7 @@ end
 
 fprintf('\nparadigm:\t%s\n ', experiment.paradigm)
 if ~isempty(paramChanges)
-    disp(paramChanges)
+    fprintf('%s\n', char(paramChanges))
 end
 
 % ------------------------------------------------- sortTablesForPrinting

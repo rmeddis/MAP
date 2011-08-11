@@ -618,14 +618,12 @@ experiment.stop=0;
 switch experiment.paradigm
     case 'profile'
         %% special option for two successive and linked measurements
-        clc
         experiment.paradigm='threshold_16ms';
         set(handles.edittargetDuration,'string', num2str(0.25))
         set(handles.editstopCriteriaBox,'string','10') % nTrials
         run (handles)
 
-        if strcmp(errormsg,'manually stopped')
-            disp(errormsg)
+        if experiment.stop
             optionNo=strmatch('profile',paradigmNames);
             set(handles.popupmenuParadigm,'value',optionNo);
             experiment.paradigm='profile';
@@ -639,7 +637,7 @@ switch experiment.paradigm
         set(handles.edittargetDuration,'string', num2str(0.016))
         set(handles.editstopCriteriaBox,'string','20') % nTrials
         run (handles)
-        if strcmp(errormsg,'manually stopped')
+        if experiment.stop
             disp(errormsg)
             optionNo=strmatch('profile',paradigmNames);
             set(handles.popupmenuParadigm,'value',optionNo);
@@ -657,11 +655,11 @@ switch experiment.paradigm
         set(handles.popupmenuParadigm,'value',optionNo);
         aParadigmSelection(handles)
         set(handles.edittargetLevel,'string', thresholds16ms+10);
-        set(handles.editstopCriteriaBox,'string','10')  % nTrials
+        set(handles.editstopCriteriaBox,'string','20')  % nTrials
         pause(.1)
         run (handles)
 
-        if strcmp(errormsg,'manually stopped')
+        if experiment.stop
             disp(errormsg)
             optionNo=strmatch('profile',paradigmNames);
             set(handles.popupmenuParadigm,'value',optionNo);
@@ -692,10 +690,15 @@ switch experiment.paradigm
         optionNo=strmatch('profile',paradigmNames);
         set(handles.popupmenuParadigm,'value',optionNo);
         aParadigmSelection(handles)
+        
+%% save data and plot profile
 
-        save profile longTone shortTone gaps BFs TMC offBFs IFMCs
-        plotProfile(longTone,shortTone,gaps,BFs,TMC,offBFs,IFMCs)
+%         save profile longTone shortTone gaps BFs TMC offBFs IFMCs
+profile2mFile(longTone, shortTone, gaps, BFs, TMC, offBFs, IFMCs,...
+    'MTprofile')
+plotProfile('MTprofile', 'profile_CMA_L')
 
+%% xx
         if strcmp(errormsg,'manually stopped')
             disp(errormsg)
             optionNo=strmatch('profile',paradigmNames);
@@ -1413,6 +1416,7 @@ function pushbuttonBM_Callback(hObject, eventdata, handles)
 global  stimulusParameters experiment paramChanges
 aReadAndCheckParameterBoxes(handles);
 relativeFrequencies=[0.25    .5   .75  1  1.25 1.5    2];
+relativeFrequencies=[ 1 ];
 AN_spikesOrProbability='probability';
 testBM(stimulusParameters.targetFrequency, ...
     experiment.name,relativeFrequencies, AN_spikesOrProbability, ...

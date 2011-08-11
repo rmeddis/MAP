@@ -136,7 +136,7 @@ for leveldB=levels
     hold on,  bar(PSTHtime,PSTHLSR,'r')
     ylim([0 1000])
     xlim([0 length(PSTH)*localPSTHbinwidth])
-    set(gcf,'name',[num2str(BFlist), ' Hz: ' num2str(leveldB) ' dB']);
+    set(gcf,'name',['PSTH: ' num2str(BFlist), ' Hz: ' num2str(leveldB) ' dB']);
     
     % AN - CV
     %  CV is computed 5 times. Use the middle one (3) as most typical

@@ -68,7 +68,7 @@ rampDuration=.005;              % raised cosine ramp (seconds)
 
 %% #4 rms level
 % signal details
-leveldBSPL= 20;                  % dB SPL
+leveldBSPL= 50;                  % dB SPL
 
 
 %% #5 number of channels in the model

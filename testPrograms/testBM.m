@@ -104,10 +104,15 @@ for BF=BMlocations
     end  % level
 
     %% analyses results and plot
+if length(relativeFrequencies)>2
+    maxRows=3;
+else
+    maxRows=2;
+end
 
     % BM I/O plot (top panel)
     figure(3)
-    subplot(3,nBFs,BFno), cla
+    subplot(maxRows,nBFs,BFno), cla
     plot(levels,peakAmpBMdB, 'linewidth',2)
     hold on, plot(levels, repmat(refBMdisplacement,1,length(levels)))
     hold off
@@ -126,7 +131,7 @@ for BF=BMlocations
 
     % Tuning curve
     if length(relativeFrequencies)>2
-        figure(3), subplot(3,nBFs, 2*nBFs+BFno)
+        figure(3), subplot(maxRows,nBFs, 2*nBFs+BFno)
         %         contour(stimulusFrequencies,levels,peakAmpBM,...
         %             [refBMdisplacement refBMdisplacement],'r')
         contour(stimulusFrequencies,levels,peakAmpBM,...
@@ -142,7 +147,7 @@ for BF=BMlocations
 
     % MOC contribution
     figure(3)
-    subplot(3,nBFs,nBFs+BFno), cla
+    subplot(maxRows,nBFs,nBFs+BFno), cla
     plot(levels,20*log10(peakEfferent), 'linewidth',2)
     ylabel('MOC (dB attenuation)'), xlabel('level')
     title(['peak MOC: model= ' AN_spikesOrProbability])

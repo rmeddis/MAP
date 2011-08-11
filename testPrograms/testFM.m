@@ -27,6 +27,7 @@ end
 
 % masker and probe levels are relative to this threshold
 thresholdAtCF=10; % dB SPL
+maskerLevels=[-80   10 20 30 40 60 ] + thresholdAtCF;
 
 showPSTHs=1;
 
@@ -36,7 +37,6 @@ dt=1/sampleRate;
 % fetch BF from GUI: use only the first target frequency
 maskerFrequency=BFlist;
 maskerDuration=.1;
-maskerLevels=[-80   10 20 30 40 60 ] + thresholdAtCF;
 
 targetFrequency=maskerFrequency;
 probeLeveldB=20+thresholdAtCF;	% H&D use 20 dB SL/ TMC uses 10 dB SL
@@ -139,6 +139,8 @@ for maskerLeveldB=maskerLevels
 
         inputSignal=...
             [initialSilence maskerPa gap probe finalSilence];
+%         time=dt:dt:length(inputSignal)*dt;
+%         figure(99), plot(time,inputSignal)
 
         % **********************************  run MAP model
 %         showPlotsAndDetails=0;
@@ -150,6 +152,7 @@ for maskerLeveldB=maskerLevels
             [nFibers c]=size(ANprobRateOutput);
             nLSRfibers=nFibers/length(ANtauCas);
             ANresponse=ANprobRateOutput(end-nLSRfibers:end,:);
+            ANdt=dt; % no adjustment for spikes speedup
         else
             [nFibers c]=size(ANoutput);
             nLSRfibers=nFibers/length(ANtauCas);
@@ -157,6 +160,8 @@ for maskerLeveldB=maskerLevels
         end
 
         ANresponse=sum(ANresponse)/nLSRfibers;
+%         ANresponseTimes=ANdt:ANdt:length(ANresponse)*ANdt;
+%         figure(99), plot(ANresponseTimes,ANresponse)
 
         % analyse results
         probeStart=initialSilenceDuration+maskerDuration+gapDuration;
@@ -182,9 +187,9 @@ for maskerLeveldB=maskerLevels
             PSTH=PSTH*ANdt/PSTHbinWidth;
             PSTHplotCount=PSTHplotCount+1;
             subplot(nLevels,nDurations,PSTHplotCount)
-            probeTime=PSTHbinWidth:PSTHbinWidth:...
+            PSTHtime=PSTHbinWidth:PSTHbinWidth:...
                 PSTHbinWidth*length(PSTH);
-            bar(probeTime, PSTH)
+            bar(PSTHtime, PSTH)
             if strcmp(AN_spikesOrProbability, 'spikes')
                 ylim([0 500])
             else
@@ -207,6 +212,9 @@ for maskerLeveldB=maskerLevels
             if PSTHplotCount<=nDurations
                 title([num2str(1000*gapDurations(PSTHplotCount)) 'ms'])
             end
+
+%         figure(99),            bar(PSTHtime, PSTH)
+
         end % showPSTHs
 
     end     % gapDurations duration
