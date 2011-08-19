@@ -144,7 +144,8 @@ for maskerLeveldB=maskerLevels
 
         % **********************************  run MAP model
 %         showPlotsAndDetails=0;
-
+nChanges=length(paramChanges);
+paramChanges{nChanges+1}='AN_IHCsynapseParams.numFibers=	500;'; 
         MAP1_14(inputSignal, 1/dt, targetFrequency, ...
             paramsName, AN_spikesOrProbability, paramChanges);
 
@@ -159,7 +160,7 @@ for maskerLeveldB=maskerLevels
             ANresponse=ANoutput(end-nLSRfibers:end,:);
         end
 
-        ANresponse=sum(ANresponse)/nLSRfibers;
+        ANresponse=sum(ANresponse);
 %         ANresponseTimes=ANdt:ANdt:length(ANresponse)*ANdt;
 %         figure(99), plot(ANresponseTimes,ANresponse)
 
@@ -189,10 +190,11 @@ for maskerLeveldB=maskerLevels
             subplot(nLevels,nDurations,PSTHplotCount)
             PSTHtime=PSTHbinWidth:PSTHbinWidth:...
                 PSTHbinWidth*length(PSTH);
-            bar(PSTHtime, PSTH)
             if strcmp(AN_spikesOrProbability, 'spikes')
-                ylim([0 500])
+            bar(PSTHtime, PSTH/PSTHbinWidth/nFibers)
+%                 ylim([0 500])
             else
+            bar(PSTHtime, PSTH)
                 ylim([0 500])
             end
 %             xlim([0 longestSignalDuration])

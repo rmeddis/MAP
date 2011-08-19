@@ -16,9 +16,7 @@ stimulusParameters.targetLevel=stimulusParameters.WRVstartValues(1);
 
 stimulusParameters.rampDuration=0.004;
 
-experiment.stopCriteria2IFC=[75 3 5];
-experiment.singleIntervalMaxTrials=[20];
-
+experiment.singleIntervalMaxTrials=[50];
 
 % forced choice window interval
 stimulusParameters.AFCsilenceDuration=0.5;

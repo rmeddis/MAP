@@ -32,7 +32,8 @@ ylim([0 100])
 % TMC
 for BFno=1:length(foreground.TMCFreq)
     subplot(2,6,BFno)
-    plot(foreground.Gaps,foreground.TMC(BFno,:)-foreground.LongTone(BFno),'r','lineWidth',3), hold on
+    % SL
+% plot(foreground.Gaps,foreground.TMC(BFno,:)-foreground.LongTone(BFno),'r','lineWidth',3), hold on
     plot(foreground.Gaps,foreground.TMC(BFno,:),'b','lineWidth',3), hold on
     ylim([-10 110])
     xlim([0.01 0.1])
@@ -52,7 +53,8 @@ if ~isempty(bgName)
         if ~isempty(idx);
             
             subplot(2,6,idx)
-            plot(background.Gaps,background.TMC(BFno,:)-background.LongTone(BFno),'k:')
+            % SL
+% plot(background.Gaps,background.TMC(BFno,:)-background.LongTone(BFno),'k:')
             plot(background.Gaps,background.TMC(BFno,:),'k:')
             ylim([-10 110])
             xlim([0.01 0.1])
@@ -82,10 +84,11 @@ if ~isempty(bgName)
         xlim([100 12000])
     end
 end
-mydate=datestr(now); idx=findstr(':',mydate); mydate(idx)='_';
+title([fgName ' / ' bgName])
+% mydate=datestr(now); idx=findstr(':',mydate); mydate(idx)='_';
 
-fileName= ['savedData/' mydate ];
-
-save (fileName)
-set(gcf,'name', mydate)
-disp(fileName)
+% fileName= ['savedData/' mydate ];
+% 
+% save (fileName)
+% set(gcf,'name', mydate)
+% disp(fileName)

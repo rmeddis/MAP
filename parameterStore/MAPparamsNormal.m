@@ -57,18 +57,18 @@ OMEParams.stapesScalar=	     45e-9;
 % Acoustic reflex: maximum attenuation should be around 25 dB Price (1966)
 % i.e. a minimum ratio of 0.056.
 % 'spikes' model: AR based on brainstem spiking activity (LSR)
-OMEParams.rateToAttenuationFactor=0.006;   % * N(all ICspikes)
+OMEParams.rateToAttenuationFactor=0.01;   % * N(all ICspikes)
 % OMEParams.rateToAttenuationFactor=0;   % * N(all ICspikes)
 
 % 'probability model': Ar based on AN firing probabilities (LSR)
-OMEParams.rateToAttenuationFactorProb=0.01;% * N(all ANrates)
+OMEParams.rateToAttenuationFactorProb=0.006;% * N(all ANrates)
 % OMEParams.rateToAttenuationFactorProb=0;% * N(all ANrates)
 
 % asymptote should be around 100-200 ms
 OMEParams.ARtau=.05; % AR smoothing function
 % delay must be longer than the segment length
 OMEParams.ARdelay=efferentDelay;  %Moss gives 8.5 ms latency
-OMEParams.ARrateThreshold=0;
+OMEParams.ARrateThreshold=40;
 
 %%  #3 DRNL
 DRNLParams=[];  % clear the structure first
@@ -76,16 +76,17 @@ DRNLParams.BFlist=BFlist;
 
 % DRNL nonlinear path
 DRNLParams.a=5e4;     % DRNL.a=0 means no OHCs (no nonlinear path)
-DRNLParams.a=2e4;     % DRNL.a=0 means no OHCs (no nonlinear path)
 
 DRNLParams.b=8e-6;    % *compression threshold raised compression
 % DRNLParams.b=1;    % b=1 means no compression
+DRNLParams.cTh= 5e-8; % compression threshold in meters.
 
-DRNLParams.c=0.2;     % compression exponent
+DRNLParams.c=9e-2;     % compression exponent
 % nonlinear filters
 DRNLParams.nonlinCFs=BFlist;
 DRNLParams.nonlinOrder=	3;           % order of nonlinear gammatone filters
 p=0.2895;   q=170;  % human  (% p=0.14;   q=366;  % cat)
+p=0.2895;   q=250;  % human  (% p=0.14;   q=366;  % cat)
 DRNLParams.nlBWs=  p * BFlist + q;
 DRNLParams.p=p;   DRNLParams.q=q;   % save p and q for printing only
 
@@ -102,12 +103,12 @@ DRNLParams.linBWs=minLinBW + coeffLinBW*BFlist; % bandwidths of linear  filters
 DRNLParams.MOCdelay = efferentDelay;            % must be < segment length!
 
 % 'spikes' model: MOC based on brainstem spiking activity (HSR)
-DRNLParams.rateToAttenuationFactor = .01;  % strength of MOC
+DRNLParams.rateToAttenuationFactor = .009;  % strength of MOC
 %      DRNLParams.rateToAttenuationFactor = 0;  % strength of MOC
 % 'probability' model: MOC based on AN spiking activity (HSR)
-DRNLParams.rateToAttenuationFactorProb = .0055;  % strength of MOC
+DRNLParams.rateToAttenuationFactorProb = 0.0045;  % strength of MOC
 % DRNLParams.rateToAttenuationFactorProb = .0;  % strength of MOC
-DRNLParams.MOCrateThresholdProb =70;                % spikes/s probability only
+DRNLParams.MOCrateThresholdProb =50;                % spikes/s probability only
 
 DRNLParams.MOCtau =.1;                         % smoothing for MOC
 
@@ -148,8 +149,9 @@ IHCpreSynapseParams.power=	3;
 % reminder: changing z has a strong effect on HF thresholds (like Et)
 IHCpreSynapseParams.z=	    2e42;   % scalar Ca -> vesicle release rate
 
-LSRtauCa=35e-6;            HSRtauCa=85e-6;            % seconds
+LSRtauCa=35e-6;            HSRtauCa=80e-6;            % seconds
 % LSRtauCa=35e-6;            HSRtauCa=70e-6;            % seconds
+IHCpreSynapseParams.tauCa= [15e-6 80e-6]; %LSR and HSR fiber
 IHCpreSynapseParams.tauCa= [LSRtauCa HSRtauCa]; %LSR and HSR fiber
 
 %%  #6 AN_IHCsynapse

@@ -9,6 +9,7 @@ function testBM (BMlocations, paramsName,...
 % Tuning curves are generated based on a range of frequencies reletove to
 % the BF of the location.
 %
+% testBM (1000, 'Normal', 1, 'probability', [])
 
 global    DRNLParams
 
@@ -17,7 +18,7 @@ if nargin<5
 end
 
 if nargin<4
-    AN_spikesOrProbability='probability';
+    AN_spikesOrProbability='spikes';
 end
 
 savePath=path;
@@ -165,5 +166,10 @@ UTIL_showStructureSummary(DRNLParams, 'DRNLParams', 10)
 
     UTIL_printTabTable([levels' finalSummary], ...
         num2str([0 stimulusFrequencies]','%5.0f'), '%5.0f')
+    diff(finalSummary)
+    if ~isempty(paramChanges)
+        disp(paramChanges)
+    end
+    
 
 path(savePath);

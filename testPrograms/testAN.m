@@ -6,61 +6,24 @@ function vectorStrength=testAN(targetFrequency,BFlist, levels, ...
 
 global IHC_VResp_VivoParams  IHC_cilia_RPParams IHCpreSynapseParams
 global AN_IHCsynapseParams
-
 global ANoutput ANdt CNoutput ICoutput ICmembraneOutput ANtauCas
 global ARattenuation MOCattenuation
 
 dbstop if error
 restorePath=path;
-
 addpath (['..' filesep 'MAP'], ['..' filesep 'utilities'], ...
     ['..' filesep 'parameterStore'],  ['..' filesep 'wavFileStore'],...
     ['..' filesep 'testPrograms'])
 
-if nargin<5
-    paramChanges=[];
-end
-
-if nargin<4
-    paramsName='Normal';
-end
-
+if nargin<5, paramChanges=[]; end
+if nargin<4, paramsName='Normal'; end
 if nargin<3
     levels=-10:10:80;
-    % levels=80:10:90;
 end
-
 nLevels=length(levels);
 
-toneDuration=.2;
-rampDuration=0.002;
-silenceDuration=.02;
+toneDuration=.2;   rampDuration=0.002;   silenceDuration=.02;
 localPSTHbinwidth=0.001;
-
-% Use only the first frequency in the GUI targetFrequency box to defineBF
-% targetFrequency=stimulusParameters.targetFrequency(1);
-% BFlist=targetFrequency;
-
-AN_HSRonset=zeros(nLevels,1);
-AN_HSRsaturated=zeros(nLevels,1);
-AN_LSRonset=zeros(nLevels,1);
-AN_LSRsaturated=zeros(nLevels,1);
-CNLSRrate=zeros(nLevels,1);
-CNHSRsaturated=zeros(nLevels,1);
-ICHSRsaturated=zeros(nLevels,1);
-ICLSRsaturated=zeros(nLevels,1);
-vectorStrength=zeros(nLevels,1);
-
-AR=zeros(nLevels,1);
-MOC=zeros(nLevels,1);
-
-% ANoutput=zeros(200,200);
-
-figure(15), clf
-set(gcf,'position',[980   356   401   321])
-figure(5), clf
-set(gcf,'position', [980 34 400 295])
-drawnow
 
 %% guarantee that the sample rate is at least 10 times the frequency
 sampleRate=50000;
@@ -77,16 +40,36 @@ ANdt=dt*ANspeedUpFactor;
 ANdt=period/round(period/ANdt);
 dt=ANdt/ANspeedUpFactor;
 sampleRate=1/dt;
-epochsPerPeriod=sampleRate*period;
+
+%% pre-allocate storage
+AN_HSRonset=zeros(nLevels,1);
+AN_HSRsaturated=zeros(nLevels,1);
+AN_LSRonset=zeros(nLevels,1);
+AN_LSRsaturated=zeros(nLevels,1);
+CNLSRrate=zeros(nLevels,1);
+CNHSRsaturated=zeros(nLevels,1);
+ICHSRsaturated=zeros(nLevels,1);
+ICLSRsaturated=zeros(nLevels,1);
+vectorStrength=zeros(nLevels,1);
+
+AR=zeros(nLevels,1);
+MOC=zeros(nLevels,1);
+
+figure(15), clf
+set(gcf,'position',[980   356   401   321])
+figure(5), clf
+set(gcf,'position', [980 34 400 295])
+drawnow
+
 
 %% main computational loop (vary level)
 levelNo=0;
 for leveldB=levels
     levelNo=levelNo+1;
-    
-    fprintf('%4.0f\t', leveldB)
     amp=28e-6*10^(leveldB/20);
-    
+    fprintf('%4.0f\t', leveldB)
+
+    %% generate tone and silences
     time=dt:dt:toneDuration;
     rampTime=dt:dt:rampDuration;
     ramp=[0.5*(1+cos(2*pi*rampTime/(2*rampDuration)+pi)) ...
@@ -95,24 +78,20 @@ for leveldB=levels
     
     silence=zeros(1,round(silenceDuration/dt));
     
-    % create signal (leveldB/ targetFrequency)
     inputSignal=amp*sin(2*pi*targetFrequency'*time);
     inputSignal= ramp.*inputSignal;
     inputSignal=[silence inputSignal];
     
     %% run the model
-    AN_spikesOrProbability='spikes';
-    showPlotsAndDetails=0;
-    
-    
+    AN_spikesOrProbability='spikes'    
     MAP1_14(inputSignal, 1/dt, BFlist, ...
         paramsName, AN_spikesOrProbability, paramChanges);
     
     nTaus=length(ANtauCas);
     
+    %% Auditory nerve evaluate and display (Fig. 5)
     %LSR (same as HSR if no LSR fibers present)
     [nANFibers nTimePoints]=size(ANoutput);
-    
     numLSRfibers=nANFibers/nTaus;
     numHSRfibers=numLSRfibers;
     
@@ -136,6 +115,7 @@ for leveldB=levels
     hold on,  bar(PSTHtime,PSTHLSR,'r')
     ylim([0 1000])
     xlim([0 length(PSTH)*localPSTHbinwidth])
+    grid on
     set(gcf,'name',['PSTH: ' num2str(BFlist), ' Hz: ' num2str(leveldB) ' dB']);
     
     % AN - CV
@@ -153,9 +133,9 @@ for leveldB=levels
     title(['AN HSR: CV=' num2str(cvANHSR(3),'%5.2f') ...
         'VS=' num2str(VS,'%5.2f')])
     
-    % CN - first-order neurons
+    %% CN - first-order neurons
     
-    % CN LSR
+    % CN driven by LSR fibers
     [nCNneurons c]=size(CNoutput);
     nLSRneurons=round(nCNneurons/nTaus);
     CNLSRspikes=CNoutput(1:nLSRneurons,:);
@@ -179,7 +159,7 @@ for leveldB=levels
     cvMMHSR= UTIL_CV(MacGregorMultiHSRspikes, ANdt);
     title(['CN    CV= ' num2str(cvMMHSR(3),'%5.2f')])
     
-    % IC LSR
+    %% IC LSR
     [nICneurons c]=size(ICoutput);
     nLSRneurons=round(nICneurons/nTaus);
     ICLSRspikes=ICoutput(1:nLSRneurons,:);
@@ -188,18 +168,16 @@ for leveldB=levels
     
     %IC HSR
     MacGregorMultiHSRspikes=...
-        ICoutput(end-nLSRneurons:end,:);
+        ICoutput(end-nLSRneurons+1:end,:);
     PSTH=UTIL_PSTHmaker(MacGregorMultiHSRspikes, ANdt, localPSTHbinwidth);
-    PSTH=sum(PSTH)/nLSRneurons;
-    PSTH=mean(PSTH,1)/localPSTHbinwidth; % sum across fibers (HSR only)
-    
-    ICHSRsaturated(levelNo)=mean(PSTH(length(PSTH)/2:end));
-    
+    ICHSRsaturated(levelNo)= (sum(PSTH)/nLSRneurons)/toneDuration;
+
     AR(levelNo)=min(ARattenuation);
     MOC(levelNo)=min(MOCattenuation(length(MOCattenuation)/2:end));
     
     time=dt:dt:dt*size(ICmembraneOutput,2);
     figure(5), subplot(2,2,4)
+    % plot HSR (last of two)
     plot(time,ICmembraneOutput(2, 1:end),'k')
     ylim([-0.07 0])
     xlim([0 max(time)])
@@ -207,14 +185,18 @@ for leveldB=levels
     drawnow
     
     figure(5), subplot(2,2,1)
-    plot(20*log10(MOC), 'k'),
+    plot(20*log10(MOC), 'k'), hold on
+    plot(20*log10(AR), 'r'), hold off
     title(' MOC'), ylabel('dB attenuation')
     ylim([-30 0])
     
     
 end % level
+
+%% plot with levels on x-axis
 figure(5), subplot(2,2,1)
-plot(levels,20*log10(MOC), 'k'),
+plot(levels,20*log10(MOC), 'k'),hold on
+plot(levels,20*log10(AR), 'r'), hold off
 title(' MOC'), ylabel('dB attenuation')
 ylim([-30 0])
 xlim([0 max(levels)])
@@ -230,9 +212,7 @@ fprintf('levels')
 fprintf('%6.2f\t', levels)
 fprintf('\n')
 
-
-% ---------------------------------------------------- display parameters
-
+%% ---------------------- display summary results (Fig 15)
 figure(15), clf
 nRows=2; nCols=2;
 
@@ -244,7 +224,7 @@ ylim([0 1000]),  xlim([min(levels) max(levels)])
 ttl=['tauCa= ' num2str(IHCpreSynapseParams.tauCa)];
 title( ttl)
 xlabel('level dB SPL'), ylabel('peak rate (sp/s)'), grid on
-text(0, 800, 'AN onset', 'fontsize', 16)
+text(0, 800, 'AN onset', 'fontsize', 14)
 
 % AN rate - level ADAPTED function
 subplot(nRows,nCols,2)
@@ -259,7 +239,7 @@ ttl=[   'spont=' num2str(mean(AN_HSRsaturated(1,:)),'%4.0f')...
     '  sat=' num2str(mean(AN_HSRsaturated(end,1)),'%4.0f')];
 title( ttl)
 xlabel('level dB SPL'), ylabel ('adapted rate (sp/s)')
-text(0, 340, 'AN adapted', 'fontsize', 16), grid on
+text(0, 340, 'AN adapted', 'fontsize', 14), grid on
 
 % CN rate - level ADAPTED function
 subplot(nRows,nCols,3)
@@ -274,7 +254,7 @@ ttl=[   'spont=' num2str(mean(CNHSRsaturated(1,:)),'%4.0f') '  sat=' ...
     num2str(mean(CNHSRsaturated(end,1)),'%4.0f')];
 title( ttl)
 xlabel('level dB SPL'), ylabel ('adapted rate (sp/s)')
-text(0, 350, 'CN', 'fontsize', 16), grid on
+text(0, 350, 'CN', 'fontsize', 14), grid on
 
 % IC rate - level ADAPTED function
 subplot(nRows,nCols,4)
@@ -284,16 +264,12 @@ ylim([0 400])
 set(gca,'ytick',0:50:300)
 xlim([min(levels) max(levels)])
 set(gca,'xtick',[levels(1):20:levels(end)]), grid on
-
-
 ttl=['spont=' num2str(mean(ICHSRsaturated(1,:)),'%4.0f') ...
     '  sat=' num2str(mean(ICHSRsaturated(end,1)),'%4.0f')];
 title( ttl)
 xlabel('level dB SPL'), ylabel ('adapted rate (sp/s)')
-text(0, 350, 'IC', 'fontsize', 16)
+text(0, 350, 'IC', 'fontsize', 14)
 set(gcf,'name',' AN CN IC rate/level')
-
-peakVectorStrength=max(vectorStrength);
 
 fprintf('\n')
 disp('levels vectorStrength')

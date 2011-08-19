@@ -610,19 +610,19 @@ end
 % ------------------------------------------------ pushbuttonRun_Callback
 function pushbuttonRun_Callback(hObject, eventdata, handles)
 global checkForPreviousGUI % holds screen positioning across repeated calls
-global experiment betweenRuns paradigmNames errormsg
+global experiment stimulusParameters betweenRuns paradigmNames errormsg
 checkForPreviousGUI.GUIposition=get(handles.figure1,'position');
 experiment.singleShot=0;
 experiment.stop=0;
 
 switch experiment.paradigm
     case 'profile'
-        %% special option for two successive and linked measurements
+        %% special option for  successive and linked measurements
+        global resultsTable
         experiment.paradigm='threshold_16ms';
         set(handles.edittargetDuration,'string', num2str(0.25))
         set(handles.editstopCriteriaBox,'string','10') % nTrials
         run (handles)
-
         if experiment.stop
             optionNo=strmatch('profile',paradigmNames);
             set(handles.popupmenuParadigm,'value',optionNo);
@@ -631,11 +631,9 @@ switch experiment.paradigm
             return
         end
 
-        global resultsTable
         longTone=resultsTable(2:end,2:end);
-
         set(handles.edittargetDuration,'string', num2str(0.016))
-        set(handles.editstopCriteriaBox,'string','20') % nTrials
+        set(handles.editstopCriteriaBox,'string','30') % nTrials
         run (handles)
         if experiment.stop
             disp(errormsg)
@@ -646,19 +644,17 @@ switch experiment.paradigm
             aParadigmSelection(handles)
             return
         end
-
         shortTone=resultsTable(2:end,2:end);
-
-        % use these threshold for TMC
+        
+        % use 16ms thresholds for TMC
         thresholds16ms=betweenRuns.thresholds;
         optionNo=strmatch('TMC',paradigmNames);
         set(handles.popupmenuParadigm,'value',optionNo);
         aParadigmSelection(handles)
         set(handles.edittargetLevel,'string', thresholds16ms+10);
-        set(handles.editstopCriteriaBox,'string','20')  % nTrials
+        set(handles.editstopCriteriaBox,'string','30')  % nTrials
         pause(.1)
         run (handles)
-
         if experiment.stop
             disp(errormsg)
             optionNo=strmatch('profile',paradigmNames);
@@ -668,21 +664,18 @@ switch experiment.paradigm
             aParadigmSelection(handles)
             return
         end
-
         TMC=resultsTable(2:end,2:end);
         gaps=resultsTable(2:end,1);
         BFs=resultsTable(1, 2:end);
 
-        % use these threshold for IFMC
+        % use 16ms threshold for IFMC
         optionNo=strmatch('IFMC',paradigmNames);
         set(handles.popupmenuParadigm,'value',optionNo);
         aParadigmSelection(handles)
         set(handles.edittargetLevel,'string', thresholds16ms+10);
-        set(handles.editstopCriteriaBox,'string','10')  % nTrials
+        set(handles.editstopCriteriaBox,'string','30')  % nTrials
         pause(.1)
         run (handles)
-
-
         IFMCs=resultsTable(2:end,2:end);
         offBFs=resultsTable(2:end,1);
 
@@ -694,10 +687,11 @@ switch experiment.paradigm
 %% save data and plot profile
 
 %         save profile longTone shortTone gaps BFs TMC offBFs IFMCs
+fileName=['MTprofile' Util_timeStamp];
 profile2mFile(longTone, shortTone, gaps, BFs, TMC, offBFs, IFMCs,...
-    'MTprofile')
-plotProfile('MTprofile', 'profile_CMA_L')
-
+    fileName)
+while ~fopen(fileName), end
+plotProfile(fileName, 'profile_CMA_L')
 %% xx
         if strcmp(errormsg,'manually stopped')
             disp(errormsg)
@@ -1068,6 +1062,7 @@ end
 
 % identify model parameter changes if any
 paramChanges=get(handles.editparamChanges,'string');
+if ~strcmp(paramChanges, ';'), paramChanges=[paramChanges ';']; end
 eval(paramChanges);
 
 % -------------------------------------------- aSetSampleRate
@@ -1418,6 +1413,7 @@ aReadAndCheckParameterBoxes(handles);
 relativeFrequencies=[0.25    .5   .75  1  1.25 1.5    2];
 relativeFrequencies=[ 1 ];
 AN_spikesOrProbability='probability';
+AN_spikesOrProbability='spikes';
 testBM(stimulusParameters.targetFrequency, ...
     experiment.name,relativeFrequencies, AN_spikesOrProbability, ...
     paramChanges);
@@ -1429,8 +1425,9 @@ aReadAndCheckParameterBoxes(handles);
 showPSTHs=0;
 targetFrequency=stimulusParameters.targetFrequency(1);
 BFlist=targetFrequency;
-
-testAN(targetFrequency,BFlist,-10:10:90,experiment.name, paramChanges);
+testLevels=-10:10:90;
+% testLevels=80:10:90;
+testAN(targetFrequency,BFlist,testLevels,experiment.name, paramChanges);
 
 function pushbuttonPhLk_Callback(hObject, eventdata, handles)
 global experiment
@@ -1451,7 +1448,7 @@ global stimulusParameters experiment paramChanges
 aReadAndCheckParameterBoxes(handles);
 showPSTHs=1;
 testFM(stimulusParameters.targetFrequency(1),experiment.name, ...
-    'probability', paramChanges)
+    'spikes', paramChanges)
 
 function popupmenuPhase_Callback(hObject, eventdata, handles)
 global stimulusParameters

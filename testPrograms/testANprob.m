@@ -1,5 +1,7 @@
-function vectorStrength=testANprob(targetFrequency,BFlist, levels, ...
+function testANprob(targetFrequency,BFlist, levels, ...
     paramsName, paramChanges)
+
+% testANprob(1000,1000, -10:10:80, 'Normal')
 
 global IHC_VResp_VivoParams  IHC_cilia_RPParams IHCpreSynapseParams
 global AN_IHCsynapseParams
@@ -45,7 +47,7 @@ AR=zeros(nLevels,1);
 MOC=zeros(nLevels,1);
 
 figure(15), clf
-set(gcf,'position',[607    17   368   321])
+set(gcf,'position',[980   356   401   321])
 drawnow
 
 %% guarantee that the sample rate is at least 10 times the frequency
@@ -122,15 +124,17 @@ for leveldB=levels
 
 
     figure(15), subplot(2,2,3)
-    plot(20*log10(MOC), 'k'),
-    title(' MOC'), ylabel('dB attenuation')
+    plot(20*log10(MOC), 'k'), hold on
+    plot(20*log10(AR), 'r'),  hold off
+    title(' MOC/AR'), ylabel('dB attenuation')
     ylim([-30 0])
 
-
 end % level
+
 figure(15), subplot(2,2,3)
-plot(levels,20*log10(MOC), 'k'),
-title(' MOC'), ylabel('dB attenuation')
+plot(levels,20*log10(MOC), 'k'), hold on
+plot(levels,20*log10(AR), 'r'),  hold off
+title(' MOC/AR'), ylabel('dB attenuation')
 ylim([-30 0])
 xlim([0 max(levels)])
 
@@ -159,13 +163,13 @@ ylim([0 1000]),  xlim([min(levels) max(levels)])
 ttl=['tauCa= ' num2str(IHCpreSynapseParams.tauCa)];
 title( ttl)
 xlabel('level dB SPL'), ylabel('peak rate (sp/s)'), grid on
-text(0, 800, 'AN onset', 'fontsize', 16)
+text(0, 800, 'AN onset', 'fontsize', 14)
 
 % AN rate - level ADAPTED function
 subplot(nRows,nCols,2)
 plot(levels,AN_LSRsaturated, 'ro'), hold on
 plot(levels,AN_HSRsaturated, 'ko'), hold off
-ylim([0 400])
+ylim([0 340])
 set(gca,'ytick',0:50:300)
 xlim([min(levels) max(levels)])
 set(gca,'xtick',[levels(1):20:levels(end)])
@@ -174,7 +178,7 @@ ttl=[   'spont=' num2str(mean(AN_HSRsaturated(1,:)),'%4.0f')...
     '  sat=' num2str(mean(AN_HSRsaturated(end,1)),'%4.0f')];
 title( ttl)
 xlabel('level dB SPL'), ylabel ('adapted rate (sp/s)')
-text(0, 340, 'AN adapted', 'fontsize', 16), grid on
+text(0, 340, 'AN adapted', 'fontsize', 14), grid on
 
 allData=[ levels'  AN_HSRonset AN_HSRsaturated...
     AN_LSRonset AN_LSRsaturated ];
@@ -186,8 +190,6 @@ UTIL_showStruct(IHC_cilia_RPParams, 'IHC_cilia_RPParams')
 UTIL_showStruct(IHCpreSynapseParams, 'IHCpreSynapseParams')
 UTIL_showStruct(AN_IHCsynapseParams, 'AN_IHCsynapseParams')
 
-fprintf('\n')
-disp('levels vectorStrength')
 
 allData=[ levels'  AN_HSRonset AN_HSRsaturated...
     AN_LSRonset AN_LSRsaturated ];

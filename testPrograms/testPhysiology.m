@@ -1,6 +1,6 @@
 function testPhysiology(BF,paramsName, paramChanges)
 % e.g.
-% testPhysiology(2000,'Normal', [])
+% testPhysiology(1000,'Normal', [])
 
 restorePath=path;
 addpath (['..' filesep 'MAP'])

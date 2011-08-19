@@ -45,7 +45,6 @@ MAPparamsName='Normal';
 AN_spikesOrProbability='spikes';
 
 % or
-% NB probabilities are not corrected for refractory effects
 % AN_spikesOrProbability='probability';
 
 

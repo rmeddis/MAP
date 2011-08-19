@@ -1,4 +1,4 @@
-function timeStamp=Util_timeStamp
+function timeStamp=UTIL_timeStamp
 
 % returns a string showing time now and current date
 % the string should be suitable for creating fileNames
