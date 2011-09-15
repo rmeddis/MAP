@@ -669,7 +669,12 @@ if withinRuns.catchTrial
             {'Please,click on the GO button'}];
         set(handles.textMSG,'string',msg)
         [y,fs]=wavread('ding.wav');
-        wavplay(y/100,fs)
+        if ispc
+            wavplay(y/100,fs)
+        else
+            sound(y/100,fs)
+        end
+            
 
         % raise catch trial rate temporarily.
         %  this is normally reduced on each new trial (see GO)
@@ -1295,7 +1300,7 @@ if betweenRuns.runNumber==length(betweenRuns.var1Sequence)
     [y,fs,nbits]=wavread('TADA.wav');
     musicGain=10^(stimulusParameters.musicLeveldB/20);
     y=y*musicGain;
-    wavplay(y/100,fs, 'async')
+    if ispc, wavplay(y/100,fs, 'async'), else sound(y/100,fs, 'async'), end
 
     % update experimenter GUI
     addToMsg('Experiment completed.',1)
@@ -1333,7 +1338,8 @@ else
     [y,fs,nbits]=wavread('CHIMES.wav');
     musicGain=10^(stimulusParameters.musicLeveldB/20);
     y=y*musicGain;
-    wavplay(y/100,fs,'async')
+    if ispc, wavplay(y/100,fs, 'async'), else sound(y/100,fs, 'async'), end
+
 end
 
 % -----------------------------------------------------MAPmodelRunsGUI

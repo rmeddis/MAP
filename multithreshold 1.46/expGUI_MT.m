@@ -676,6 +676,15 @@ switch experiment.paradigm
         set(handles.editstopCriteriaBox,'string','30')  % nTrials
         pause(.1)
         run (handles)
+        if experiment.stop
+            disp(errormsg)
+            optionNo=strmatch('profile',paradigmNames);
+            set(handles.popupmenuParadigm,'value',optionNo);
+            experiment.paradigm='profile';
+            experiment.stop=-0;
+            aParadigmSelection(handles)
+            return
+        end
         IFMCs=resultsTable(2:end,2:end);
         offBFs=resultsTable(2:end,1);
 

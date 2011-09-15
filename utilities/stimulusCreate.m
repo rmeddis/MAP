@@ -500,6 +500,12 @@ end
 audio=audio/globalStimParams.audioOutCorrection;
 
 if globalStimParams.doPlay
+        if ispc
+            wavplay(audio,globalStimParams.FS)
+        else
+            sound(audio,globalStimParams.FS)
+        end
+
     wavplay(audio,globalStimParams.FS)
 end
 % all Done

@@ -1,4 +1,4 @@
-function testBM (BMlocations, paramsName,...
+function testBM (BFlist, paramsName,...
     relativeFrequencies, AN_spikesOrProbability, paramChanges)
 % testBM generates input output functions for DRNL model for any number
 % of locations.
@@ -13,13 +13,10 @@ function testBM (BMlocations, paramsName,...
 
 global    DRNLParams
 
-if nargin<5
-    paramChanges=[];
-end
-
-if nargin<4
-    AN_spikesOrProbability='spikes';
-end
+if nargin<5, paramChanges=[]; end
+if nargin<4, AN_spikesOrProbability='spikes'; end
+if nargin==0, BFlist=1000; paramsName='Normal'; 
+    relativeFrequencies=1; end
 
 savePath=path;
 addpath (['..' filesep 'utilities'],['..' filesep 'MAP'])
@@ -32,7 +29,8 @@ levels=-10:10:90;   nLevels=length(levels);
 % ? adjust for frequency
 refBMdisplacement= 1e-8; % adjusted for 10 nm at 1 kHz 
 
-toneDuration=.200;
+toneDuration=.5;
+% toneDuration=.050;
 rampDuration=0.01;
 silenceDuration=0.01;
 
@@ -45,9 +43,9 @@ set(gcf,'name','DRNL - BM')
 pause(0.1)
 
 finalSummary=[];
-nBFs=length(BMlocations);
+nBFs=length(BFlist);
 BFno=0; plotCount=0;
-for BF=BMlocations
+for BF=BFlist
     BFno=BFno+1;
     plotCount=plotCount+nBFs;
     stimulusFrequencies=BF* relativeFrequencies;
@@ -151,7 +149,8 @@ end
     subplot(maxRows,nBFs,nBFs+BFno), cla
     plot(levels,20*log10(peakEfferent), 'linewidth',2)
     ylabel('MOC (dB attenuation)'), xlabel('level')
-    title(['peak MOC: model= ' AN_spikesOrProbability])
+    title(['MOC: (' AN_spikesOrProbability ') duration= ' ...
+        num2str(1000*toneDuration,'%5.0f') ' ms'])
     grid on
     if length(levels)>1, xlim([min(levels) max(levels)]), end
 

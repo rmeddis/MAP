@@ -149,27 +149,31 @@ errormsg='';
 set(handles.textMSG,'string', stimulusParameters.subjectText)
 
 % select the new levels of the between runs variables
-num=betweenRuns.runNumber;
+thisRunNumber=betweenRuns.runNumber;
 cmd=(['stimulusParameters.' betweenRuns.variableName1 '= ' ...
-    num2str(betweenRuns.var1Sequence(num)) ';']);
+    num2str(betweenRuns.var1Sequence(thisRunNumber)) ';']);
 % e.g.  stimulusParameters.targetFrequency= 1000;
 eval(cmd);
 
 cmd=(['stimulusParameters.' betweenRuns.variableName2 '= ' ...
-    num2str(betweenRuns.var2Sequence(num)) ';']);
+    num2str(betweenRuns.var2Sequence(thisRunNumber)) ';']);
 % e.g.  stimulusParameters.targetDuration= 0.1;
 eval(cmd);
 
-switch experiment.paradigm
-    % target level may vary between runs
-    case {'trainingIFMC', 'TMC','TMC_16ms', 'TMC - ELP', 'IFMC','IFMC_8ms','IFMC_16ms'}
-        idx=floor(num/length(betweenRuns.variableList1)-0.01)+1;
-        cmd=(['stimulusParameters.targetLevel = ' ...
-            num2str(stimulusParameters.targetLevels(idx)) ';']);
-        eval(cmd);
-        if withinRuns.trialNumber==1
-            disp(['targetLevel=' num2str(stimulusParameters.targetLevel)])
-        end
+% When variableList2 is 'targetFrequency' targetLevel may vary between runs 
+% If so, it is changed at the end of each variableList1.
+if strcmp(betweenRuns.variableName2, 'maskerRelativeFrequency') && ...
+        length(stimulusParameters.targetLevels)>1
+    switch experiment.paradigm
+        case {'trainingIFMC', 'TMC','TMC_16ms', 'TMC - ELP', 'IFMC','IFMC_8ms','IFMC_16ms'}
+            idx=floor(thisRunNumber/length(betweenRuns.variableList1)-0.01)+1;
+            cmd=(['stimulusParameters.targetLevel = ' ...
+                num2str(stimulusParameters.targetLevels(idx)) ';']);
+            eval(cmd);
+            if withinRuns.trialNumber==1
+                disp(['targetLevel=' num2str(stimulusParameters.targetLevel)])
+            end
+    end
 end
 
 
@@ -316,13 +320,14 @@ if withinRuns.catchTrial
 end
 
 % ----------------------------- calibration of sound output
+% seperate calibration for each frequency to match headphones
 calibrationCorrectiondB=stimulusParameters.calibrationdB;
 if calibrationCorrectiondB<-50
     if maskerFrequency==targetFrequency
         load 'calibrationFile'  % calibrationFrequency calibrationAttenutation
         idx=find(calibrationFrequency==targetFrequency);
         if isempty(idx)
-            error('Calibration bty file; frequency not found')
+            error('Calibration by file; frequency not found')
         else
             calibrationCorrectiondB=calibrationAttenutation(idx)
         end

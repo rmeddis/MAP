@@ -13,16 +13,21 @@ function testFM(BFlist,paramsName, AN_spikesOrProbability,...
 global inputStimulusParams outerMiddleEarParams DRNLParams
 global IHC_VResp_VivoParams IHCpreSynapseParams  AN_IHCsynapseParams
 global  ANprobRateOutput  ANoutput ANtauCas  ANdt
-
 dbstop if error
-
 restorePath=path;
 addpath (['..' filesep 'MAP'], ['..' filesep 'utilities'], ...
     ['..' filesep 'parameterStore'],  ['..' filesep 'wavFileStore'],...
     ['..' filesep 'testPrograms'])
 
-if nargin<3
+if nargin==0
+    BFlist=1000;
+    paramsName=('Normal');
+    AN_spikesOrProbability='spikes';
     paramChanges=[];
+else
+    if nargin<3
+    paramChanges=[];
+    end
 end
 
 % masker and probe levels are relative to this threshold

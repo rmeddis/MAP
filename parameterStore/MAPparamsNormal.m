@@ -1,21 +1,22 @@
 function method=MAPparamsNormal ...
     (BFlist, sampleRate, showParams, paramChanges)
 % MAPparams<> establishes a complete set of MAP parameters
-% Parameter file names must be of the form <MAPparams> <name>
+% Parameter file names must be of the form <MAPparams><name>
 %
-% input arguments
+% Input arguments
 %  BFlist     (optional) specifies the desired list of channel BFs
 %    otherwise defaults set below
 %  sampleRate (optional), default is 50000.
 %  showParams (optional) =1 prints out the complete set of parameters
-% output argument
+% Output argument
 %  method passes a miscelleny of values
+%  the use of 'method' is being phased out. use globals
 
 global inputStimulusParams OMEParams DRNLParams IHC_cilia_RPParams
-global IHC_VResp_VivoParams IHCpreSynapseParams  AN_IHCsynapseParams
+global IHCpreSynapseParams  AN_IHCsynapseParams
 global MacGregorParams MacGregorMultiParams  filteredSACFParams
-global experiment % used by calls from multiThreshold only
-
+global experiment % used only by calls from multiThreshold
+% global IHC_VResp_VivoParams
 
 currentFile=mfilename;                      % i.e. the name of this mfile
 method.parameterSource=currentFile(10:end); % for the record
@@ -30,7 +31,7 @@ if nargin<1 || BFlist(1)<0 % if BFlist= -1, set BFlist to default
     % 21 chs (250-8k)includes BFs at 250 500 1000 2000 4000 8000
     BFlist=round(logspace(log10(lowestBF),log10(highestBF),numChannels));
 end
-% BFlist=1000;
+% BFlist=1000;  % single channel option
 
 % preserve for backward campatibility
 method.nonlinCF=BFlist; 
@@ -54,69 +55,67 @@ OMEParams.externalResonanceFilters=      [ 10 1 1000 4000];
 OMEParams.OMEstapesLPcutoff= 1000;
 OMEParams.stapesScalar=	     45e-9;
 
-% Acoustic reflex: maximum attenuation should be around 25 dB Price (1966)
+% Acoustic reflex: maximum attenuation should be around 25 dB (Price, 1966)
 % i.e. a minimum ratio of 0.056.
 % 'spikes' model: AR based on brainstem spiking activity (LSR)
-OMEParams.rateToAttenuationFactor=0.01;   % * N(all ICspikes)
-% OMEParams.rateToAttenuationFactor=0;   % * N(all ICspikes)
+OMEParams.rateToAttenuationFactor=0.008;  % * N(all ICspikes)
+% OMEParams.rateToAttenuationFactor=0;  % i.e. no AR
 
 % 'probability model': Ar based on AN firing probabilities (LSR)
-OMEParams.rateToAttenuationFactorProb=0.006;% * N(all ANrates)
-% OMEParams.rateToAttenuationFactorProb=0;% * N(all ANrates)
+OMEParams.rateToAttenuationFactorProb=0.006;    % * N(all ANrates)
+% OMEParams.rateToAttenuationFactorProb=0;      % i.e. no AR
 
 % asymptote should be around 100-200 ms
-OMEParams.ARtau=.05; % AR smoothing function
+OMEParams.ARtau=.250; % AR smoothing function 250 ms fits Hung and Dallos
 % delay must be longer than the segment length
 OMEParams.ARdelay=efferentDelay;  %Moss gives 8.5 ms latency
 OMEParams.ARrateThreshold=40;
 
 %%  #3 DRNL
 DRNLParams=[];  % clear the structure first
-DRNLParams.BFlist=BFlist;
+% DRNLParams.BFlist=BFlist;
 
-% DRNL nonlinear path
-DRNLParams.a=5e4;     % DRNL.a=0 means no OHCs (no nonlinear path)
+%   *** DRNL nonlinear path
+% broken stick compression
+DRNLParams.a=5e4;       % DRNL.a=0 means no OHCs (no nonlinear path)
+DRNLParams.c=.2;        % compression exponent
+DRNLParams.CtBMdB = 10; %Compression threshold dB re 10e-9 m displacement
 
-DRNLParams.b=8e-6;    % *compression threshold raised compression
-% DRNLParams.b=1;    % b=1 means no compression
-DRNLParams.cTh= 5e-8; % compression threshold in meters.
-
-DRNLParams.c=9e-2;     % compression exponent
-% nonlinear filters
+% filters
+DRNLParams.nonlinOrder=	3;  % order of nonlinear gammatone filters
 DRNLParams.nonlinCFs=BFlist;
-DRNLParams.nonlinOrder=	3;           % order of nonlinear gammatone filters
-p=0.2895;   q=170;  % human  (% p=0.14;   q=366;  % cat)
-p=0.2895;   q=250;  % human  (% p=0.14;   q=366;  % cat)
+p=0.2895;   q=250;      % human  (% p=0.14;   q=366;  % cat)
 DRNLParams.nlBWs=  p * BFlist + q;
 DRNLParams.p=p;   DRNLParams.q=q;   % save p and q for printing only
 
-% DRNL linear path:
-DRNLParams.g=100;     % linear path gain factor
+%   *** DRNL linear path:
+DRNLParams.g=200;       % linear path gain factor
+DRNLParams.linOrder=3;  % order of linear gammatone filters
 % linCF is not necessarily the same as nonlinCF
 minLinCF=153.13; coeffLinCF=0.7341;   % linCF>nonlinBF for BF < 1 kHz
 DRNLParams.linCFs=minLinCF+coeffLinCF*BFlist;
-DRNLParams.linOrder=	3;           % order of linear gammatone filters
+% bandwidths (linear)
 minLinBW=100; coeffLinBW=0.6531;
 DRNLParams.linBWs=minLinBW + coeffLinBW*BFlist; % bandwidths of linear  filters
 
-% DRNL MOC efferents
+%   *** DRNL MOC efferents
 DRNLParams.MOCdelay = efferentDelay;            % must be < segment length!
+DRNLParams.minMOCattenuationdB=-30;
 
 % 'spikes' model: MOC based on brainstem spiking activity (HSR)
-DRNLParams.rateToAttenuationFactor = .009;  % strength of MOC
-%      DRNLParams.rateToAttenuationFactor = 0;  % strength of MOC
+DRNLParams.MOCtau =.025;                         % smoothing for MOC
+DRNLParams.rateToAttenuationFactor = .00635;  % strength of MOC
+% DRNLParams.rateToAttenuationFactor = 0;  % strength of MOC
+
 % 'probability' model: MOC based on AN spiking activity (HSR)
-DRNLParams.rateToAttenuationFactorProb = 0.0045;  % strength of MOC
+DRNLParams.MOCtauProb =.285;                         % smoothing for MOC
+DRNLParams.rateToAttenuationFactorProb = 0.0075;  % strength of MOC
 % DRNLParams.rateToAttenuationFactorProb = .0;  % strength of MOC
 DRNLParams.MOCrateThresholdProb =50;                % spikes/s probability only
 
-DRNLParams.MOCtau =.1;                         % smoothing for MOC
-
 
 %% #4 IHC_cilia_RPParams
-
 IHC_cilia_RPParams.tc=	0.0003;   % 0.0003 filter time simulates viscocity
-% IHC_cilia_RPParams.tc=	0.0005;   % 0.0003 filter time simulates viscocity
 IHC_cilia_RPParams.C=	0.03;      % 0.1 scalar (C_cilia ) 
 IHC_cilia_RPParams.u0=	5e-9;       
 IHC_cilia_RPParams.s0=	30e-9;
@@ -140,7 +139,7 @@ IHC_cilia_RPParams.Rpc=	0.04;           % combined resistances
 %%  #5 IHCpreSynapse
 IHCpreSynapseParams=[];
 IHCpreSynapseParams.GmaxCa=	14e-9;% maximum calcium conductance
-IHCpreSynapseParams.GmaxCa=	12e-9;% maximum calcium conductance
+% IHCpreSynapseParams.GmaxCa=	12e-9;% maximum calcium conductance
 IHCpreSynapseParams.ECa=	0.066;  % calcium equilibrium potential
 IHCpreSynapseParams.beta=	400;	% determine Ca channel opening
 IHCpreSynapseParams.gamma=	100;	% determine Ca channel opening
@@ -149,15 +148,21 @@ IHCpreSynapseParams.power=	3;
 % reminder: changing z has a strong effect on HF thresholds (like Et)
 IHCpreSynapseParams.z=	    2e42;   % scalar Ca -> vesicle release rate
 
-LSRtauCa=35e-6;            HSRtauCa=80e-6;            % seconds
-% LSRtauCa=35e-6;            HSRtauCa=70e-6;            % seconds
-IHCpreSynapseParams.tauCa= [15e-6 80e-6]; %LSR and HSR fiber
+LSRtauCa=40e-6;            HSRtauCa=80e-6;            % seconds
+% IHCpreSynapseParams.tauCa= [15e-6 80e-6]; %LSR and HSR fiber
 IHCpreSynapseParams.tauCa= [LSRtauCa HSRtauCa]; %LSR and HSR fiber
 
 %%  #6 AN_IHCsynapse
+AN_IHCsynapseParams=[];             % clear the structure first
+% number of AN fibers at each BF (used only for spike generation)
+AN_IHCsynapseParams.numFibers=	100; 
+% absolute refractory period. Relative refractory period is the same. 
+AN_IHCsynapseParams.refractory_period=	0.00075;
+AN_IHCsynapseParams.TWdelay=0.004;  % ?delay before stimulus first spike
+AN_IHCsynapseParams.ANspeedUpFactor=5; % longer epochs for computing spikes.
+
 % c=kym/(y(l+r)+kl)	(spontaneous rate)
 % c=(approx)  ym/l  (saturated rate)
-AN_IHCsynapseParams=[];             % clear the structure first
 AN_IHCsynapseParams.M=	12;         % maximum vesicles at synapse
 AN_IHCsynapseParams.y=	4;          % depleted vesicle replacement rate
 AN_IHCsynapseParams.y=	6;          % depleted vesicle replacement rate
@@ -172,12 +177,6 @@ AN_IHCsynapseParams.l=	250; % *loss rate of vesicles from the cleft
 AN_IHCsynapseParams.r=	500; % *reuptake rate from cleft into cell
 % AN_IHCsynapseParams.r=	300; % *reuptake rate from cleft into cell
 
-AN_IHCsynapseParams.refractory_period=	0.00075;
-% number of AN fibers at each BF (used only for spike generation)
-AN_IHCsynapseParams.numFibers=	100; 
-AN_IHCsynapseParams.TWdelay=0.004;  % ?delay before stimulus first spike
-
-AN_IHCsynapseParams.ANspeedUpFactor=5; % longer epochs for computing spikes.
 
 %%  #7 MacGregorMulti (first order brainstem neurons)
 MacGregorMultiParams=[];
@@ -204,7 +203,6 @@ switch MacGregorMultiType
         MacGregorMultiParams.nNeuronsPerBF=	10;   % N neurons per BF
         MacGregorMultiParams.type = 'chopper cell';
         MacGregorMultiParams.fibersPerNeuron=10;  % N input fibers
-%         MacGregorMultiParams.fibersPerNeuron=6;  % N input fibers
 
         MacGregorMultiParams.dendriteLPfreq=50;   % dendritic filter
         MacGregorMultiParams.currentPerSpike=35e-9; % *per spike
@@ -235,7 +233,7 @@ MacGregorParams.Cap=16.7e-9;        % cell capacitance (Siemens)
 MacGregorParams.tauM=0.002;         % membrane time constant (s)
 MacGregorParams.Ek=-0.01;           % K+ eq. potential (V)
 MacGregorParams.dGkSpike=1.33e-4;   % K+ cond.shift on spike,S
-MacGregorParams.tauGk=	0.0005;     % K+ conductance tau (s)
+MacGregorParams.tauGk=	0.0012;     % K+ conductance tau (s)
 MacGregorParams.Th0=	0.01;       % equilibrium threshold (V)
 MacGregorParams.c=	0;              % threshold shift on spike, (V)
 MacGregorParams.tauTh=	0.02;       % variable threshold tau
@@ -270,8 +268,34 @@ end
 %% now accept last minute parameter changes required by the calling program
 % paramChanges
 if nargin>3 && ~isempty(paramChanges)
+    if ~iscellstr(paramChanges)
+        error(['paramChanges error: paramChanges not a cell array'])
+    end
+    
     nChanges=length(paramChanges);
     for idx=1:nChanges
+        x=paramChanges{idx};
+        x=deblank(x);
+        if ~isempty(x)
+            if ~strcmp(x(end),';')
+                error(['paramChanges error (terminate with semicolon) ' x])
+            end
+            st=strtrim(x(1:strfind(x,'.')-1));
+            fld=strtrim(x(strfind(x,'.')+1:strfind(x,'=')-1));
+            value=x(strfind(x,'=')+1:end);
+            if isempty(st) || isempty(fld) || isempty(value)
+                error(['paramChanges error:' x])
+            end
+            
+            x1=eval(['isstruct(' st ')']);
+            cmd=['isfield(' st ',''' fld ''')'];
+            x2=eval(cmd);
+            if ~(x1*x2)
+                error(['paramChanges error:' x])
+            end
+        end
+        
+        % no problems so go ahead
         eval(paramChanges{idx})
     end
 end

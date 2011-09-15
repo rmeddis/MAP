@@ -1,5 +1,7 @@
 function testRP(BFs,MAPparamsName,paramChanges)
 % testIHC used for IHC I/O function
+% multiple BFs can be used but only one is easier to interpret.
+% e.g. testRP(1000,'Normal',{});
 
 global experiment method inputStimulusParams
 global stimulusParameters IHC_VResp_VivoParams IHC_cilia_RPParams

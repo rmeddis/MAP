@@ -1,14 +1,15 @@
-function vectorStrength=testAN(targetFrequency,BFlist, levels, ...
+function vectorStrength=testAN(probeFrequency,BFlist, levels, ...
     paramsName,paramChanges)
 % generates rate/level functions for AN and brainstem units.
 %  also other information like PSTHs, MOC efferent activity levels.
+% e.g.
 % testAN(1000,1000, -10:10:80,'Normal',[]);
 
 global IHC_VResp_VivoParams  IHC_cilia_RPParams IHCpreSynapseParams
 global AN_IHCsynapseParams
 global ANoutput ANdt CNoutput ICoutput ICmembraneOutput ANtauCas
 global ARattenuation MOCattenuation
-
+tic
 dbstop if error
 restorePath=path;
 addpath (['..' filesep 'MAP'], ['..' filesep 'utilities'], ...
@@ -17,9 +18,8 @@ addpath (['..' filesep 'MAP'], ['..' filesep 'utilities'], ...
 
 if nargin<5, paramChanges=[]; end
 if nargin<4, paramsName='Normal'; end
-if nargin<3
-    levels=-10:10:80;
-end
+if nargin<3, levels=-10:10:80; end
+if nargin==0, probeFrequency=1000; BFlist=1000; end
 nLevels=length(levels);
 
 toneDuration=.2;   rampDuration=0.002;   silenceDuration=.02;
@@ -27,14 +27,14 @@ localPSTHbinwidth=0.001;
 
 %% guarantee that the sample rate is at least 10 times the frequency
 sampleRate=50000;
-while sampleRate< 10* targetFrequency
+while sampleRate< 10* probeFrequency
     sampleRate=sampleRate+10000;
 end
 
 %% adjust sample rate so that the pure tone stimulus has an integer
 %% numver of epochs in a period
 dt=1/sampleRate;
-period=1/targetFrequency;
+period=1/probeFrequency;
 ANspeedUpFactor=5;  %anticipating MAP (needs clearing up)
 ANdt=dt*ANspeedUpFactor;
 ANdt=period/round(period/ANdt);
@@ -78,12 +78,12 @@ for leveldB=levels
     
     silence=zeros(1,round(silenceDuration/dt));
     
-    inputSignal=amp*sin(2*pi*targetFrequency'*time);
+    inputSignal=amp*sin(2*pi*probeFrequency'*time);
     inputSignal= ramp.*inputSignal;
     inputSignal=[silence inputSignal];
     
     %% run the model
-    AN_spikesOrProbability='spikes'    
+    AN_spikesOrProbability='spikes';   
     MAP1_14(inputSignal, 1/dt, BFlist, ...
         paramsName, AN_spikesOrProbability, paramChanges);
     
@@ -125,7 +125,7 @@ for leveldB=levels
     % AN - vector strength
     PSTH=sum(HSRspikes);
     [PH, binTimes]=UTIL_periodHistogram...
-        (PSTH, ANdt, targetFrequency);
+        (PSTH, ANdt, probeFrequency);
     VS=UTIL_vectorStrength(PH);
     vectorStrength(levelNo)=VS;
     disp(['sat rate= ' num2str(AN_HSRsaturated(levelNo)) ...
@@ -308,3 +308,4 @@ fprintf('VS (phase locking)= \t%6.4f\n\n',...
     max(vectorStrength))
 
 path(restorePath)
+toc

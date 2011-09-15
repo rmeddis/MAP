@@ -12,7 +12,7 @@ function UTIL_showMAP (showMapOptions, paramChanges)
 % showMapOptions.surfProbability=0;      % HSR (probability) surf plot
 % showMapOptions.fileName=[];            % parameter filename for plot title
 
-dbstop if warning
+% dbstop if warning
 
 global dt ANdt  savedBFlist saveAN_spikesOrProbability saveMAPparamsName...
     savedInputSignal OMEextEarPressure TMoutput OMEoutput ARattenuation ...
@@ -60,7 +60,7 @@ end
 %% summarise firing rates in command window
 if showMapOptions.printFiringRates
     %% print summary firing rates
-    fprintf('\n\n')
+    fprintf('\n')
     disp('summary')
     disp(['AR: ' num2str(min(ARattenuation))])
     disp(['MOC: ' num2str(min(min(MOCattenuation)))])
@@ -78,7 +78,7 @@ if showMapOptions.printFiringRates
             /(nHSRCNneuronss*duration))])
         nICneurons=size(ICoutput,1);
         nHSRICneurons= round(nICneurons/nANfiberTypes);
-        ICrate=sum(sum(ICoutput(end-nHSRICneurons:end,:)))/duration/nHSRICneurons;
+        ICrate=sum(sum(ICoutput(end-nHSRICneurons+1:end,:)))/duration/nHSRICneurons;
         disp(['IC(HSR): ' num2str(ICrate)])
         %         disp(['IC by type: ' num2str(mean(ICfiberTypeRates,2)')])
     else
@@ -93,7 +93,9 @@ end
 %% figure (99): display output from all model stages
 if showMapOptions.showModelOutput
     plotInstructions.figureNo=99;
-    signalRMS=mean(savedInputSignal.^2)^0.5;
+    
+    % ignore zero elements in signal
+    signalRMS=mean(savedInputSignal(find(savedInputSignal)).^2)^0.5;
     signalRMSdb=20*log10(signalRMS/20e-6);
 
     % plot signal (1)
@@ -101,21 +103,28 @@ if showMapOptions.showModelOutput
     plotInstructions.numPlots=6;
     plotInstructions.subPlotNo=1;
     plotInstructions.title=...
-        ['stimulus: ' num2str(signalRMSdb, '%4.0f') ' dB SPL'];
+        ['stimulus (Pa).  ' num2str(signalRMSdb, '%4.0f') ' dB SPL'];
     r=size(savedInputSignal,1);
     if r==1, savedInputSignal=savedInputSignal'; end
     UTIL_plotMatrix(savedInputSignal', plotInstructions);
 
     % stapes (2)
     plotInstructions.subPlotNo=2;
-    plotInstructions.title= ['stapes displacement'];
+    plotInstructions.title= ['stapes displacement (m)'];
     UTIL_plotMatrix(OMEoutput, plotInstructions);
 
     % DRNL (3)
     plotInstructions.subPlotNo=3;
-    plotInstructions.title= ['BM displacement'];
     plotInstructions.yValues= savedBFlist;
+    [r c]=size(DRNLoutput);
+    if r>1
+        plotInstructions.title= ['BM displacement'];
+    UTIL_plotMatrix(abs(DRNLoutput), plotInstructions);
+    else
+        plotInstructions.title= ['BM displacement. BF=' ...
+            num2str(savedBFlist) ' Hz'];
     UTIL_plotMatrix(DRNLoutput, plotInstructions);
+    end
 
     switch saveAN_spikesOrProbability
         case 'spikes'
@@ -148,7 +157,7 @@ if showMapOptions.showModelOutput
             % IC (6)
             plotInstructions.displaydt=ANdt;
             plotInstructions.subPlotNo=6;
-            plotInstructions.title='IC';
+            plotInstructions.title='Brainstem 2nd level';
             if size(ICoutput,1)>1
                 if sum(sum(ICoutput))<100
                     plotInstructions.rasterDotSize=3;
@@ -165,17 +174,23 @@ if showMapOptions.showModelOutput
         otherwise % AN rate based on probability of firing
             PSTHbinWidth=0.001;
             PSTH= UTIL_PSTHmakerb(ANprobRateOutput, dt, PSTHbinWidth);
+%             PSTH = makeANsmooth(PSTH, 1/PSTHbinWidth);
             plotInstructions.displaydt=PSTHbinWidth;
             plotInstructions.numPlots=2;
             plotInstructions.subPlotNo=2;
             plotInstructions.yLabel='BF';
+            plotInstructions.xLabel='time';
+            plotInstructions.zValuesRange= [0 300];
             if nANfiberTypes>1,
                 plotInstructions.yLabel='LSR    HSR';
                 plotInstructions.plotDivider=1;
             end
             plotInstructions.title='AN - spike rate';
             UTIL_plotMatrix(PSTH, plotInstructions);
+            shading interp
+            colorbar('southOutside')
     end
+    set(gcf,'name','MAP output')
 end
 
 if showMapOptions.surfProbability &&...
@@ -204,10 +219,12 @@ if showMapOptions.surfProbability &&...
 
         title (['firing probability of HSR fibers only. Level= ' ...
             num2str(signalRMSdb,'% 3.0f') ' dB'])
+        colorbar('southOutside')
 end
 
-if showMapOptions.surfSpikes
-    %% surface plot of AN spikes
+%% surface plot of AN spikes
+if showMapOptions.surfSpikes ...
+    && strcmp(saveAN_spikesOrProbability, 'spikes')
     figure(97), clf
     % select only HSR fibers at the bottom of the matrix
     ANoutput= ANoutput(end-length(savedBFlist)+1:end,:);
@@ -227,6 +244,7 @@ if showMapOptions.surfSpikes
     view([-20 60])
     %     view([0 90])
     title ([showMapOptions.fileName ':   ' num2str(signalRMSdb,'% 3.0f') ' dB'])
+    set(97,'name', 'spikes surface plot')
 end
 
 
@@ -236,22 +254,53 @@ if showMapOptions.showEfferent
     plotInstructions.figureNo=98;
     figure(98), clf
     plotInstructions.displaydt=dt;
-    plotInstructions.numPlots=2;
+    plotInstructions.numPlots=4;
     plotInstructions.subPlotNo=1;
+    plotInstructions.zValuesRange= [-1 1];
+    plotInstructions.title= ['RMS level='...
+        num2str(signalRMSdb, '%4.0f') ' dB SPL'];
+    UTIL_plotMatrix(savedInputSignal', plotInstructions);
+    
+    
+    plotInstructions.subPlotNo=2;
     plotInstructions.zValuesRange=[ -25 0];
-    plotInstructions.title= ['AR strength.  Signal level= ' ...
-        num2str(signalRMSdb,'%4.0f') ' dB SPL'];
+    plotInstructions.title= ['AR stapes attenuation (dB); tau='...
+        num2str(OMEParams.ARtau, '%4.3f') ' s'];
     UTIL_plotMatrix(20*log10(ARattenuation), plotInstructions);
 
+    % MOCattenuation
+    plotInstructions.numPlots=2;
     plotInstructions.subPlotNo=2;
     plotInstructions.yValues= savedBFlist;
-    plotInstructions.yLabel= 'BF';
-    plotInstructions.title= ['MOC strength'];
-    plotInstructions.zValuesRange=[ -25 0];
-    subplot(2,1,2)
-    % imagesc(MOCattenuation)
-    UTIL_plotMatrix(20*log10(MOCattenuation), plotInstructions);
-    colorbar
+    plotInstructions.yLabel= 'dB';
+    if strcmp(saveAN_spikesOrProbability,'spikes')
+        rate2atten=DRNLParams.rateToAttenuationFactor;
+    plotInstructions.title= ['MOC atten; tau=' ...
+        num2str(DRNLParams.MOCtau) '; factor='...
+        num2str(rate2atten, '%6.4f')];
+    else
+        rate2atten=DRNLParams.rateToAttenuationFactorProb;
+    plotInstructions.title= ['MOC atten; tauProb=' ...
+        num2str(DRNLParams.MOCtauProb) '; factor='...
+        num2str(rate2atten, '%6.4f')];
+    end
+    plotInstructions.zValuesRange=[0 -DRNLParams.minMOCattenuationdB+5];
+    UTIL_plotMatrix(-20*log10(MOCattenuation), plotInstructions);
+    hold on
+    [r c]=size(MOCattenuation);
+    if r>2
+    colorbar('southOutside')
+    end
+    set(plotInstructions.figureNo, 'name', 'AR/ MOC')
+    
+    binwidth=0.1;
+    [PSTH ]=UTIL_PSTHmaker(20*log10(MOCattenuation), dt, binwidth);
+    PSTH=PSTH*length(PSTH)/length(MOCattenuation);
+    t=binwidth:binwidth:binwidth*length(PSTH);
+    fprintf('\n\n')
+%     UTIL_printTabTable([t' PSTH'])
+%     fprintf('\n\n')
+    
 end
 
 %% ACF plot if required
@@ -327,19 +376,41 @@ end
 
 path(restorePath)
 
+
 %% IC chopper analysis
-global ICrate
-if showMapOptions.ICrates
-[r nEpochs]=size(ICoutput);
-ICrate=zeros(1,length(CNtauGk));
-% convert ICoutput to a 4-D matrix (time, CNtau, BF, fiberType)
-%  NB only one IC unit for any combination.
-y=reshape(ICoutput', ...
-    nEpochs, length(CNtauGk),length(savedBFlist),length(ANtauCas));
-for i=1:length(CNtauGk)
-    ICrate(i)=sum(sum(sum(y(:,i,:,:))))/duration;
-    fprintf('%10.5f\t%6.0f\n', CNtauGk(i), ICrate(i))
-end
-figure(95), plot(CNtauGk,ICrate)
-title ('ICrate'), xlabel('CNtauGk'), ylabel('ICrate')
-end
+% global ICrate
+% if showMapOptions.ICrates
+% [r nEpochs]=size(ICoutput);
+% ICrate=zeros(1,length(CNtauGk));
+% % convert ICoutput to a 4-D matrix (time, CNtau, BF, fiberType)
+% %  NB only one IC unit for any combination.
+% y=reshape(ICoutput', ...
+%     nEpochs, length(CNtauGk),length(savedBFlist),length(ANtauCas));
+% for i=1:length(CNtauGk)
+%     ICrate(i)=sum(sum(sum(y(:,i,:,:))))/duration;
+%     fprintf('%10.5f\t%6.0f\n', CNtauGk(i), ICrate(i))
+% end
+% figure(95), plot(CNtauGk,ICrate)
+% title ('ICrate'), xlabel('CNtauGk'), ylabel('ICrate')
+% end
+
+function ANsmooth = makeANsmooth(ANresponse, sampleRate, winSize, hopSize)
+            if nargin < 3
+                winSize = 25; %default 25 ms window
+            end
+            if nargin < 4
+                hopSize = 10; %default 10 ms jump between windows
+            end
+            
+            winSizeSamples = round(winSize*sampleRate/1000);
+            hopSizeSamples = round(hopSize*sampleRate/1000);
+            
+            % smooth
+            hann = hanning(winSizeSamples);
+            
+            ANsmooth = [];%Cannot pre-allocate a size as it is unknown until the enframing
+            for chan = 1:size(ANresponse,1)
+                f = enframe(ANresponse(chan,:), hann, hopSizeSamples);
+                ANsmooth(chan,:) = mean(f,2)'; %#ok<AGROW> see above comment
+            end
+%         end% ------ OF makeANsmooth

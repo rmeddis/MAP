@@ -6,8 +6,12 @@ function [PSTH dt]=UTIL_PSTHmaker(inputData, dt, PSTHbinWidth)
 %
 % arguments
 %	inputData is a channel x time matrix
+%   dt is the sampling interval of the input signal (not clear why this is
+%   returned?!)
 %	PSTH is the reduced matrix, the sum of all elements in the bin
 %
+% e.g.
+% [PSTH dt]=UTIL_PSTHmaker(inputData, dt, PSTHbinWidth)
 
 [numChannels numDataPoints]= size(inputData);
 

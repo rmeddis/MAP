@@ -1,4 +1,4 @@
-function test_MAP1_14
+function test_speechInNoise
 % test_MAP1_14 is a general purpose test routine that can be adjusted to
 % test a number of different applications of MAP1_14
 %
@@ -48,34 +48,35 @@ AN_spikesOrProbability='spikes';
 
 
 %% #3 pure tone, harmonic sequence or speech file input
-signalType= 'tones';
-sampleRate= 50000;
-duration=0.500;                 % seconds
-rampDuration=.005;              % raised cosine ramp (seconds)
-beginSilence=0.250;               
-endSilence=0.250;                  
-toneFrequency= 1000;            % or a pure tone (Hz)
+% signalType= 'tones';
+% sampleRate= 50000;
+% toneFrequency= 1000;            % or a pure tone (Hz8
+% duration=.5;                   % seconds
+% beginSilence=.2;
+% endSilence=0.5;
 
-%   or
-% harmonic sequence (Hz)
 % F0=210;
-% toneFrequency= F0:F0:8000;    
+% toneFrequency= F0:F0:8000;    % harmonic sequence (Hz)
+
+rampDuration=.005;              % raised cosine ramp (seconds)
 
 %   or
-% signalType= 'file';
-% fileName='twister_44kHz';
-
-
+signalType= 'file';
+fileName='twister_44kHz';
+beginSilence=1;
+endSilence=0.5;
 
 %% #4 rms level
 % signal details
-leveldBSPL= 90;                  % dB SPL (80 for Lieberman)
+leveldBSPL= 60;                  % dB SPL
 
+% leveldBSPLNoise=leveldBSPL;
+leveldBSPLNoise=0;
 
 %% #5 number of channels in the model
 %   21-channel model (log spacing)
 numChannels=21;
-lowestBF=250; 	highestBF= 6000;
+lowestBF=300; 	highestBF= 6000;
 BFlist=round(logspace(log10(lowestBF), log10(highestBF), numChannels));
 
 %   or specify your own channel BFs
@@ -91,8 +92,17 @@ BFlist=round(logspace(log10(lowestBF), log10(highestBF), numChannels));
 % paramChanges={'AN_IHCsynapseParams.ANspeedUpFactor=5;', ...
 %     'IHCpreSynapseParams.tauCa=86e-6;'};
 
-paramChanges={};
+% paramChanges={};
 
+paramChanges{1}='DRNLParams.MOCtau =.3;';
+paramChanges{2}='IHCpreSynapseParams.tauCa= IHCpreSynapseParams.tauCa(2);';
+paramChanges{3}='DRNLParams.rateToAttenuationFactorProb = 0.05;';
+paramChanges{3}='DRNLParams.rateToAttenuationFactorProb = 0;';
+
+% paramChanges={...
+%     'DRNLParams.MOCtau =.055;DRNLParams.rateToAttenuationFactor = 002;'};
+% paramChanges=...
+%     {'DRNLParams.MOCtau =.3; DRNLParams.rateToAttenuationFactor=0.0123;'};
 
 %% delare 'showMap' options to control graphical output
 showMapOptions.printModelParameters=1;   % prints all parameters
@@ -100,8 +110,8 @@ showMapOptions.showModelOutput=1;       % plot of all stages
 showMapOptions.printFiringRates=1;      % prints stage activity levels
 showMapOptions.showACF=0;               % shows SACF (probability only)
 showMapOptions.showEfferent=1;          % tracks of AR and MOC
-showMapOptions.surfProbability=1;       % 2D plot of HSR response 
-showMapOptions.surfSpikes=1;            % 2D plot of spikes histogram
+showMapOptions.surfProbability=0;       % 2D plot of HSR response
+showMapOptions.surfSpikes=0;            % 2D plot of spikes histogram
 showMapOptions.ICrates=0;               % IC rates by CNtauGk
 
 % disable certain silly options
@@ -109,8 +119,9 @@ if strcmp(AN_spikesOrProbability, 'spikes')
     % avoid nonsensical options
     showMapOptions.surfProbability=0;
     showMapOptions.showACF=0;
+else
+    showMapOptions.surfSpikes=0;
 end
-
 if strcmp(signalType, 'file')
     % needed for labeling plot
     showMapOptions.fileName=fileName;
@@ -122,12 +133,15 @@ end
 
 switch signalType
     case 'tones'
+        %         inputSignal=createMultiTone(sampleRate, toneFrequency, ...
+        %             leveldBSPL, duration, rampDuration);
         % Create pure tone stimulus
         dt=1/sampleRate; % seconds
         time=dt: dt: duration;
         inputSignal=sum(sin(2*pi*toneFrequency'*time), 1);
         amp=10^(leveldBSPL/20)*28e-6;   % converts to Pascals (peak)
         inputSignal=amp*inputSignal;
+        
         % apply ramps
         % catch rampTime error
         if rampDuration>0.5*duration, rampDuration=duration/2; end
@@ -137,11 +151,12 @@ switch signalType
         inputSignal=inputSignal.*ramp;
         ramp=fliplr(ramp);
         inputSignal=inputSignal.*ramp;
-        % add silence
+        
+        % add silences
         intialSilence= zeros(1,round(beginSilence/dt));
         finalSilence= zeros(1,round(endSilence/dt));
         inputSignal= [intialSilence inputSignal finalSilence];
-
+        
     case 'file'
         %% file input simple or mixed
         [inputSignal sampleRate]=wavread(fileName);
@@ -151,17 +166,30 @@ switch signalType
         rms=(mean(inputSignal.^2))^0.5;
         amp=targetRMS/rms;
         inputSignal=inputSignal*amp;
-        intialSilence= zeros(1,round(0.1/dt));
-        finalSilence= zeros(1,round(0.2/dt));
+        
+        % add silences
+        intialSilence= zeros(1,round(beginSilence*sampleRate));
+        finalSilence= zeros(1,round(endSilence*sampleRate));
         inputSignal= [intialSilence inputSignal' finalSilence];
+        
+        [inputNoise sampleRateN]=wavread('babble');
+        inputNoise=inputNoise(1:length(inputSignal));
+       inputNoise=inputNoise(:,1);
+        targetRMS=20e-6*10^(leveldBSPLNoise/20);
+        rms=(mean(inputNoise.^2))^0.5;
+        amp=targetRMS/rms;
+        inputNoise=inputNoise*amp;
+        inputSignal=inputSignal+inputNoise';
+        
 end
 
 
 %% run the model
 tic
+
 fprintf('\n')
 disp(['Signal duration= ' num2str(length(inputSignal)/sampleRate)])
-disp([num2str(numChannels) ' channel model: ' AN_spikesOrProbability])
+disp([num2str(numChannels) ' channel model'])
 disp('Computing ...')
 
 MAP1_14(inputSignal, sampleRate, BFlist, ...
@@ -170,18 +198,17 @@ MAP1_14(inputSignal, sampleRate, BFlist, ...
 
 %% the model run is now complete. Now display the results
 UTIL_showMAP(showMapOptions, paramChanges)
+disp(['duration=' num2str(duration)])
+disp(['level=' num2str(leveldBSPL)])
+disp(['noise level=' num2str(leveldBSPLNoise)])
 
-if strcmp(signalType,'tones')
-    disp(['duration=' num2str(duration)])
-    disp(['level=' num2str(leveldBSPL)])
-    disp(['toneFrequency=' num2str(toneFrequency)])
-    global DRNLParams
-    disp(['attenuation factor =' ...
-        num2str(DRNLParams.rateToAttenuationFactor, '%5.3f') ])
-    disp(['attenuation factor (probability)=' ...
-        num2str(DRNLParams.rateToAttenuationFactorProb, '%5.3f') ])
-    disp(AN_spikesOrProbability)
-end
+disp(['toneFrequency=' num2str(toneFrequency)])
+global DRNLParams
+disp(['attenuation factor =' ...
+    num2str(DRNLParams.rateToAttenuationFactor, '%5.3f') ])
+disp(['attenuation factor (probability)=' ...
+    num2str(DRNLParams.rateToAttenuationFactorProb, '%5.3f') ])
+disp(AN_spikesOrProbability)
 disp(paramChanges)
 toc
 path(restorePath)

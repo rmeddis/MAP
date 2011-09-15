@@ -20,6 +20,7 @@ end
 
 % absolute thresholds
 figure(90), clf
+set(gcf, 'name', 'Profile')
 subplot(2,1,2)
 semilogx(foreground.BFs,foreground.LongTone,'ko-','lineWidth',2); hold on
 semilogx(foreground.BFs,foreground.ShortTone,'bo-','lineWidth',2); hold on

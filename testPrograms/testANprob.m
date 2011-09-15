@@ -15,17 +15,10 @@ addpath (['..' filesep 'MAP'], ['..' filesep 'utilities'], ...
     ['..' filesep 'parameterStore'],  ['..' filesep 'wavFileStore'],...
     ['..' filesep 'testPrograms'])
 
-if nargin<5
-    paramChanges=[];
-end
-
-if nargin<4
-    paramsName='Normal';
-end
-
-if nargin<3
-    levels=-10:10:80;
-end
+if nargin<5, paramChanges=[]; end
+if nargin<4, paramsName='Normal'; end
+if nargin<3, levels=-10:10:80; end
+if nargin==0, targetFrequency=1000; BFlist=1000; end
 
 nLevels=length(levels);
 
@@ -113,7 +106,7 @@ for leveldB=levels
     AN_HSRsaturated(levelNo)= mean(PSTH(round(length(PSTH)/2): end));
 
     figure(15), subplot(2,2,4)
-    hold off, bar(PSTHtime,PSTH, 'b')
+    hold off, bar(PSTHtime,PSTH, 'k')
     hold on,  bar(PSTHtime,PSTHLSR,'r')
     ylim([0 1000])
     xlim([0 length(PSTH)*localPSTHbinwidth])
@@ -169,7 +162,8 @@ text(0, 800, 'AN onset', 'fontsize', 14)
 subplot(nRows,nCols,2)
 plot(levels,AN_LSRsaturated, 'ro'), hold on
 plot(levels,AN_HSRsaturated, 'ko'), hold off
-ylim([0 340])
+maxYlim=340;
+ylim([0 maxYlim])
 set(gca,'ytick',0:50:300)
 xlim([min(levels) max(levels)])
 set(gca,'xtick',[levels(1):20:levels(end)])
@@ -178,7 +172,7 @@ ttl=[   'spont=' num2str(mean(AN_HSRsaturated(1,:)),'%4.0f')...
     '  sat=' num2str(mean(AN_HSRsaturated(end,1)),'%4.0f')];
 title( ttl)
 xlabel('level dB SPL'), ylabel ('adapted rate (sp/s)')
-text(0, 340, 'AN adapted', 'fontsize', 14), grid on
+text(0, maxYlim-50, 'AN adapted', 'fontsize', 14), grid on
 
 allData=[ levels'  AN_HSRonset AN_HSRsaturated...
     AN_LSRonset AN_LSRsaturated ];

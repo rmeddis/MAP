@@ -18,7 +18,7 @@ experiment.allowCatchTrials= 1;
 
 % {'tone','noise', 'pinkNoise','whiteNoise','OHIO'}
 stimulusParameters.WRVname='targetLevel';
-stimulusParameters.WRVstartValues=20 ;
+stimulusParameters.WRVstartValues=30 ;
 stimulusParameters.WRVsteps=[10 2];
 stimulusParameters.WRVlimits=[-30 110];
 
