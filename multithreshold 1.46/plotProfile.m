@@ -38,13 +38,13 @@ for BFno=1:length(foreground.TMCFreq)
     plot(foreground.Gaps,foreground.TMC(BFno,:),'b','lineWidth',3), hold on
     ylim([-10 110])
     xlim([0.01 0.1])
-    grid on
+%     grid on
     if BFno==1
         ylabel('masker dB SL')
-        xlabel('gap')
+        xlabel('    gap (s)')
     end
     title([num2str(foreground.TMCFreq(BFno)) ' Hz'])
-    set(gca,'XTick',[ 0.1],'xTickLabel', { '0.1'})
+    set(gca,'XTick',[ 0.02:0.02:0.1],'xTickLabel', { '', '0.04', '', '',  '0.1'})
 end
 
 if ~isempty(bgName)
@@ -70,7 +70,7 @@ for BFno=1:length(foreground.IFMCFreq)
     semilogx(freq,foreground.IFMCs(BFno,:),'r','lineWidth',3), hold on
     ylim([0 100])
     xlim([100 12000])
-    grid on
+%     grid on
 end
 xlabel('frequency (Hz)')
 ylabel('masker dB / probe dB')
@@ -85,6 +85,8 @@ if ~isempty(bgName)
         xlim([100 12000])
     end
 end
+set(get(gca,'title'),'interpreter','None')
+
 title([fgName ' / ' bgName])
 % mydate=datestr(now); idx=findstr(':',mydate); mydate(idx)='_';
 

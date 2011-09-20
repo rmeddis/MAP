@@ -183,7 +183,7 @@ hold on, plot(sndLevel,RPanimal,'o')
 
     grid on
     title(['Et= ' num2str(IHC_cilia_RPParams.Et) ':  RP data 7 kHz Patuzzi'])
-    ylabel ('RP(V)'), xlabel('dB SPL')
+    ylabel ('RP(V) peak and DC'), xlabel('dB SPL')
     ylim([-0.08 -0.04])
     allIHC_RP_peak=[allIHC_RP_peak IHC_RP_peak];
     allIHC_RP_dc=[allIHC_RP_dc IHC_RP_dc];

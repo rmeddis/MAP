@@ -44,7 +44,7 @@ MAPparamsName='Normal';
 %% #2 probability (fast) or spikes (slow) representation
 AN_spikesOrProbability='spikes';
 %   or
-% AN_spikesOrProbability='probability';
+AN_spikesOrProbability='probability';
 
 
 %% #3 pure tone, harmonic sequence or speech file input
@@ -62,14 +62,14 @@ toneFrequency= 1000;            % or a pure tone (Hz)
 % toneFrequency= F0:F0:8000;    
 
 %   or
-% signalType= 'file';
-% fileName='twister_44kHz';
+signalType= 'file';
+fileName='twister_44kHz';
 
 
 
 %% #4 rms level
 % signal details
-leveldBSPL= 90;                  % dB SPL (80 for Lieberman)
+leveldBSPL= 70;                  % dB SPL (80 for Lieberman)
 
 
 %% #5 number of channels in the model
@@ -84,14 +84,16 @@ BFlist=round(logspace(log10(lowestBF), log10(highestBF), numChannels));
 
 
 %% #6 change model parameters
+
+paramChanges={};
+
 % Parameter changes can be used to change one or more model parameters
 %  *after* the MAPparams file has been read
 % This example declares only one fiber type with a calcium clearance time
 % constant of 80e-6 s (HSR fiber) when the probability option is selected.
-% paramChanges={'AN_IHCsynapseParams.ANspeedUpFactor=5;', ...
-%     'IHCpreSynapseParams.tauCa=86e-6;'};
+paramChanges={'AN_IHCsynapseParams.ANspeedUpFactor=5;', ...
+    'IHCpreSynapseParams.tauCa=86e-6; '};
 
-paramChanges={};
 
 
 %% delare 'showMap' options to control graphical output

@@ -145,7 +145,7 @@ for leveldB=levels
     
     %CN HSR
     MacGregorMultiHSRspikes=...
-        CNoutput(end-nLSRneurons:end,:);
+        CNoutput(end-nLSRneurons+1:end,:);
     PSTH=UTIL_PSTHmaker(MacGregorMultiHSRspikes, ANdt, localPSTHbinwidth);
     PSTH=sum(PSTH)/nLSRneurons;
     PSTH=mean(PSTH,1)/localPSTHbinwidth; % sum across fibers (HSR only)
@@ -178,7 +178,7 @@ for leveldB=levels
     time=dt:dt:dt*size(ICmembraneOutput,2);
     figure(5), subplot(2,2,4)
     % plot HSR (last of two)
-    plot(time,ICmembraneOutput(2, 1:end),'k')
+    plot(time,ICmembraneOutput(end-nLSRneurons+1, 1:end),'k')
     ylim([-0.07 0])
     xlim([0 max(time)])
     title(['IC  ' num2str(leveldB,'%4.0f') 'dB'])

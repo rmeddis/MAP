@@ -162,7 +162,7 @@ eval(cmd);
 
 % When variableList2 is 'targetFrequency' targetLevel may vary between runs 
 % If so, it is changed at the end of each variableList1.
-if strcmp(betweenRuns.variableName2, 'maskerRelativeFrequency') && ...
+if strcmp(betweenRuns.variableName2, 'targetFrequency') && ...
         length(stimulusParameters.targetLevels)>1
     switch experiment.paradigm
         case {'trainingIFMC', 'TMC','TMC_16ms', 'TMC - ELP', 'IFMC','IFMC_8ms','IFMC_16ms'}
@@ -217,76 +217,6 @@ cueGapDuration=gapDuration;
 % ----------------------------paradigm sensitive cue and masker settings
 % switch off unwanted components and base cue on target values
 % for catch trials switch off the target
-switch experiment.paradigm
-    % OHIO is a temporary special arrangement
-    case{'OHIOrand','OHIOspect','OHIOtemp','OHIOspectemp','OHIOabs'}
-        % these values must be set in MAPparamsOHIO
-        targetFrequency=experiment.OHIOfrequencies;
-        numOHIOtones=stimulusParameters.numOHIOtones;
-        maskerType='OHIO';
-        targetType='OHIO';
-        
-        % globalStimParams.beginSilences says when each tone begins
-        % targetFrequency specifies the frequency of each tone
-        % targetLevel is the level of each tone
-        switch experiment.paradigm
-            case 'OHIOabs'
-                % only one tone
-                targetFrequency=targetFrequency(numOHIOtones);
-                globalStimParams.beginSilences=0.01;
-                targetDuration=0.01;
-            case 'OHIOrand'
-                % select random frequencies from the list
-                x=rand(12,1); [x idx]=sort(x);
-                targetFrequency=targetFrequency(idx(1:numOHIOtones));
-                thresholds=experiment.OHIOthresholds;
-                targetLevel=thresholds(idx(1:numOHIOtones))+targetLevel;
-                globalStimParams.beginSilences=0.01:0.02:...
-                    0.01+0.02*(numOHIOtones-1);
-                targetDuration=numOHIOtones*0.02;
-            case 'OHIOspect'
-                % only one tone with multiple frequencies
-                targetFrequency=fliplr(targetFrequency);
-                targetFrequency=targetFrequency(1:numOHIOtones);
-                thresholds=experiment.OHIOthresholds;
-                thresholds=fliplr(thresholds);
-                targetLevel=thresholds(1:numOHIOtones)+targetLevel;
-                globalStimParams.beginSilences=...
-                    repmat(0.01, 1, numOHIOtones);
-                targetDuration=0.02;
-            case 'OHIOspectemp'
-                % only one tone with multiple frequencies
-                targetFrequency=fliplr(targetFrequency);
-                targetFrequency=targetFrequency(1:numOHIOtones);
-                thresholds=experiment.OHIOthresholds;
-                thresholds=fliplr(thresholds);
-                targetLevel=thresholds(1:numOHIOtones)+targetLevel;
-                globalStimParams.beginSilences=0.01:0.02:...
-                    0.01+0.02*(numOHIOtones-1);
-                targetDuration=numOHIOtones*0.02;
-            case 'OHIOtemp'
-                % use only one tone repeatedly
-                tonesToUse=10;
-                targetFrequency=targetFrequency(tonesToUse);
-                targetFrequency=repmat(targetFrequency,1,numOHIOtones);
-                thresholds=experiment.OHIOthresholds;
-                thresholds=thresholds(tonesToUse);
-                targetLevel=repmat(thresholds,1,numOHIOtones)+targetLevel;
-                globalStimParams.beginSilences=0.01:0.02:...
-                    0.01+0.02*(numOHIOtones-1);
-                targetDuration=numOHIOtones*0.02;
-        end
-        % still in OHIO
-        % Dummy values to make things work although no masker or cue used
-        % target values have changed and this affects the cue values
-        cueMaskerLevel=targetLevel;
-        cueTargetLevel=targetLevel;
-        cueTargetFrequency=targetFrequency;
-        cueMaskerFrequency=targetFrequency;
-        maskerFrequency=targetFrequency;
-        maskerLevel=targetLevel;
-        disp(['OHIO frequencies= ' num2str(targetFrequency)])
-end
 
 % --- set cueTarget level according to assessment method
 % cue-test difference applies only with singleInterval

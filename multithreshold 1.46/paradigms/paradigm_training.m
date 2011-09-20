@@ -2,7 +2,7 @@ function paradigm_training(handles)
 global stimulusParameters experiment betweenRuns
 
 stimulusParameters.subjectSampleRate=44100; % compatible with file input
-% stimulusParameters.subjectSampleRate=64000; % compatible with file input
+stimulusParameters.subjectSampleRate=64000; % compatible with file input
 % stimulusParameters.subjectSampleRate=128000; % compatible with file input
 
 %  assessment method

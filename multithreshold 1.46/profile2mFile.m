@@ -2,7 +2,7 @@ function profile2mFile(longTone, shortTone, gaps, BFs, TMC, offBFs, ...
     IFMCs, mFileName)
 
 St = ['function x = ' mFileName ];
-fid = fopen([mFileName '.m'],'w');
+fid = fopen(['..' filesep 'profiles' filesep mFileName '.m'],'w');
 fprintf(fid, '%s\n', St);
 
 St = ['%created: ' UTIL_timeStamp];

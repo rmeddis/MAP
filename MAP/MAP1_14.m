@@ -353,7 +353,8 @@ synapse_z= IHCpreSynapseParams.z;
 synapse_power=IHCpreSynapseParams.power;
 
 % tauCa vector is established across channels to allow vectorization
-%  (one tauCa per channel). Do not confuse with ANtauCas (one pre fiber type)
+%  (one tauCa per channel). 
+%  Do not confuse with ANtauCas vector (one per fiber type)
 tauCa=repmat(ANtauCas, nBFs,1);
 tauCa=reshape(tauCa, nANchannels, 1);
 
@@ -770,20 +771,23 @@ while segmentStartPTR<signalLength
 
     %% synapse -----------------------------
     % Compute the vesicle release rate for each fiber type at each BF
-    % replicate IHC_RP for each fiber type
+    
+    % replicate IHC_RP for each fiber type to obtain the driving voltage
     Vsynapse=repmat(IHC_RP, nANfiberTypes,1);
 
     % look-up table of target fraction channels open for a given IHC_RP
     mICaINF=    1./( 1 + exp(-gamma  * Vsynapse)  /beta);
-    % fraction of channel open - apply time constant
+    
+    % fraction of channels open - apply time membrane constant
     for idx=1:segmentLength
         % mICaINF is the current 'target' value of mICa
         mICaCurrent=mICaCurrent+(mICaINF(:,idx)-mICaCurrent)*dt./tauM;
         mICa(:,idx)=mICaCurrent;
     end
-
+    
+    % calcium current
     ICa=   (GmaxCa* mICa.^3) .* (Vsynapse- ECa);
-
+    % apply calcium channel time constant
     for idx=1:segmentLength
         CaCurrent=CaCurrent +  ICa(:,idx)*dt - CaCurrent*dt./tauCa;
         synapticCa(:,idx)=CaCurrent;
@@ -801,10 +805,9 @@ while segmentStartPTR<signalLength
     %     end
 
 
-    %% AN
+    %% AN -------------------------------
     switch AN_spikesOrProbability
         case 'probability'
-            % No refractory effect is applied
             for t = 1:segmentLength;
                 M_Pq=PAN_M-Pavailable;
                 M_Pq(M_Pq<0)=0;
@@ -834,7 +837,7 @@ while segmentStartPTR<signalLength
             
             %% Apply refractory effect
                % the probability of a spike's occurring in the preceding
-               %  refractory window (t= tnow-refractory period to tnow-)
+               %  refractory window: t= (tnow-refractory period) :dt: tnow
                %    pFired= 1 - II(1-p(t)),
                % we need a running account of cumProb=II(1-p(t))
                %   cumProb(t)= cumProb(t-1)*(1-p(t))/(1-p(t-refracPeriod))
@@ -849,7 +852,6 @@ while segmentStartPTR<signalLength
                % NB this covers only the absoute refractory period
                % not the relative refractory period. To approximate this it
                % is necessary to extend the refractory period by 50%
-
 
                 for t = segmentStartPTR:segmentEndPTR;
                     if t>1
@@ -867,7 +869,7 @@ while segmentStartPTR<signalLength
 %                 figure(88), plot(cumANnotFireProb'), title('cumNotFire')
 %                 figure(89), plot(ANprobRateOutput'), title('ANprobRateOutput')
 
-            %% Estimate efferent effects. ARattenuation (0 <> 1)
+            %% Estimate efferent effect:  0 < ARattenuation > 1
             %  acoustic reflex
             [r c]=size(ANrate);
             if r>nBFs % Only if LSR fibers are computed

@@ -11,7 +11,7 @@ betweenRuns.variableList2=0.016;
 stimulusParameters.targetType='tone';
 stimulusParameters.targetPhase='sin';
 stimulusParameters.targetFrequency=[250 500 1000 2000 4000 8000 ];
-stimulusParameters.targetDuration=0.016;
+stimulusParameters.targetDuration=0.25;
 stimulusParameters.targetLevel=stimulusParameters.WRVstartValues(1);
 
 stimulusParameters.rampDuration=0.004;

@@ -1,4 +1,4 @@
-% expGUI_MT = 'experimenter GUI for multiThreshold
+% multiThreshold = 'experimenter GUI for multiThreshold
 % allows the experimenter to design experiments.
 % The *running* of experiments is left to subjGUI.m
 %
@@ -22,21 +22,21 @@
 % subjGUI program. When the measurements are complete control is handed
 % back and the stack unwinds without any further action
 
-function varargout = expGUI_MT(varargin)
-%EXPGUI_MT M-file for expGUI_MT.fig
-%      EXPGUI_MT, by itself, creates a new EXPGUI_MT or raises the existing
+function varargout = multiThreshold(varargin)
+%MULTITHRESHOLD M-file for multiThreshold.fig
+%      MULTITHRESHOLD, by itself, creates a new MULTITHRESHOLD or raises the existing
 %      singleton*.
 %
-%      H = EXPGUI_MT returns the handle to a new EXPGUI_MT or the handle to
+%      H = MULTITHRESHOLD returns the handle to a new MULTITHRESHOLD or the handle to
 %      the existing singleton*.
 %
-%      EXPGUI_MT('Property','Value',...) creates a new EXPGUI_MT using the
+%      MULTITHRESHOLD('Property','Value',...) creates a new MULTITHRESHOLD using the
 %      given property value pairs. Unrecognized properties are passed via
-%      varargin to expGUI_MT_OpeningFcn.  This calling syntax produces a
+%      varargin to multiThreshold_OpeningFcn.  This calling syntax produces a
 %      warning when there is an existing singleton*.
 %
-%      EXPGUI_MT('CALLBACK') and EXPGUI_MT('CALLBACK',hObject,...) call the
-%      local function named CALLBACK in EXPGUI_MT.M with the given input
+%      MULTITHRESHOLD('CALLBACK') and MULTITHRESHOLD('CALLBACK',hObject,...) call the
+%      local function named CALLBACK in MULTITHRESHOLD.M with the given input
 %      arguments.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
@@ -44,16 +44,16 @@ function varargout = expGUI_MT(varargin)
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
-% Edit the above text to modify the response to help expGUI_MT
+% Edit the above text to modify the response to help multiThreshold
 
-% Last Modified by GUIDE v2.5 25-Jun-2011 21:41:35
+% Last Modified by GUIDE v2.5 20-Sep-2011 11:47:22
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
     'gui_Singleton',  gui_Singleton, ...
-    'gui_OpeningFcn', @expGUI_MT_OpeningFcn, ...
-    'gui_OutputFcn',  @expGUI_MT_OutputFcn, ...
+    'gui_OpeningFcn', @multiThreshold_OpeningFcn, ...
+    'gui_OutputFcn',  @multiThreshold_OutputFcn, ...
     'gui_LayoutFcn',  [], ...
     'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -67,10 +67,10 @@ else
 end
 % End initialization code - DO NOT EDIT
 
-% --------------------------------------------------  expGUI_MT_OpeningFcn
-function expGUI_MT_OpeningFcn(hObject, eventdata, handles, varargin)
+% --------------------------------------------------  multiThreshold_OpeningFcn
+function multiThreshold_OpeningFcn(hObject, eventdata, handles, varargin)
 
-% Choose default command line output for expGUI_MT
+% Choose default command line output for multiThreshold
 handles.output = hObject;
 
 cla(handles.axes1)
@@ -81,42 +81,10 @@ cla(handles.axes5)
 % Update handles structure
 guidata(hObject, handles);
 
-function varargout = expGUI_MT_OutputFcn(hObject, eventdata, handles)
+function varargout = multiThreshold_OutputFcn(hObject, eventdata, handles)
 % Get default command line output from handles structure
 initializeGUI(handles)
 varargout{1} = handles.output;
-
-% function setLocationOfGUIs(handles)
-% global checkForPreviousGUI  % holds screen positioning across repeated calls
-% scrnsize=get(0,'screensize');
-% checkForPreviousGUI=[];
-% % if isstruct(checkForPreviousGUI)...
-% %         && checkForPreviousGUI.GUIalreadyStarted==1 ...
-% %         && isfield(checkForPreviousGUI,'GUIposition')
-% %     set(handles.figure1,'position',checkForPreviousGUI.GUIposition)
-% % else
-% %     % relocate the GUI only if this is the first time of use
-% %     set(0, 'units','pixels')
-% %     % occupies top to bottom of screen but only 60% width
-% %     % [left bottom width height]
-% %     firstPos=[0.01*scrnsize(4) 0.03*scrnsize(3) 0.6*scrnsize(3) 0.92*scrnsize(4)];
-% %     firstPos=[4 0.045*scrnsize(4) 0.6*scrnsize(3) 0.93*scrnsize(4)];
-% %     set(handles.figure1, 'units','pixels')
-% %     set(handles.figure1,'position',firstPos)
-% %     checkForPreviousGUI.GUIalreadyStarted=1;
-% %     checkForPreviousGUI.GUIposition=firstPos;
-% % end
-% set(handles.figure1,'color',[.871 .961 .996])
-% set(handles.figure1,'name', pwd)
-% 
-% % MAP model figure; sits alongside GUI if requested
-% figure(99)
-% % [left bottom width height]
-% MAPpos=[0.615*scrnsize(3) 0.05*scrnsize(4) 0.15*scrnsize(3) 0.85*scrnsize(4)];
-% % visible only on request.
-% set(gcf,'position',MAPpos , 'visible','off')
-% 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % -----------------------------------------------------initializeGUI
