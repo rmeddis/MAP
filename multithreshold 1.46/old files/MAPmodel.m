@@ -20,7 +20,7 @@ showPlotsAndDetails=experiment.MAPplot;
 AN_spikesOrProbability='spikes';
 
 % [response, method]=MAPsequenceSeg(audio, method, 1:8);
-global ICoutput ANdt
+global ICoutput dtSpikes
     MAP1_14(audio, 1/method.dt, method.nonlinCF,...
         MAPparamsName, AN_spikesOrProbability);
     
@@ -29,7 +29,7 @@ if showPlotsAndDetails
     options.showModelOutput=1;
     options.printFiringRates=1;
     options.showACF=0;
-    options.showEfferent=1;
+    options.showEfferent=0;
     UTIL_showMAP(options)
 end
 
@@ -41,7 +41,7 @@ MacGregorResponse= sum(ICoutput,1);                 % use IC
 
 % ---------------------------------------------------------- end model run
 
-dt=ANdt;
+dt=dtSpikes;
 time=dt:dt:dt*length(MacGregorResponse);
 
 % group delay on unit response

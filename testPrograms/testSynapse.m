@@ -1,12 +1,14 @@
-function testSynapse(BFlist,paramsName, paramChanges)
+function testSynapse(BF,paramsName, AN_spikesOrProbability, paramChanges)
 % testSynapse tracks the quantity of available transmitter vesicles
 %  the computations are single channel using the first frequency
 %  in the targetFrequency box of the expGUI.
-% For, speed this function uses only probability and HSR fibers.
-% This cannot be changed because of the way AN_IHCsynapse is coded.This).
+% This function uses only probability and HSR fibers.
+% testSynapse(1000,'Normal',[])
 
-global experiment  method IHCpreSynapseParams
+global experiment  IHCpreSynapseParams
 global  AN_IHCsynapseParams  stimulusParameters
+global savePavailable saveNavailable
+
 savePath=path;
 addpath (['..' filesep 'utilities'],['..' filesep 'MAP'])
 
@@ -14,15 +16,27 @@ if nargin<3
     paramChanges=[];
 end
 
+if length(BF)>1
+    error('Only one value allowed for BF')
+end
+% AN_spikesOrProbability='probability';
+% AN_spikesOrProbability='spikes';
+% showPlotsAndDetails=0;
+
 figure(6),clf
 plotColors='rbgkrbgkrbgkrbgkrbgkrbgk';
 set(gcf,'position',[5    32   264   243])
 
 sampleRate=5e4; dt=1/sampleRate;
 
-maskerLevels=-0:10:100;
+switch AN_spikesOrProbability
+    case 'probability'
+        maskerLevels=-0:20:100;
+    case 'spikes'
+        maskerLevels=80;
+end
 
-targetFrequency=BFlist;
+targetFrequency=BF;
 
 silenceDuration=0.015;
 maskerDuration=0.1;
@@ -51,17 +65,16 @@ for leveldB=maskerLevels
     amp=28e-6*10^(leveldB/20);
     inputSignal=amp*signal;
 
-    AN_spikesOrProbability='probability';
-    showPlotsAndDetails=0;
-
-    global savePavailable
-   
-        MAP1_14(inputSignal, 1/dt, targetFrequency, ...
-            paramsName, AN_spikesOrProbability, paramChanges);
+    MAP1_14(inputSignal, 1/dt, targetFrequency, ...
+        paramsName, AN_spikesOrProbability, paramChanges);
 
     % ignore LSR channels (if any) at the top of the matrix
-    qt=savePavailable(end, :);
-
+    switch AN_spikesOrProbability
+        case 'probability'
+            qt=savePavailable(end, :);
+        case 'spikes'
+            qt=saveNavailable;
+    end
     synapsedt=dt;
     time=synapsedt:synapsedt:synapsedt*length(qt);
 
@@ -71,17 +84,22 @@ for leveldB=maskerLevels
     hold on
     xlim([0 max(time)])
     ylim([0 AN_IHCsynapseParams.M])
+    xlabel ('time')
 end
 
 set(gcf,'name','pre-synaptic available transmitter')
-title(['q - available vesicles:' num2str(BFlist) ' Hz'])
+title(['pre-synaptic transmitter:' num2str(BF) ' Hz'])
+ylabel(['q - available vesicles'])
 legend(strvcat(num2str(maskerLevels')),'location','southeast')
 legend boxoff
 grid on
 
-figure(88), [c,H]=contour(time, maskerLevels,qtMatrix,1:12); clabel(c, H);
-set(gcf,'position',[ 276    31   328   246])
-xlabel('time'), ylabel('maskerLevels')
-title('contour plot of available transmitter')
-grid on
+switch AN_spikesOrProbability
+    case 'probability'
+        figure(88), [c,H]=contour(time, maskerLevels,qtMatrix,1:12); clabel(c, H);
+        set(gcf,'position',[ 276    31   328   246])
+        xlabel('time'), ylabel('maskerLevels')
+        title('contour plot of available transmitter')
+        grid on
+end
 path(savePath);

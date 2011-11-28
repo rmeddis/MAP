@@ -1,7 +1,7 @@
 function paradigm_overShoot(handles)
 global stimulusParameters  betweenRuns experiment
 
-paradigm_training(handles) % default
+paradigmBase(handles) % default
 
 stimulusParameters.WRVname='targetLevel';
 stimulusParameters.WRVstartValues=50;

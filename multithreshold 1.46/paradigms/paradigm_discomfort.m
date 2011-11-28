@@ -1,7 +1,7 @@
 function paradigm_discomfort(handles)
 global stimulusParameters experiment betweenRuns
 
-paradigm_training(handles) % default
+paradigmBase(handles) % default
 
 stimulusParameters.WRVname='targetLevel';
 stimulusParameters.WRVstartValues=75 ;

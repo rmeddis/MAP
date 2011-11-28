@@ -1,5 +1,5 @@
 function testRP(BFs,MAPparamsName,paramChanges)
-% testIHC used for IHC I/O function
+% testIHC evaluates IHC I/O function
 % multiple BFs can be used but only one is easier to interpret.
 % e.g. testRP(1000,'Normal',{});
 
@@ -17,6 +17,12 @@ drawnow
 
 if nargin<3
     paramChanges=[]; 
+end
+if nargin<2
+    MAPparamsName='Normal';
+end
+if nargin<3
+    BFs=800; 
 end
 
 levels=-20:10:100;
@@ -133,10 +139,10 @@ for BFno=1:length(BFs)
     subplot(2,2,2)
     restingIHC_cilia=IHCrestingCiliaCond;
     plot(levels, IHC_cilia_peak,'k', 'linewidth',2), hold on
-    plot(levels, IHC_cilia_min,'r', 'linewidth',2)
-    hold on,
-    plot([min(levels) max(levels)], ...
-        [restingIHC_cilia restingIHC_cilia], 'g')
+%     plot(levels, IHC_cilia_min,'r', 'linewidth',2)
+%     hold on,
+%     plot([min(levels) max(levels)], ...
+%         [restingIHC_cilia restingIHC_cilia], 'g')
     title(' IHC apical cond.')
     ylabel ('IHCcilia(conductance)'), xlabel('dB SPL')
     xlim([min(levels) max(levels)])

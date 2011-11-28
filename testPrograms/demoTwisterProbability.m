@@ -63,9 +63,12 @@ showMapOptions.showModelOutput=1;
 showMapOptions.printFiringRates=1;
 showMapOptions.showACF=0;
 showMapOptions.showEfferent=0;
-showMapOptions.surfProbability=1;       % 2D plot of HSR response 
+showMapOptions.surfAN=1;       % 3D plot of HSR response 
+showMapOptions.PSTHbinwidth=0.002;      % 3D plot of HSR response 
+showMapOptions.view=[-14 76];           % 3D plot of HSR response
 
-UTIL_showMAP(showMapOptions, paramChanges)
+
+UTIL_showMAP(showMapOptions)
 
 toc
 path(restorePath)

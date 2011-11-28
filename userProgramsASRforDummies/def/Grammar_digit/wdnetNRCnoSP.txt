@@ -1,0 +1,7 @@
+
+$digit = one | two | three | four | five | six | eight | nine | oh;
+
+( 
+	sil $digit $digit $digit sil
+)
+

@@ -1,7 +1,7 @@
 function paradigm_TENtest(handles)
 global stimulusParameters experiment betweenRuns
 
-paradigm_training(handles) % default
+paradigmBase(handles) % default
 
 stimulusParameters.WRVname='targetLevel';
 stimulusParameters.WRVstartValues=40;
@@ -29,6 +29,6 @@ stimulusParameters.backgroundLevel=20;
 %   single interval up/down no cue
 stimulusParameters.instructions{1}=[{'YES if you hear the added click'}, { }, { 'NO if not (or you are uncertain'}];
 %   single interval up/down with cue
-stimulusParameters.instructions{2}=[{'count how many distinct clicks you hear'},{'ignore the tones'},{' '},...
+stimulusParameters.instructions{2}=[{'count how many distinct clicks you hear'},{'ignore the noise'},{' '},...
     {'The clicks must be **clearly distinct** to count'}];
 

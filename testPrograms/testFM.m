@@ -12,7 +12,7 @@ function testFM(BFlist,paramsName, AN_spikesOrProbability,...
 
 global inputStimulusParams outerMiddleEarParams DRNLParams
 global IHC_VResp_VivoParams IHCpreSynapseParams  AN_IHCsynapseParams
-global  ANprobRateOutput  ANoutput ANtauCas  ANdt
+global  ANprobRateOutput  ANoutput ANtauCas  dtSpikes
 dbstop if error
 restorePath=path;
 addpath (['..' filesep 'MAP'], ['..' filesep 'utilities'], ...
@@ -26,7 +26,7 @@ if nargin==0
     paramChanges=[];
 else
     if nargin<3
-    paramChanges=[];
+        paramChanges=[];
     end
 end
 
@@ -144,13 +144,13 @@ for maskerLeveldB=maskerLevels
 
         inputSignal=...
             [initialSilence maskerPa gap probe finalSilence];
-%         time=dt:dt:length(inputSignal)*dt;
-%         figure(99), plot(time,inputSignal)
+        %         time=dt:dt:length(inputSignal)*dt;
+        %         figure(99), plot(time,inputSignal)
 
         % **********************************  run MAP model
-%         showPlotsAndDetails=0;
-nChanges=length(paramChanges);
-paramChanges{nChanges+1}='AN_IHCsynapseParams.numFibers=	500;'; 
+        %         showPlotsAndDetails=0;
+        nChanges=length(paramChanges);
+        paramChanges{nChanges+1}='AN_IHCsynapseParams.numFibers=	500;';
         MAP1_14(inputSignal, 1/dt, targetFrequency, ...
             paramsName, AN_spikesOrProbability, paramChanges);
 
@@ -158,7 +158,7 @@ paramChanges{nChanges+1}='AN_IHCsynapseParams.numFibers=	500;';
             [nFibers c]=size(ANprobRateOutput);
             nLSRfibers=nFibers/length(ANtauCas);
             ANresponse=ANprobRateOutput(end-nLSRfibers:end,:);
-            ANdt=dt; % no adjustment for spikes speedup
+            dtSpikes=dt; % no adjustment for spikes speedup
         else
             [nFibers c]=size(ANoutput);
             nLSRfibers=nFibers/length(ANtauCas);
@@ -166,12 +166,12 @@ paramChanges{nChanges+1}='AN_IHCsynapseParams.numFibers=	500;';
         end
 
         ANresponse=sum(ANresponse);
-%         ANresponseTimes=ANdt:ANdt:length(ANresponse)*ANdt;
-%         figure(99), plot(ANresponseTimes,ANresponse)
+        %         ANresponseTimes=dtSpikes:dtSpikes:length(ANresponse)*dtSpikes;
+        %         figure(99), plot(ANresponseTimes,ANresponse)
 
         % analyse results
         probeStart=initialSilenceDuration+maskerDuration+gapDuration;
-        PSTHbinWidth=ANdt;
+        PSTHbinWidth=dtSpikes;
         responseDelay=0.005;
         probeTimes=probeStart+responseDelay:...
             PSTHbinWidth:probeStart+probeDuration+responseDelay;
@@ -189,20 +189,20 @@ paramChanges{nChanges+1}='AN_IHCsynapseParams.numFibers=	500;';
             nDurations=length(gapDurations);
             figure(8)
             PSTHbinWidth=1e-3;
-            PSTH=UTIL_PSTHmaker(ANresponse, ANdt, PSTHbinWidth);
-            PSTH=PSTH*ANdt/PSTHbinWidth;
+            PSTH=UTIL_PSTHmaker(ANresponse, dtSpikes, PSTHbinWidth);
+            PSTH=PSTH*dtSpikes/PSTHbinWidth;
             PSTHplotCount=PSTHplotCount+1;
             subplot(nLevels,nDurations,PSTHplotCount)
             PSTHtime=PSTHbinWidth:PSTHbinWidth:...
                 PSTHbinWidth*length(PSTH);
             if strcmp(AN_spikesOrProbability, 'spikes')
-            bar(PSTHtime, PSTH/PSTHbinWidth/nFibers)
-%                 ylim([0 500])
+                bar(PSTHtime, PSTH/PSTHbinWidth/nFibers)
+                %                 ylim([0 500])
             else
-            bar(PSTHtime, PSTH)
+                bar(PSTHtime, PSTH)
                 ylim([0 500])
             end
-%             xlim([0 longestSignalDuration])
+            xlim([0 longestSignalDuration])
             grid on
 
             if PSTHplotCount< (nLevels-1) * nDurations+1
@@ -220,7 +220,7 @@ paramChanges{nChanges+1}='AN_IHCsynapseParams.numFibers=	500;';
                 title([num2str(1000*gapDurations(PSTHplotCount)) 'ms'])
             end
 
-%         figure(99),            bar(PSTHtime, PSTH)
+            %         figure(99),            bar(PSTHtime, PSTH)
 
         end % showPSTHs
 

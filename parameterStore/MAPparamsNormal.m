@@ -25,7 +25,7 @@ efferentDelay=0.010;
 method.segmentDuration=efferentDelay;
 
 if nargin<3, showParams=0; end
-if nargin<2, sampleRate=50000; end
+if nargin<2, sampleRate=44100; end
 if nargin<1 || BFlist(1)<0 % if BFlist= -1, set BFlist to default
     lowestBF=250; 	highestBF= 8000; 	numChannels=21;
     % 21 chs (250-8k)includes BFs at 250 500 1000 2000 4000 8000
@@ -52,18 +52,15 @@ OMEParams.externalResonanceFilters=      [ 10 1 1000 4000];
                                        
 % highpass stapes filter  
 %  Huber gives 2e-9 m at 80 dB and 1 kHz (2e-13 at 0 dB SPL)
-OMEParams.OMEstapesLPcutoff= 1000;
+OMEParams.OMEstapesHPcutoff= 1000;
 OMEParams.stapesScalar=	     45e-9;
 
 % Acoustic reflex: maximum attenuation should be around 25 dB (Price, 1966)
 % i.e. a minimum ratio of 0.056.
 % 'spikes' model: AR based on brainstem spiking activity (LSR)
-OMEParams.rateToAttenuationFactor=0.008;  % * N(all ICspikes)
-% OMEParams.rateToAttenuationFactor=0;  % i.e. no AR
-
+OMEParams.rateToAttenuationFactor=0.05; % * N(all ICspikes)
 % 'probability model': Ar based on AN firing probabilities (LSR)
-OMEParams.rateToAttenuationFactorProb=0.006;    % * N(all ANrates)
-% OMEParams.rateToAttenuationFactorProb=0;      % i.e. no AR
+OMEParams.rateToAttenuationFactorProb=0.02;    % * N(all ANrates)
 
 % asymptote should be around 100-200 ms
 OMEParams.ARtau=.250; % AR smoothing function 250 ms fits Hung and Dallos
@@ -77,19 +74,19 @@ DRNLParams=[];  % clear the structure first
 
 %   *** DRNL nonlinear path
 % broken stick compression
-DRNLParams.a=5e4;       % DRNL.a=0 means no OHCs (no nonlinear path)
+DRNLParams.a=2e4;       % DRNL.a=0 means no OHCs (no nonlinear path)
 DRNLParams.c=.2;        % compression exponent
-DRNLParams.CtBMdB = 10; %Compression threshold dB re 10e-9 m displacement
+DRNLParams.ctBMdB = 10; %Compression threshold dB re 10e-9 m displacement
 
 % filters
 DRNLParams.nonlinOrder=	3;  % order of nonlinear gammatone filters
 DRNLParams.nonlinCFs=BFlist;
-p=0.2895;   q=250;      % human  (% p=0.14;   q=366;  % cat)
-DRNLParams.nlBWs=  p * BFlist + q;
-DRNLParams.p=p;   DRNLParams.q=q;   % save p and q for printing only
+DRNLParams.p=0.2895;   DRNLParams.q=250;   % save p and q for printing only
+% p=0.2895;   q=250;      % human  (% p=0.14;   q=366;  % cat)
+DRNLParams.nlBWs=  DRNLParams.p * BFlist + DRNLParams.q;
 
 %   *** DRNL linear path:
-DRNLParams.g=200;       % linear path gain factor
+DRNLParams.g=100;       % linear path gain factor
 DRNLParams.linOrder=3;  % order of linear gammatone filters
 % linCF is not necessarily the same as nonlinCF
 minLinCF=153.13; coeffLinCF=0.7341;   % linCF>nonlinBF for BF < 1 kHz
@@ -100,23 +97,22 @@ DRNLParams.linBWs=minLinBW + coeffLinBW*BFlist; % bandwidths of linear  filters
 
 %   *** DRNL MOC efferents
 DRNLParams.MOCdelay = efferentDelay;            % must be < segment length!
-DRNLParams.minMOCattenuationdB=-30;
+DRNLParams.minMOCattenuationdB=-35;
 
 % 'spikes' model: MOC based on brainstem spiking activity (HSR)
-DRNLParams.MOCtau =.025;                         % smoothing for MOC
-DRNLParams.rateToAttenuationFactor = .00635;  % strength of MOC
-% DRNLParams.rateToAttenuationFactor = 0;  % strength of MOC
+DRNLParams.MOCtau =.0285;                         % smoothing for MOC
+DRNLParams.rateToAttenuationFactor = .03;  % strength of MOC
+DRNLParams.rateToAttenuationFactor = .0055;  % strength of MOC
 
-% 'probability' model: MOC based on AN spiking activity (HSR)
+% 'probability' model: MOC based on AN probability (HSR)
 DRNLParams.MOCtauProb =.285;                         % smoothing for MOC
-DRNLParams.rateToAttenuationFactorProb = 0.0075;  % strength of MOC
-% DRNLParams.rateToAttenuationFactorProb = .0;  % strength of MOC
-DRNLParams.MOCrateThresholdProb =50;                % spikes/s probability only
+DRNLParams.rateToAttenuationFactorProb = 0.007;  % strength of MOC
+DRNLParams.MOCrateThresholdProb =67;                % spikes/s probability only
 
 
 %% #4 IHC_cilia_RPParams
-IHC_cilia_RPParams.tc=	0.0003;   % 0.0003 filter time simulates viscocity
-IHC_cilia_RPParams.C=	0.03;      % 0.1 scalar (C_cilia ) 
+IHC_cilia_RPParams.tc=	0.00012;   % 0.0003 Shamma
+IHC_cilia_RPParams.C=	0.08;       % 0.1 scalar (C_cilia ) 
 IHC_cilia_RPParams.u0=	5e-9;       
 IHC_cilia_RPParams.s0=	30e-9;
 IHC_cilia_RPParams.u1=	1e-9;
@@ -148,7 +144,8 @@ IHCpreSynapseParams.power=	3;
 % reminder: changing z has a strong effect on HF thresholds (like Et)
 IHCpreSynapseParams.z=	    2e42;   % scalar Ca -> vesicle release rate
 
-LSRtauCa=40e-6;            HSRtauCa=80e-6;            % seconds
+LSRtauCa=30e-6;            HSRtauCa=80e-6;            % seconds
+% LSRtauCa=40e-6;            HSRtauCa=90e-6;            % seconds
 % IHCpreSynapseParams.tauCa= [15e-6 80e-6]; %LSR and HSR fiber
 IHCpreSynapseParams.tauCa= [LSRtauCa HSRtauCa]; %LSR and HSR fiber
 
@@ -159,7 +156,8 @@ AN_IHCsynapseParams.numFibers=	100;
 % absolute refractory period. Relative refractory period is the same. 
 AN_IHCsynapseParams.refractory_period=	0.00075;
 AN_IHCsynapseParams.TWdelay=0.004;  % ?delay before stimulus first spike
-AN_IHCsynapseParams.ANspeedUpFactor=5; % longer epochs for computing spikes.
+AN_IHCsynapseParams.spikesTargetSampleRate=10000;
+% AN_IHCsynapseParams.ANspeedUpFactor=5; % longer epochs for computing spikes.
 
 % c=kym/(y(l+r)+kl)	(spontaneous rate)
 % c=(approx)  ym/l  (saturated rate)
@@ -205,7 +203,7 @@ switch MacGregorMultiType
         MacGregorMultiParams.fibersPerNeuron=10;  % N input fibers
 
         MacGregorMultiParams.dendriteLPfreq=50;   % dendritic filter
-        MacGregorMultiParams.currentPerSpike=35e-9; % *per spike
+        MacGregorMultiParams.currentPerSpike=28e-9; % *per spike
 %         MacGregorMultiParams.currentPerSpike=30e-9; % *per spike
         
         MacGregorMultiParams.Cap=1.67e-8; % ??cell capacitance (Siemens)
@@ -226,7 +224,6 @@ MacGregorParams=[];                 % clear the structure first
 MacGregorParams.type = 'chopper cell';
 MacGregorParams.fibersPerNeuron=10; % N input fibers
 MacGregorParams.dendriteLPfreq=100; % dendritic filter
-MacGregorParams.currentPerSpike=120e-9;% *(A) per spike
 MacGregorParams.currentPerSpike=40e-9;% *(A) per spike
 
 MacGregorParams.Cap=16.7e-9;        % cell capacitance (Siemens)
@@ -246,18 +243,26 @@ MacGregorParams.wideband=0;         % special for wideband units
 % MacGregorParams.saveAllData=0;
 
 %%  #9 filteredSACF
-minPitch=	300; maxPitch=	3000; numPitches=60;    % specify lags
-pitches=100*log10(logspace(minPitch/100, maxPitch/100, numPitches));
-filteredSACFParams.lags=1./pitches;     % autocorrelation lags vector
-filteredSACFParams.acfTau=	.003;       % time constant of running ACF
-filteredSACFParams.lambda=	0.12;       % slower filter to smooth ACF
-filteredSACFParams.plotFilteredSACF=1;  % 0 plots unfiltered ACFs
-filteredSACFParams.plotACFs=0;          % special plot (see code)
-%  filteredSACFParams.usePressnitzer=0; % attenuates ACF at  long lags
-filteredSACFParams.lagsProcedure=  'useAllLags';
-% filteredSACFParams.lagsProcedure=  'useBernsteinLagWeights';
-% filteredSACFParams.lagsProcedure=  'omitShortLags';
-filteredSACFParams.criterionForOmittingLags=3;
+% identify periodicities to be logged
+    minPitch=	80; maxPitch=	500; numPitches=50;  
+    maxLag=1/minPitch; minLag=1/maxPitch;
+    lags= linspace(minLag, maxLag, numPitches);
+    pitches=10.^ linspace(log10(minPitch), log10(maxPitch),numPitches);
+    pitches=fliplr(pitches);
+    % convert to lags for ACF
+    filteredSACFParams.lags=lags;     % autocorrelation lags vector
+    filteredSACFParams.acfTau=	.003;       % time constant of running ACF
+    filteredSACFParams.lambda=	0.12;       % slower filter to smooth ACF
+    % request plot of within-channel ACFs at fixed intervals in time
+    filteredSACFParams.plotACFs=1;          
+    filteredSACFParams.plotACFsInterval=0.002;
+    filteredSACFParams.plotMoviePauses=.1;  
+
+    filteredSACFParams.usePressnitzer=0; % attenuates ACF at  long lags
+    filteredSACFParams.lagsProcedure=  'useAllLags';
+    %  'useAllLags' or 'omitShortLags'
+    filteredSACFParams.criterionForOmittingLags=3;
+
 
 % checks
 if AN_IHCsynapseParams.numFibers<MacGregorMultiParams.fibersPerNeuron
@@ -269,7 +274,7 @@ end
 % paramChanges
 if nargin>3 && ~isempty(paramChanges)
     if ~iscellstr(paramChanges)
-        error(['paramChanges error: paramChanges not a cell array'])
+        error('paramChanges error: paramChanges not a cell array')
     end
     
     nChanges=length(paramChanges);

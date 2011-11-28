@@ -4,7 +4,7 @@ addpath (['..' filesep 'profiles'])
 
 %% plot profile
 if nargin<1
-    fgName = myFile;
+    fgName = 'profile_JSAN_R';
     bgName = '';
 end
 
@@ -68,13 +68,14 @@ for BFno=1:length(foreground.IFMCFreq)
     freq=foreground.MaskerRatio'*foreground.IFMCFreq(BFno);
     subplot(2,1,2)
     semilogx(freq,foreground.IFMCs(BFno,:),'r','lineWidth',3), hold on
-    ylim([0 100])
+    ylim([-20 100])
     xlim([100 12000])
 %     grid on
 end
 xlabel('frequency (Hz)')
 ylabel('masker dB / probe dB')
 set(gca,'XTick',foreground.IFMCFreq)
+set(gca,'Ytick', [-20 0 50 100])
 
 if ~isempty(bgName)
     for BFno=1:length(background.IFMCFreq)

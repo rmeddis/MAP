@@ -2,80 +2,75 @@ function UTIL_plotMatrix(toPlot, method)
 % UTIL_plotMatrix general purpose plotting utility for plotting the results
 %  of the MAP auditory model.
 % All plots are placed in subplots of a figure (default figure 1).
+%
 % Input arguments:
 % 	'toPlot' is matrix (either numeric or logical)
 % 	'method' is a structure containing plot instructions
 %
-%   surface plots have log z-axis when all values are >1
-%
-% when calling this function, always increment the subPlotNo in method
-% 	method.subPlotNo=method.subPlotNo+1;
-% 	method.subPlotNo=method.subPlotNo;
-%
 % mandatory parameters:
-% 	method.displaydt			xValues spacing between data points
-% 	method.numPlots      total number of subPlots in the figure
-% 	method.subPlotNo     number of this plot
-%   method.yValues 		mandatory only for 3D plots
+% 	method.displaydt		xValues spacing between data points
+%   method.yValues          yaxis labels mandatory only for 3D plots
 %
 % optional
-% 	method.figureNo      normally figure(1)
-% 	method.zValuesRange 	[min max] value pair to define yaxis limits
-%   method.zValuesRange  [min max] CLIMS for 3-D plot
-% 	method.yLabel 		(string) y-axis label
-% 	method.xLabel		(string) x-axis label
-% 	method.title  		     (string) subplot title
+% 	method.figureNo         default figure(1)
+% 	method.numPlots         number of subPlots in the figure (default=1)
+% 	method.subPlotNo        number of this plot (default=1)
+% 	method.zValuesRange     [min max] value pair to define yaxis limits
+%   method.zValuesRange     [min max] CLIMS for 3-D plot
+% 	method.yLabel           (string) y-axis label
+%   method.minyMaxy         y-axis limits
+% 	method.xLabel           (string) x-axis label
+% 	method.title  		    (string) subplot title
 %   method.bar    		    =1,  to force bar histogram (single channel only)
-%   method.view			  3D plot 'view' settings e.g. [-6 40]
-%   method.axes           (handle) used for writing to GUIs (specifies panel)
-%   method.maxPixels     maximum number of pixels (used to speed plotting)
-%   method.blackOnWhite =1;  % NB inverts display for 2D plots
-%   method.forceLog      positive values are put on log z-scale
-%   method.rasterDotSize min value is 1
-%   method.defaultFontSize
-%   method.timeStart        default=dt
-%   method.defaultTextColor default ='w'
-%   method.defaultAxesColor default = 'w'
-%   method.nCols            default=1
-%   method.nRows            default=method.numPlots
+%   method.view             3D plot 'view' settings e.g. [-6 40]
+%   method.axes             (handle) where to plot (overules all others)
+%   method.maxPixels        maximum number of pixels (used to speed plotting)
+%   method.blackOnWhite     =1; inverts display for 2D plots
+%   method.forceLog         positive values are put on log z-scale
+%   method.rasterDotSize    min value is 1
+%   method.defaultFontSize  deafult= 12
+%   method.timeStart        default= dt
+%   method.defaultTextColor default ='k'
+%   method.defaultAxesColor default ='k'
+%   method.nCols            default = 1 (layout for subplots)
+%   method.nRows            default=method.numPlots (layout for subplots
+%   method.segmentNumber    plot only this segment while 'hold on'
 %
-% useful paste for calling program
-% 	method.numPlots=method.numPlots;
-%	method.subPlotNo=method.subPlotNo+1;
-% 	method.subPlotNo=method.subPlotNo;
-% 	dt=dt;
-% 	method.yValues=method.nonlinCF;	% for 3D plots only
-%
-% 	method.figureNo=1;
-% 	method.yLabel='useThisLabel';
-% 	method.xLabel='use this label';
-% 	method.title='myTitle';
-%
+% e.g.
 %   UTIL_plotMatrix(toPlot, method)
 
 dt=method.displaydt;
+[r cols]=size(toPlot);
+if cols==1
+    % toPlot should be a wide matrix or a long vector
+    toPlot=toPlot';
+end
+
+if ~isfield(method,'numPlots') || isempty(method.numPlots)
+    method.numPlots =1;
+    method.subPlotNo =1;
+end
+
 if ~isfield(method,'figureNo') || isempty(method.figureNo)
     method.figureNo=99;
 end
+
 % if ~isfield(method,'zValuesRange') || isempty(method.zValuesRange)
 %     method.zValuesRange=[-inf inf];
 % end
 
 % set some defaults
-if ~isfield( method,'plotDivider') || isempty(method.plotDivider)
-    method.plotDivider=0; 
-end
 if ~isfield( method,'blackOnWhite') || isempty(method.blackOnWhite)
-    method.blackOnWhite=0; 
+    method.blackOnWhite=0;
 end
 if ~isfield(method,'timeStart')|| isempty(method.timeStart)
-    method.timeStart=dt; 
+    method.timeStart=dt;
 end
 if ~isfield(method,'objectDuration') || isempty(method.objectDuration)
     [nRows nCols]=size(toPlot); method.objectDuration=dt*nCols;
 end
 if ~isfield(method,'defaultFontSize') || isempty(method.defaultFontSize)
-    method.defaultFontSize=12; 
+    method.defaultFontSize=12;
 end
 if ~isfield(method,'defaultTextColor') || isempty(method.defaultTextColor)
     method.defaultTextColor='k';
@@ -84,7 +79,7 @@ else
     defaultTextColor='k';
 end
 if ~isfield( method,'defaultAxesColor') || isempty(method.defaultAxesColor)
-    method.defaultAxesColor=defaultTextColor; 
+    method.defaultAxesColor=defaultTextColor;
 end
 defaultAxesColor=method.defaultAxesColor;
 
@@ -107,8 +102,11 @@ end
 %   if both are specified, 'axes' takes priority
 figure(method.figureNo)
 if isfield(method,'axes') && ~isempty(method.axes)
-    % select an axis in some location other than 'figure'
-    h=axes(method.axes);
+    % user defines where to plot it
+    axes(method.axes);
+    method.numPlots =1;
+    method.subPlotNo =1;
+    
 else
     % now using a regular figure
     if method.subPlotNo>method.numPlots;
@@ -119,7 +117,7 @@ else
     
     if isfield(method,'segmentNumber') && ~isempty(method.segmentNumber)...
             && method.segmentNumber>1
-        % in multi-segment mode do not clear the image 
+        % in multi-segment mode do not clear the image
         %  from the previous segment
         hold on
     else
@@ -137,6 +135,14 @@ if isfield(method,'yValues') && ~isempty(method.yValues)
     yValues=method.yValues;
 else
     yValues=1:numYvalues;
+end
+
+if round(numYvalues/length(yValues))>1
+    % case where the plot matrix is double height (e.g. LSR+HSR)
+    yValues=[yValues yValues];
+    method.plotDivider=1;
+else
+    method.plotDivider=0;
 end
 
 % Now start the plot.
@@ -195,11 +201,9 @@ if ~islogical(toPlot)
             end
             
         otherwise                       % >3 channels: surface plot
-            % add white line to separate HSR and LSR
+            % add  line to separate HSR and LSR
             if method.plotDivider && size(toPlot,1) > 2
                 [r c]=size(toPlot);
-%                 if isempty(method.zValuesRange), method.zValuesRange=0; end
-%                 mm=method.zValuesRange(2);
                 emptyLine=max(max(toPlot))*ones(2,c);
                 halfway=round(r/2);
                 toPlot=[toPlot(1:halfway,:); emptyLine; toPlot(halfway+1:end,:)];
@@ -225,27 +229,11 @@ if ~islogical(toPlot)
             %  zValuesRange
             if isfield(method,'zValuesRange') ...
                     && ~isempty(method.zValuesRange)
-                % zValuesRange gives the max and min values
-%                 a=method.zValuesRange(1);
-%                 b=method.zValuesRange(2);
-%                 toPlot=(toPlot-a)/(b-a);
-%                 clims=[0 1];
                 clims=(method.zValuesRange);
                 imagesc(xValues, yValues, toPlot, clims), axis xy; %NB assumes equally spaced y-values
             else
                 % automatically scaled
                 imagesc(xValues, yValues, toPlot), axis xy; %NB assumes equally spaced y-values
-                
-                %                 if ~isfield(method,'zValuesRange')
-                %                     method.zValuesRange=[-inf inf];
-                %                 end
-                %
-                %                 if method.blackOnWhite
-                %                     % NB plotted values have negative sign for black on white
-                %                     caxis([-method.zValuesRange(2) -method.zValuesRange(1)])
-                %                 else
-                %                     caxis(method.zValuesRange)
-                %                 end
                 
                 if ~isfield(method,'zValuesRange')...
                         || isempty(method.zValuesRange)
@@ -264,9 +252,8 @@ if ~islogical(toPlot)
             % NB segmentation may shorten signal duration
             [r c]=size(toPlot);
             imageDuration=c*method.displaydt;
-            xlim([0 imageDuration])            
-%             xlim([0 method.objectDuration])
-
+            xlim([0 imageDuration])
+            
             % yaxis
             if isfield(method,'minyMaxy') && ~isempty(method.minyMaxy)
                 ylim(method.minyMaxy)
@@ -275,17 +262,29 @@ if ~islogical(toPlot)
                     ylim([min(yValues) max(yValues)])
                 end
             end
-            if min(yValues)>1  % put channel array on a log scale
+            
+            % y-axis design yTickLabels
+            if min(yValues)>1
                 tickValues=[min(yValues) max(yValues)];
+                tickLabels=num2str(tickValues');
+                if method.plotDivider && size(toPlot,1) > 2
+                    % show min/max yvalues with slight shift
+                    yList=yValues;
+                    yValues=1:length(yValues);
+                    tickValues=[1 halfway-1 halfway+2 length(yValues)];
+                    idx=[1 halfway halfway+1 length(yValues)];
+                    tickLabels=num2str(yList(idx)');
+                    imagesc(xValues, yValues, toPlot), axis xy;
+                end
+                
                 set(gca,'ytick',tickValues)
-                set(gca,'ytickLabel', strvcat(num2str(tickValues')))
+                set(gca,'ytickLabel', strvcat(tickLabels))
                 set(gca,'FontSize', method.defaultFontSize)
             end
             
     end
     
-else	% is logical 
-    
+else	% is logical
     % logical implies spike array. Use raster plot
     [y,x]=find(toPlot);	%locate all spikes: y is fiber number ie row
     x=x*dt+method.timeStart;   % x is time
@@ -314,6 +313,7 @@ else	% is logical
         plot([0 c*method.displaydt],[halfWayUp halfWayUp], 'b')
         hold off
     end
+    
 end
 
 set(gca, 'xcolor', defaultAxesColor)
@@ -330,7 +330,7 @@ if ~isfield(method,'axes') || isempty(method.axes)
     set(gca,'xtick',[],'FontSize', method.defaultFontSize)
     if method.subPlotNo==method.numPlots
         if isfield(method,'xLabel') && ~isempty(method.xLabel)
-%               set(gca,'ActivePositionProperty','outerposition')
+            %               set(gca,'ActivePositionProperty','outerposition')
             %  xlabel(method.xLabel)
             xlabel(method.xLabel, 'FontSize', method.defaultFontSize, 'color', defaultTextColor)
         end

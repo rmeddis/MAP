@@ -19,6 +19,7 @@ printReportGuide.structures=1;
 printReportGuide.showPsychometric=0;
 printReportGuide.HorizontalTracks=1;
 
+
 if nargin==0
     % print new report
     printReportGuide.showTracks=experiment.printTracks;
@@ -180,9 +181,14 @@ if length(var1values)==1 && length(var2values)==1 ...
     disp('Psychometric function')
     fprintf(' level  \tfreq\tprob\n')
     fprintf('%6.0f\t%6.2f\t%6.0f\n',[levelsBinVector; binFrequencies; psy])
-    fprintf('\n')
-    fprintf('k \t %6.2f\n',logistic.bestK)
-    fprintf('g  \t%7.5f\n',rareEvent.bestGain)
+
+    switch experiment.threshEstMethod
+        % only one value required for level change
+        case {'MaxLikelihood',  'oneIntervalUpDown'};
+%             fprintf('\n')
+%             fprintf('k \t %6.2f\n',logistic.bestK)
+%             fprintf('g  \t%7.5f\n',rareEvent.bestGain)
+    end
     fprintf('\n')
 
 end

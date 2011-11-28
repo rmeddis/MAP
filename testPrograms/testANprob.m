@@ -1,6 +1,9 @@
 function testANprob(targetFrequency,BFlist, levels, ...
     paramsName, paramChanges)
-
+% testANprob generates rate/level functions for AN and brainstem units.
+%  also other information like PSTHs, MOC efferent activity levels.
+% A 'probability' model is used.
+% e.g.
 % testANprob(1000,1000, -10:10:80, 'Normal')
 
 global IHC_VResp_VivoParams  IHC_cilia_RPParams IHCpreSynapseParams
@@ -151,7 +154,7 @@ nRows=2; nCols=2;
 % AN rate - level ONSET functions
 subplot(nRows,nCols,1)
 plot(levels,AN_LSRonset,'ro'), hold on
-plot(levels,AN_HSRonset,'ko'), hold off
+plot(levels,AN_HSRonset,'ko', 'MarkerEdgeColor','k', 'markerFaceColor','k'), hold off
 ylim([0 1000]),  xlim([min(levels) max(levels)])
 ttl=['tauCa= ' num2str(IHCpreSynapseParams.tauCa)];
 title( ttl)
@@ -161,7 +164,7 @@ text(0, 800, 'AN onset', 'fontsize', 14)
 % AN rate - level ADAPTED function
 subplot(nRows,nCols,2)
 plot(levels,AN_LSRsaturated, 'ro'), hold on
-plot(levels,AN_HSRsaturated, 'ko'), hold off
+plot(levels,AN_HSRsaturated, 'ko', 'MarkerEdgeColor','k', 'markerFaceColor','k'), hold off
 maxYlim=340;
 ylim([0 maxYlim])
 set(gca,'ytick',0:50:300)

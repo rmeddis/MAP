@@ -399,7 +399,7 @@ for ear=1:Nears % left/ right
             stimulus=applyGaussianRamps(stimulus, -stim.rampOnDur, 1/dt);
         end
 
-        % Initial silence
+        % begin silence
         % start with a signal of the right length consisting of zeros
         signal=zeros(1, globalStimParams.nSignalPoints);
         % identify start of stimulus
@@ -414,7 +414,7 @@ for ear=1:Nears % left/ right
 
         % time signature
         time=dt:dt:dt*length(signal);
-        %     figure(22), plot(signal), title([num2str(ear) ' - ' num2str(componentNo)]),pause (1)
+        % figure(22), plot(signal), title([num2str(ear) ' - ' num2str(componentNo)]),pause (1)
 
         try
             % create a column vector and trap if no signal has been created
@@ -574,33 +574,63 @@ end
 function stimulus=makeOHIOtones(globalStimParams, stimComponents)
 
 % Generates a stimulus consisting of one or more 10-ms tones
-% Tones are presented at 10-ms intervals
+%  The length of the list of frequencies determines the numberof tones
+% Tones are either presented at 10-ms intervals or simultaneously
+% all tones are individually ramped
 % Each tone has its own amplitude and its own ramp.
 
 frequencies=stimComponents.frequencies;
 amplitudesdB=stimComponents.amplitudesdB;
 nFrequencies=length(frequencies);
 
+if amplitudesdB==-100
+    % catch trial
+    amplitudesdB=repmat(-100,1,nFrequencies);
+end
+
 dt=globalStimParams.dt;
+
 toneDuration=.010;
 time=dt:dt:toneDuration;
 
-rampDuration=stimComponents.rampOnDur;
+% fixed ramp, silenceDuration, toneDuration
+rampDuration=0.005;
 rampTime=dt:dt:rampDuration;
-ramp=[0.5*(1+cos(2*pi*rampTime/(2*rampDuration)+pi)) ones(1,length(time)-length(rampTime))];
+ramp=[0.5*(1+cos(2*pi*rampTime/(2*rampDuration)+pi)) ...
+    ones(1,length(time)-length(rampTime))];
 ramp=ramp.*fliplr(ramp);
 
-stimulus= zeros(1,round((toneDuration+globalStimParams.beginSilences(end))/dt)+1);
+silenceDuration=0.010;
+silenceDurationLength=round(silenceDuration/dt);
+initialSilence=zeros(1,silenceDurationLength);
+
+silenceToneDuration=toneDuration + silenceDuration;
+silenceToneDurationLength=round(silenceToneDuration/dt);
+
+% OHIO spect produces simultaneous tones
+if strcmp(stimComponents.OHIOtype,'OHIOspect')
+    totalDuration=silenceToneDuration;
+else
+    totalDuration=silenceToneDuration*nFrequencies;
+end
+
+totalDurationLength=round(totalDuration/dt);
+stimulus=zeros(1,totalDurationLength);
+toneBeginPTR=1;
 
 for i=1:nFrequencies
-    toneBeginPTR=round(globalStimParams.beginSilences(i)/dt)+1;
-
     frequency=frequencies(i);
     dBSPL=amplitudesdB(i);
     amplitude=28e-6* 10.^(dBSPL/20);
     tone=amplitude*sin(2*pi*frequency*time);
     tone=tone.*ramp;
-    stimulus(toneBeginPTR:toneBeginPTR+length(tone)-1)=stimulus(toneBeginPTR:toneBeginPTR+length(tone)-1)+tone;
+    % stimulus is normally zeros except for OHIOspect
+    stimulus(toneBeginPTR:toneBeginPTR+silenceToneDurationLength-1)=...
+        [initialSilence tone]+...
+        stimulus(toneBeginPTR:toneBeginPTR+silenceToneDurationLength-1);    
+    if ~strcmp(stimComponents.OHIOtype,'OHIOspect')
+        toneBeginPTR=toneBeginPTR+silenceToneDurationLength;
+    end
 end
 % figure(2), plot( stimulus')
 

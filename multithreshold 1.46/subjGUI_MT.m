@@ -986,11 +986,12 @@ if length(withinRuns.meanEstTrack)>=1
         otherwise
             title([stimulusParameters.WRVname ' = ' ...
                 num2str(withinRuns.variableValue, '%5.1f') ...
-                ';    TH= ' num2str(estThresh, '%5.1f')])
+                ';    TH= ' num2str(estThresh, '%5.1f') ' dB'])
     end
 end
 xlim([0 experiment.maxTrials+withinRuns.beginningOfPhase2]);
 ylim(stimulusParameters.WRVlimits)
+ylabel ('dB SPL')
 grid on
 
 % Panel 4: Summary of threshold estimates (not used here)
@@ -1275,7 +1276,7 @@ for i=1:length(betweenRuns.thresholds)
 end
 xlimRM([ min(betweenRuns.variableList1) max(betweenRuns.variableList1) ])
 ylim(stimulusParameters.WRVlimits)
-ylabel('thresholds')
+ylabel('thresholds (dB)')
 xlabel(betweenRuns.variableName1)
 set(gca,'ytick', [0 20 40 60 80 100])
 try
@@ -1305,6 +1306,7 @@ if betweenRuns.runNumber==length(betweenRuns.var1Sequence)
     % update experimenter GUI
     addToMsg('Experiment completed.',1)
 
+    set(expGUIhandles.pushbuttonSave,'visible','on')
     printReport
     experiment.status='endOfExperiment';
     return
@@ -1433,7 +1435,7 @@ function [modelResponse, MacGregorResponse]=MAPmodel
 
 global experiment stimulusParameters audio withinRuns
 % global outerMiddleEarParams DRNLParams AN_IHCsynapseParams
-global ICoutput ANdt dt savedBFlist ANprobRateOutput expGUIhandles
+global ICoutput dtSpikes dt savedBFlist ANprobRateOutput expGUIhandles
 global paramChanges
 
 savePath=path;
@@ -1479,7 +1481,7 @@ if showPlotsAndDetails
     options.showModelOutput=1;
     options.printFiringRates=1;
     options.showACF=0;
-    options.showEfferent=1;
+    options.showEfferent=0;
     options.surfProbability=0;
     showMapOptions.surfSpikes=0;
     UTIL_showMAP(options)
@@ -1493,7 +1495,7 @@ end
 
 if strcmp(AN_spikesOrProbability,'spikes')
     MacGregorResponse= sum(ICoutput,1);                 % use IC
-    dt=ANdt;
+    dt=dtSpikes;
     time=dt:dt:dt*length(MacGregorResponse);
 else
     % for one channel, ANprobResponse=ANprobRateOutput
@@ -1508,7 +1510,8 @@ end
 windowOnsetDelay= 0.004;
 windowOffsetDelay= 0.022; % long ringing time
 
-% now find the response of the MacGregor model during the target presentation + group delay
+% now find the response of the MacGregor model during 
+%  the target presentation + group delay
 switch experiment.threshEstMethod
     case {'2I2AFC++', '2I2AFC+++'}
         idx= time>stimulusParameters.testTargetBegins+windowOnsetDelay ...
@@ -1550,7 +1553,8 @@ switch experiment.threshEstMethod
             num2str([withinRuns.variableValue nSpikesTrueWindow ...
             nSpikesFalseWindow  nSpikesDuringTarget], '%4.0f') ] )
     otherwise
-        % single interval
+        
+        % single interval up/down
         idx=find(time>stimulusParameters.testTargetBegins +windowOnsetDelay...
             & time<stimulusParameters.testTargetEnds+windowOffsetDelay);
         if strcmp(AN_spikesOrProbability,'spikes')
@@ -1747,7 +1751,9 @@ catch
 end
 
 try
-    serobj = serial('COM4') ;           	% Creating serial port object now its connected to COM4 !!! button boxes in booths are connected to COM2
+    % !!! button boxes in booths are connected to COM2. User beware of
+    % connection port.
+    serobj = serial('COM2') ;           	% Creating serial port object
     serobj.Baudrate = 9600;           		% Set the baud rate at the specific value
     set(serobj, 'Parity', 'none') ;     	% Set parity as none
     set(serobj, 'Databits', 8) ;          	% set the number of data bits

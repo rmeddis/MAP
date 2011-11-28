@@ -1,7 +1,7 @@
 function paradigm_psychometric(handles)
 global stimulusParameters experiment betweenRuns
 
-paradigm_training(handles) % default
+paradigmBase(handles) % default
 
 experiment.printTracks=1;
 experiment.maxTrials=30;

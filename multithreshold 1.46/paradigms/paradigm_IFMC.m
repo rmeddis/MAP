@@ -1,7 +1,7 @@
 function paradigm_IFMC(handles)
 global stimulusParameters experiment betweenRuns
 
-paradigm_training(handles) % default
+paradigmBase(handles) % default
 
 stimulusParameters.WRVname='maskerLevel';
 stimulusParameters.WRVstartValues=10;

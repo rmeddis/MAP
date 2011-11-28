@@ -46,7 +46,7 @@ function varargout = multiThreshold(varargin)
 
 % Edit the above text to modify the response to help multiThreshold
 
-% Last Modified by GUIDE v2.5 20-Sep-2011 11:47:22
+% Last Modified by GUIDE v2.5 25-Oct-2011 07:51:14
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -93,7 +93,7 @@ function initializeGUI(handles)
 % Then wait for user action
 global stimulusParameters experiment betweenRuns
 global targetTypes maskerTypes backgroundTypes
-global variableNames paradigmNames threshEstNames  cueNames
+global variableNames paradigmNames threshEstNames  cueNames betweenRunsVariables
 
 % Specify order of fields in main structures
 % identify as empty values or empty strings only
@@ -106,13 +106,14 @@ addpath (['..' filesep 'testPrograms']) % model physiology tests
 variableNames={'stimulusDelay','maskerDuration','maskerLevel',...
     'maskerRelativeFrequency', 'targetFrequency', 'gapDuration',...
     'targetDuration','targetLevel','rampDuration',...
-    'cueTestDifference', 'WRVstartValues', 'WRVsteps', 'WRVlimits'};
+    'cueTestDifference', 'WRVstartValues', 'WRVsteps', 'WRVlimits',...
+    'OHIOnTones'};
 
 % Variable variables
 %  (names of variable that can changed between runs)
 betweenRunsVariables={'stimulusDelay','maskerDuration','maskerLevel',...
     'maskerRelativeFrequency','targetFrequency', 'gapDuration',...
-    'targetDuration','targetLevel','numOHIOtones'};
+    'targetDuration','targetLevel','OHIOnTones'};
 % populate the 'between runs variable' menus
 set(handles.popupmenuVaryParameter1,'string',betweenRunsVariables)
 set(handles.popupmenuVaryParameter2,'string',betweenRunsVariables)
@@ -143,6 +144,8 @@ set(handles.editBackgroundLevel,'string', '0')
 % Establish available paradigms by scanning paradigms folder
 paradigmNames= what('paradigms');
 paradigmNames= paradigmNames.m; % select m files only
+idx=strmatch('paradigm_', paradigmNames); % with 'paradigm_'
+paradigmNames=paradigmNames(idx);
 for i=1:length(paradigmNames)   % strip off file extension
     paradigmNames{i}=paradigmNames{i}(10:end-2); 
 end
@@ -183,7 +186,7 @@ threshEstNames={'oneIntervalUpDown', 'MaxLikelihood', ...
     '2I2AFC++', '2I2AFC+++'};
 set(handles.popupmenuThreshEst, 'string', threshEstNames);
 experiment.stopCriteria2IFC=[75 3 5];
-experiment.stopCriteriaSI=[20];
+experiment.stopCriteriaSI=20;
 
 % ** editBoxes that are only set by hand
 % music (relative) level, 'tada!' (manual setting only)
@@ -191,7 +194,7 @@ experiment.stopCriteriaSI=[20];
 set(handles.editMusicLevel,'string','0')
 
 % Catch Trial Rate
-set(handles.editCatchTrialRate,'string','0.2   0.1  2 ');
+set(handles.editCatchTrialRate,'string','0.2   0.1  ');
 
 % calibration
 stimulusParameters.restoreCalibration=7;
@@ -205,6 +208,7 @@ set(handles.editMAPplot,'string',num2str(experiment.MAPplot))
 % saveData
 experiment.saveData=1;
 set(handles.editSaveData,'string',num2str(experiment.saveData))
+set(handles.pushbuttonSave,'visible','off')
 
 % printTracks
 experiment.printTracks=0;
@@ -336,6 +340,25 @@ end
 set(handles.editBackgroundLevel,'string', num2str...
     (stimulusParameters.backgroundLevel))
 
+% values related to assessment method
+switch experiment.threshEstMethod
+    case {'MaxLikelihood','oneIntervalUpDown'}
+        set(handles.editstopCriteriaBox, 'string', ...
+            num2str(experiment.singleIntervalMaxTrials))
+    case {'2I2AFC++','2I2AFC+++'}
+        set(handles.editstopCriteriaBox, 'string', ...
+            num2str(experiment.stopCriteria2IFC))
+    otherwise
+        error([' aResetPopupMenus:  threshEstMethod not recognised -> ' ...
+            experiment.threshEstMethod])
+end
+% assessment method popup may be changed between paradigms
+%  e.g. SRT must be one interval
+x=get(handles.popupmenuThreshEst, 'string');
+set(handles.popupmenuThreshEst, 'value', ...
+    strmatch(experiment.threshEstMethod, x));
+
+
 % on RUN the sample rate will be picked from the text box
 % However, MAP overrules the sample rate and sets its own
 aSetSampleRate(stimulusParameters.subjectSampleRate, handles);
@@ -352,7 +375,7 @@ aResetPopupMenus(handles)
 % ------------------------------------------------------ aResetPopupMenus
 function aResetPopupMenus(handles)
 global   stimulusParameters betweenRuns variableNames
-global targetTypes maskerTypes experiment backgroundTypes
+global targetTypes maskerTypes experiment backgroundTypes betweenRunsVariables
 
 switch experiment.threshEstMethod
     case {'MaxLikelihood','oneIntervalUpDown'}
@@ -375,11 +398,11 @@ end
 
 %set variables popupmenus as specified in betweenRuns
 variableParameter1ID=0; variableParameter2ID=0;
-for i=1:length(variableNames)
-    if strcmp(variableNames{i},betweenRuns.variableName1)
+for i=1:length(betweenRunsVariables) %  variableNames
+    if strcmp(betweenRunsVariables{i},betweenRuns.variableName1)
         variableParameter1ID=i;
     end
-    if strcmp(variableNames{i},betweenRuns.variableName2)
+    if strcmp(betweenRunsVariables{i},betweenRuns.variableName2)
         variableParameter2ID=i;
     end
 end
@@ -415,6 +438,15 @@ global experiment stimulusParameters
 set(handles.edittargetLevel, 'visible', 'on')
 set(handles.edittargetDuration, 'visible', 'on')
 set(handles.edittargetFrequency, 'visible', 'on')
+
+switch experiment.paradigm(1:3)
+    case 'OHI'
+        set(handles.editOHIOnTones, 'visible', 'on')
+        set(handles.textOHIOnTones, 'visible', 'on')
+    otherwise
+        set(handles.editOHIOnTones, 'visible', 'off')
+        set(handles.textOHIOnTones, 'visible', 'off')
+end
 
 switch experiment.ear
     case {'statsModelLogistic', 'statsModelRareEvent'}
@@ -688,6 +720,8 @@ function run (handles)
 global experiment expGUIhandles stimulusParameters
 tic
 expGUIhandles=handles;
+set(handles.pushbuttonSave,'visible','off')
+
 set(handles.pushbuttonStop, 'backgroundColor', [.941 .941 .941])
 % set(handles.editparamChanges,'visible','off')
 
@@ -718,8 +752,14 @@ toc
 
 % --- Executes on button press in pushbuttonSingleShot.
 function pushbuttonSingleShot_Callback(hObject, eventdata, handles)
-global experiment
+global experiment paradigmNames
 experiment.singleShot=1;
+
+% startup paradigm, 'training' (could be anywhere on the list)
+startupParadigm='training';
+idx= find(strcmp(paradigmNames,startupParadigm));
+set(handles.popupmenuParadigm,'value', idx)
+aParadigmSelection(handles);
 
 % special test for spontaneous activity
 x=get(handles.editWRVstartValues, 'string');
@@ -740,7 +780,7 @@ set(handles.edittargetDuration, 'string', y)
 % ------------------------------------------aReadAndCheckParameterBoxes
 function errorMsg=aReadAndCheckParameterBoxes(handles)
 global experiment  stimulusParameters betweenRuns  statsModel
-global variableNames  LevittControl paramChanges
+global variableNames  LevittControl paramChanges betweenRunsVariables
 % When the program sets the parameters all should be well
 % But when the user changes them...
 
@@ -801,7 +841,7 @@ for i=1:length(variableNames)-3 % do not include 'level limits'
 end
 
 chosenOption=get(handles.popupmenuVaryParameter1,'value');
-betweenRuns.variableName1=variableNames{chosenOption};
+betweenRuns.variableName1=betweenRunsVariables{chosenOption};
 eval(['betweenRuns.variableList1 = stimulusParameters.' ...
     betweenRuns.variableName1 ';']);
 
@@ -891,6 +931,9 @@ if stimulusParameters.catchTrialRates(1) ...
         'catch trial base rates must be less than catch trial start rate';
     return,
 end
+% force the decay rate for catchTrialRate
+%  to avoid having to explain it to the user
+stimulusParameters.catchTrialRates(3)=2;
 
 % sample rate
 % The sample rate is set in the paradigm file.
@@ -1040,7 +1083,12 @@ end
 % identify model parameter changes if any
 paramChanges=get(handles.editparamChanges,'string');
 if ~strcmp(paramChanges, ';'), paramChanges=[paramChanges ';']; end
+try
 eval(paramChanges);
+catch
+    error('Problems with suggested parameter changes')
+end
+
 
 % -------------------------------------------- aSetSampleRate
 function aSetSampleRate(sampleRate, handles)
@@ -1099,7 +1147,7 @@ switch experiment.ear
         stimulusParameters.includeCue=0;						 % no cue
         set(handles.popupmenuCueNoCue,'value', 2)
 
-        set(handles.editCatchTrialRate,'string','0 0  2 ');%no catch trials
+        set(handles.editCatchTrialRate,'string','0 0');%no catch trials
         set(handles.editName,'string', 'Normal')			% force name
         experiment.name=get(handles.editName,'string');	% read name back
         set(handles.editcalibrationdB,'string','0')
@@ -1110,6 +1158,9 @@ switch experiment.ear
         set(handles.editSaveData,'string', '0')
         set(handles.editSubjectFont,'string', '10');
         experiment.MacGThreshold=0; % num MacG spikes to exceed threshold
+    otherwise
+        set(handles.editCatchTrialRate,'string','0.2 0.1');%no catch trials
+
 end
 aResetPopupMenus(handles)
 
@@ -1119,19 +1170,22 @@ cueSetUp(handles)
 
 % ------------------------------------------------------------- cueSetUp
 function cueSetUp(handles)
-global stimulusParameters
+global stimulusParameters experiment
 
-chosenOption=get(handles.popupmenuCueNoCue,'value');
-if chosenOption==1
-    stimulusParameters.includeCue=1;
-    set(handles.editcueTestDifference,'visible', 'on')
-    set(handles.textcueTestDifference,'visible', 'on')
-    stimulusParameters.subjectText=stimulusParameters.instructions{2};
-else
-    stimulusParameters.includeCue=0;
-    set(handles.editcueTestDifference,'visible', 'off')
-    set(handles.textcueTestDifference,'visible', 'off')
-    stimulusParameters.subjectText= stimulusParameters.instructions{1};
+switch experiment.threshEstMethod
+    case {'oneIntervalUpDown', 'MaxLikelihood'}
+        chosenOption=get(handles.popupmenuCueNoCue,'value');
+        if chosenOption==1
+            stimulusParameters.includeCue=1;
+            set(handles.editcueTestDifference,'visible', 'on')
+            set(handles.textcueTestDifference,'visible', 'on')
+            stimulusParameters.subjectText=stimulusParameters.instructions{2};
+        else
+            stimulusParameters.includeCue=0;
+            set(handles.editcueTestDifference,'visible', 'off')
+            set(handles.textcueTestDifference,'visible', 'off')
+            stimulusParameters.subjectText= stimulusParameters.instructions{1};
+        end
 end
 
 % -------------------------------------------- popupmenuThreshEst_Callback
@@ -1753,6 +1807,37 @@ function editparamChanges_Callback(hObject, eventdata, handles)
 
 
 function editparamChanges_CreateFcn(hObject, eventdata, handles)
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+
+function pushbuttonSave_Callback(hObject, eventdata, handles)
+global experiment
+
+subjectName=experiment.name;
+if ~isdir(['savedData' filesep subjectName ])
+    mkdir(['savedData' filesep subjectName ])
+end
+
+% date and time and replace ':' with '_'
+date=datestr(now);idx=findstr(':',date);date(idx)='_';
+fileName=[subjectName ' ' date '.mat'];
+movefile(['savedData' filesep 'mostRecentResults.mat'], ...
+    ['savedData' filesep subjectName filesep fileName])
+set(handles.pushbuttonSave,'visible','off')
+
+
+
+function editOHIOnTones_Callback(hObject, eventdata, handles)
+
+
+function editOHIOnTones_CreateFcn(hObject, eventdata, handles)
 
 % Hint: edit controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.

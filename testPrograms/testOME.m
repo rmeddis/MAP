@@ -1,15 +1,23 @@
 function testOME(paramsName, paramChanges)
-% testOME compute the stapes response at a number of frequencies
-%  and compares the stapes displacement with in vivo data
+% testOME compute the external resonance and 
+%  stapes response at a number of frequencies
+% It compares the stapes displacement against human in vivo data
 %  collected by Huber et al.2001.
-% e.g.
+% paramsName: name of file in parameterStore containing model parameters
+% paramchanges: string array of changes to parameters. 
+%    this can be omitted or {} is acceptable argument
+% 
 % testOME('Normal',{})
 
 savePath=path;
 addpath (['..' filesep 'utilities'],['..' filesep 'MAP'])
 
+% default arguments
 if nargin<2
     paramChanges=[];
+end
+if nargin<1
+    paramsName='Normal';
 end
 
 sampleRate=50000;

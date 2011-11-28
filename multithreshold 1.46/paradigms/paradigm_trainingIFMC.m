@@ -1,7 +1,7 @@
-function paradigm_trainingIFMC(handles)
+function paradigmBaseIFMC(handles)
 global stimulusParameters experiment betweenRuns
 
-paradigm_training(handles) % default
+paradigmBase(handles) % default
 
 stimulusParameters.WRVname='maskerLevel';
 stimulusParameters.WRVstartValues=-10;
@@ -16,7 +16,7 @@ betweenRuns.variableName1='maskerRelativeFrequency';
 betweenRuns.variableList1=[ 0.5       .9 .7   1.3 ];
 betweenRuns.variableName2='targetFrequency';
 % keep old list of target frequencies
-betweenRuns.variableList2=str2num(get(handles.edittargetFrequency,'string'));
+betweenRuns.variableList2=[ 2000 ];
 
 experiment.maskerInUse=1;
 stimulusParameters.maskerType='tone';

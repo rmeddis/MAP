@@ -1,7 +1,7 @@
 function paradigm_absThreshold(handles)
 global stimulusParameters experiment betweenRuns
 
-paradigm_training(handles) % default
+paradigmBase(handles) % default
 
 betweenRuns.variableName1='targetFrequency';
 betweenRuns.variableList1=[250 500 1000 2000 4000 8000 ];

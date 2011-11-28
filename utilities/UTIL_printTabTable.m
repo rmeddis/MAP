@@ -2,7 +2,7 @@ function UTIL_printTabTable(M, headers, format)
 % printTabTable prints a matrix as a table with tabs
 %headers are optional
 %headers=strvcat('firstname', 'secondname')
-%  printTabTable([1 2; 3 4],strvcat('a1','a2'));
+%  UTIL_printTabTable([1 2; 3 4],strvcat('a1','a2'));
 
 if nargin<3
     format='%g';

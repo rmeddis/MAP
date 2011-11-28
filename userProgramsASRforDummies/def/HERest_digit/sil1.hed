@@ -1,0 +1,7 @@
+MU 2 {sil.state[2-4].mix}
+AT 2 4 0.2 {sil.transP}
+AT 4 2 0.2 {sil.transP}
+
+TI silst {sil.state[3]}
+
+

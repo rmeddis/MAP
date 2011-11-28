@@ -27,13 +27,13 @@ leveldBSPL=70;                  % dB SPL
 
 %% #5 number of channels in the model
 %   21-channel model (log spacing)
-numChannels=21;
+numChannels=11;
 lowestBF=250; 	highestBF= 8000;
 BFlist=round(logspace(log10(lowestBF), log10(highestBF), numChannels));
 
 
 %% #6 change model parameters
-paramChanges=[];
+paramChanges={};
 
 %% delare showMap options
 showMapOptions=[];  % use defaults
@@ -45,7 +45,7 @@ showMapOptions.printFiringRates=1;
 showMapOptions.showACF=0;
 showMapOptions.showEfferent=0;
 showMapOptions.surfSpikes=0;
-showMapOptions.surfProbability=0;       % 2D plot of HSR response
+showMapOptions.surfAN=0;       % 2D plot of HSR response
 
 %% Generate stimuli
 [inputSignal sampleRate]=wavread(fileName);
@@ -69,7 +69,7 @@ MAP1_14(inputSignal, sampleRate, BFlist, ...
 
 
 % the model run is now complete. Now display the results
-UTIL_showMAP(showMapOptions, paramChanges)
+UTIL_showMAP(showMapOptions)
 
 toc
 path(restorePath)
